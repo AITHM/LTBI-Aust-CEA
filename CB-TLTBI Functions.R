@@ -136,11 +136,16 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
 # Look up the Reactivation rate
 Get.RR <- function(xDT, year) {
 
-    DT <- copy(xDT[, .(AGERP, SEXP, YARP)])
+    DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+    
+    DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
+    
+    DT[ISO3 == "100-149" | ISO3 == "150+", COBI := "100+"]  
 
     DT[AGERP > 110, AGERP := 110]
 
-    RRates[DT[, .(AGERP, SEXP, ST = year - YARP)], Rate, on = .(Age = AGERP, Sex = SEXP, statetime = ST)]
+    RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(Age = AGERP, Sex = SEXP, 
+                                                                statetime = ST, cobi = COBI)]
 
 }
 
@@ -152,6 +157,7 @@ Get.TBMR <- function(xDT, year) {
     # To lookup all ages beyond 95 & 97
     DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
     DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
+    DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
 
     vic.tb.mortality[DT[, .(AGEP, SEXP)], Prob, on = .(age = AGEP, sex = SEXP)]
 
@@ -176,7 +182,9 @@ Get.POP <- function(DT, strategy, markov.cycle) {
 
     if ((strategy$myname == "S1" || strategy$myname == "S0_1") && markov.cycle <= 5) {
 
-        1
+        0.836 # Proportion of migrants referred following off-shore screening (CXR) that attend follow-up  
+        # appointment once onshore. Source: Flynn MG, Brown LK. Treatment of latent tuberculosis in migrants 
+        # to Victoria. Commun Dis Intell Q Rep 2015; 39(4): E578-83.
 
     } else if (strategy$myname == "S2" && markov.cycle <=5 ) {
 
@@ -489,7 +497,7 @@ DoRunModel <- function(strategy, start.year, cycles) {
 
     } else {
 
-        listoftests <- c("QTFGIT", "TST05", "TST10", "TST15")
+        listoftests <- c("QTFGIT", "TST10", "TST15")
         listoftreatments <- c("4R", "3HP", "6H", "9H")
 
     }

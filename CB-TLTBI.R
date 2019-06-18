@@ -32,17 +32,34 @@ source("CB-TLTBI Functions.R")
 # Read the data files (if required)
 
 # aust <- readRDS("Data/aust.rds")
-aust.vic <- readRDS("Data/aust.vic.rds") # this is required for S1,S2,S3,S4 and S5
+#aust.vic <- readRDS("Data/aust.vic.rds") # this is required for S1,S2,S3,S4 and S5
+aust.vic <- readRDS("Data/Aust16byTBincid.rds") 
+    # Australian 2016 census data extracted from Table Builder by country of birth
+    # (place of usual residence), single year age and single year of arrival. 
 # aust.vic.LGA <- readRDS("Data/aust.vic.LGA.rds") # this is for S0
 # prob.Inf <- readRDS("Data/prob.Inf.rds") 
 # tbhaz.200rep <- readRDS("Data/tbhaz.200rep.rds")
 # tbhaz.5000rep <- readRDS("Data/tbhaz.5000rep.rds")
 # vic.fertility <- readRDS("Data/vic.fertility.rds")
-vic.mortality <- readRDS("Data/vic.mortality.rds") # this is also required
+#vic.mortality <- readRDS("Data/vic.mortality.rds") # this is also required
+vic.mortality <- readRDS("Data/aust.mortality.rds") # this is also required
+vic.mortality <- as.data.table(vic.mortality)
+    # Projected mortality rates for Australia from:
+    # https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3222.02017%20(base)%20-%202066?OpenDocument
+    # Results then aggregated by gender assuming a gender weighting by age equivalent to the Australian population
+    # in September 2018. Source: https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3101.0Sep%202018?OpenDocument
 # vic.migration <- readRDS("Data/vic.migration.rds")
 # vic.pop <- readRDS("Data/vic.pop.rds")
-RRates <- readRDS("Data/RRates.rds") # this is also required
-vic.tb.mortality <- readRDS("Data/vic.tb.mortality.rds") # this is also required
+#RRates <- readRDS("Data/RRates.rds") # this is also required
+RRates <- readRDS("Data/RRatescobincidnosex.rds") # this is also required
+    # TB reactivation rate data from: Dale K, Trauer J, et al. Estimating long-term tuberculosis 
+    # reactivation rates in Australian migrants. Clinical Infectious Diseases 2019 (in press)
+#vic.tb.mortality <- readRDS("Data/vic.tb.mortality.rds") # this is also required
+vic.tb.mortality <- readRDS("Data/tb.mortality.rds") # this is also required
+vic.tb.mortality <- as.data.table(vic.tb.mortality)
+    # TB mortality data from: Dale K, Tay E, Trevan P, et al. Mortality among tuberculosis cases 
+    # in Victoria, 2002-2013: case fatality and factors associated with death. 
+    # Int J Tuberc Lung Dis 2016;20(4):515-23. doi: 10.5588/ijtld.15.0659
 
 # Creating a vector of state names
 state.names <- c("p.sus", "p.sus.fp.t", "p.sus.fp.nt", "p.sus.fp.tc", "p.sus.tn",
@@ -63,8 +80,12 @@ new.state.names <- c(state.names, paste("V.", state.names, sep = ""),
 
 
 # Create a sample data table of test sensitivity & specificity
-tests.dt <- data.table(tests = c("QTFGIT", "TST05", "TST10", "TST15"), SN = c(0.76, 0.74, 0.72, 0.4),
-                       SP = c(0.97, 0.56, 0.58, 0.87), cost.primary = c(79.75, 67.10, 67.10, 67.10),
+tests.dt <- data.table(tests = c("QTFGIT", "TST05", "TST10", "TST15"), SN = c(0.6104, 0.74, 0.7532, 0.6753),
+                       SP = c(0.7784, 0.56, 0.6679, 0.7726), 
+                       # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value 
+                       # of interferon-gamma release assays and tuberculin skin test in predicting the development of active 
+                       # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
+                       cost.primary = c(79.75, 67.10, 67.10, 67.10),
                        cost.tertiary = c(122.71, 164.5, 164.5, 164.5))
 
 
