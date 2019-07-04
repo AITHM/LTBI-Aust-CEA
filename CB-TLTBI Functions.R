@@ -177,6 +177,51 @@ Get.TREAT <- function(S, treat) {
 
 }
 
+# Look up the chance of beginning treatment (age and treatment??? dependent)
+Get.BEGINTREAT <- function(xDT, year) {
+  
+  DT <- copy(xDT[, .(AGERP)])
+  
+  DT[AGERP > 110, AGERP := 110]
+  
+  begintreat.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+  
+}
+
+# Look up SAE rate from sae.rate (age and treatment dependent)
+Get.SAE <- function(xDT, year, treat) {
+  
+  DT <- copy(xDT[, .(AGERP)])
+  
+  DT[AGERP > 110, AGERP := 110]
+  
+  sae.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+  
+}
+
+# Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
+Get.SAEMR <- function(xDT, year, treat) {
+  
+  DT <- copy(xDT[, .(AGERP)])
+  
+  DT[AGERP > 110, AGERP := 110]
+  
+  sae.mortality[DT[, .(AGERP)], Rate, on = .(Age = AGERP, treat = treat)]
+  
+}
+
+# Look up the emigrate rate from emigrate.rate (age and time since migration dependent)
+Get.EMIGRATE <- function(xDT, year, rate.assumption = "Med") {
+  
+  DT <- copy(xDT[, .(AGEP, SEXP)])
+  
+  # To lookup all ages beyond 110
+  DT[AGEP > 110, AGEP := 110]
+  
+  emigrate.rate[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
+  
+}
+
 # Look up target population percentage
 Get.POP <- function(DT, strategy, markov.cycle) {
 
@@ -334,6 +379,11 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
     parameters$MR$env <- environment()
     parameters$RR$env <- environment()
     parameters$TBMR$env <- environment()
+    parameters$ATTEND$env <- environment()
+    parameters$BEGINTREAT$env <- environment()
+    parameters$SAE$env <- environment()
+    parameters$SAEMR$env <- environment()
+    parameters$EMIGRATE$env <- environment()
     parameters$TESTSN$env <- environment()
     parameters$TESTSP$env <- environment()
     parameters$TESTC$env <- environment()
@@ -604,7 +654,7 @@ DoRunModel <- function(strategy, start.year, cycles) {
                     #rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
                     saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, "pop.output3.rds", sep = ""))
 
-
+ 
 
                     #pop.output <- pop.master[YARP < year][, cycle := 0][150001:200000]
                     #pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
