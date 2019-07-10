@@ -112,10 +112,18 @@ treatment.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
                            cost.tertiary = c(632.38, 969.37, 596.54, 709.77),
                            sae = c(0.000000009, 0.00000025, 0.00000016, 0.0000002))
 
+# Create a sample treatment data table
+treatment.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
+                           rate = c(.83, .78, .82, .63),
+                           cost.primary = c(437.13, 578.87, 440.34, 436.42),
+                           cost.tertiary = c(632.38, 969.37, 596.54, 709.77))
 
 #9H cost changed from 549.22 to 578.87 and 939.72 to 969.37 respectively. 
 
-
+# Create a sample data table to give the reactivation rate reduction in the treatment year
+treatmentyearRR.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
+                           ratereduction = c(0.4, 0.8, 0.3, 0.6))
+# need to talk to Michael Flynn to establish how long it takes to complete treatment
 
 # Create a sample utility data table
 # TODO: fix hard coded data table. It should take state.names and create the columns.
@@ -265,16 +273,18 @@ S0_1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t,p.sus.fp.t.sae,
 parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                RR = Get.RR(DT, year),
                                RR = Get.RR(DT, year),
-                               
+                      
                                ATTEND = 0.836,
                                # Proportion of migrants referred following off-shore screening (CXR) 
                                # that attend follow-up appointment once onshore. 
                                # Source: Flynn MG, Brown LK. Treatment of latent tuberculosis in migrants 
                                # to Victoria. Commun Dis Intell Q Rep 2015; 39(4): E578-83.
-                               BEGINTREAT = Get.BEGINTREAT(DT, year),
-                               TBDURINGFOLLOWUP = 0.5,
-                               SAE = Get.SAE(DT, year, treatment),
-                               SAEMR = Get.SAEMR(DT, year, treatment),
+                               BEGINTREAT = 
+                                 # BEGINTREAT = Get.BEGINTREAT(DT, year),
+                                 # Work out if the chance of beginning treatment is age-dependent. Will that depend on treatment as well??
+                                 TBDURINGFOLLOWUP = Get.TBDURINGFOLLOWUP(DT, year, treatment),
+                               SAE = Get.SAE(DT, treatment),
+                               SAEMR = Get.SAEMR(DT, treatment),
                                EMIGRATE = Get.EMIGRATE(DT, year),
                                
                                TESTSN = Get.TEST(S = "SN", testing),
@@ -282,7 +292,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                TESTC = Get.TEST(S = "cost.primary", testing),
                                TREATR = Get.TREAT(S = "rate", treatment),
                                TREATC = Get.TREAT(S = "cost.primary", treatment),
-                               TREATSAE = Get.TREAT(S ="sae", treatment),
+                               #TREATSAE = Get.TREAT(S ="sae", treatment),
                                POP = Get.POP(DT, strategy, markov.cycle),
                                UTILITY = Get.UTILITY(treatment),
                                TBCOST = 11408.84

@@ -189,18 +189,18 @@ Get.BEGINTREAT <- function(xDT, year) {
 }
 
 # Look up SAE rate from sae.rate (age and treatment dependent)
-Get.SAE <- function(xDT, year, treat) {
+Get.SAE <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGERP)])
   
   DT[AGERP > 110, AGERP := 110]
   
-  sae.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+  sae.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP, treat = treat)]
   
 }
 
 # Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
-Get.SAEMR <- function(xDT, year, treat) {
+Get.SAEMR <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGERP)])
   
@@ -211,16 +211,45 @@ Get.SAEMR <- function(xDT, year, treat) {
 }
 
 # Look up the emigrate rate from emigrate.rate (age and time since migration dependent)
-Get.EMIGRATE <- function(xDT, year, rate.assumption = "Med") {
+Get.EMIGRATE <- function(xDT, year) {
   
-  DT <- copy(xDT[, .(AGEP, SEXP)])
+  DT <- copy(xDT[, .(year, AGERP, YARP, ISO3)])
   
-  # To lookup all ages beyond 110
-  DT[AGEP > 110, AGEP := 110]
+  DT[YARP < year-2, VISA := "perm"]  
   
-  emigrate.rate[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
+  DT[YARP > year-3, VISA := "temp"]  
+  
+  DT[AGERP > 110, AGERP := 110]
+  
+  emigrate.rate[DT[, .(AGERP, ISO3, VISA)], Rate, on = .(Age = AGERP, VISA = VISA,
+                                                         ISO3 = ISO3)]
   
 }
+
+
+# Look up the reactivation rate from RRates and then reduce the rate by a certain proprtion (treatmentyearRR.dt)
+# to reflect that some people will reactivate with TB in their treatment year before they complete follow-up and treatment.
+
+Get.TBDURINGFOLLOWUP <- function(xDT, year, treat) {
+  
+  DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+  
+  DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
+  
+  DT[ISO3 == "100-149" | ISO3 == "150+", COBI := "100+"]  
+  
+  DT[AGERP > 110, AGERP := 110]
+  
+  rawrate <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(Age = AGERP, Sex = SEXP, 
+                                                                    statetime = ST, cobi = COBI)]
+  
+  ratereduction <- as.numeric(treatmentyearRR.dt[treatment == treat, ratereduction])
+  
+  rawrate*ratereduction
+  
+}
+
+
 
 # Look up target population percentage
 Get.POP <- function(DT, strategy, markov.cycle) {
