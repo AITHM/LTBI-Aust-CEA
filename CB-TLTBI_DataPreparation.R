@@ -80,8 +80,13 @@ CreatePopulationMaster <- function(Modify = FALSE) {
     pop.master <- pop.master[, (new.state.names) := as.numeric(NA)]
 
     # TODO - Fix this! It is hard coded for 20 states.
-    pop.master <- pop.master[, (state.names) := .(NUMP - LTBP, 0, 0, 0, 0, LTBP, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
-
+    # pop.master <- pop.master[, (state.names) := .(NUMP - LTBP, 0, 0, 0, 0, LTBP, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
+    pop.master <- pop.master[, (state.names) := .(NUMP - LTBP, 0, 0, 0, 0,
+                                                  0, 0, 0, 
+                                                  LTBP, 0, 0, 0, 0,
+                                                  0, 0, 0,
+                                                  0, 0, 0, 0, 0)]
+    
     # Because we are running the model from 2020 the retrospective cohort must be aged from 2016 to 2020
     pop.master[YARP <= 2016, AGEP := AGEP + 4] # Census was taken in 2016
     pop.master[YARP == 2017, AGEP := AGEP + 3]

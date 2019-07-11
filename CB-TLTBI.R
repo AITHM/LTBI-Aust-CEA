@@ -60,12 +60,16 @@ vic.tb.mortality <- as.data.table(vic.tb.mortality)
     # TB mortality data from: Dale K, Tay E, Trevan P, et al. Mortality among tuberculosis cases 
     # in Victoria, 2002-2013: case fatality and factors associated with death. 
     # Int J Tuberc Lung Dis 2016;20(4):515-23. doi: 10.5588/ijtld.15.0659
-begintreat.rate <- as.data.table(emigrate.rate)
+# begintreat.rate <- readRDS("Data/begintreat.rate.rds") # this is also required
+# begintreat.rate <- as.data.table(begintreat.rate)
     # ??? data from: ...
+sae.rate <- readRDS("Data/sae.rate.rds") # this is also required
 sae.rate <- as.data.table(sae.rate)
     # SAE rate from: ...
+sae.mortality <- readRDS("Data/sae.mortality.rds") # this is also required
 sae.mortality <- as.data.table(sae.mortality)
     # SAE mortality data from: ...
+emigrate.rate <- readRDS("Data/emigrate.rate.rds") # this is also required
 emigrate.rate <- as.data.table(emigrate.rate)
     # emigrate data from: ...
 
@@ -77,13 +81,11 @@ emigrate.rate <- as.data.table(emigrate.rate)
 #                  "p.ltbi.tp.nt.tbr", "p.ltbi.fn", "p.ltbi.fn.tb", "p.ltbi.fn.tbr", "p.ltbi.tb",
 #                  "p.ltbi.tbr", "p.ltbi.tp.nt.tb.death", "p.ltbi.fn.tb.death", "p.ltbi.tb.death", "p.death")
 # Creating a vector of state names - KD
-state.names <- c("p.sus", "p.sus.fp", "p.sus.fp.a", "p.sus.fp.t","p.sus.fp.t.sae",
+state.names <- c("p.sus", "p.sus.fp", "p.sus.fp.a", "p.sus.fp.t", "p.sus.fp.t.sae",
                  "p.sus.fp.sae.death", "p.sus.fp.tc", "p.sus.nt",
                  "p.ltbi", "p.ltbi.tp", "p.ltbi.tp.a", "p.ltbi.tp.t","p.ltbi.tp.t.sae",
                  "p.ltbi.tp.sae.death", "p.ltbi.tp.tc", "p.ltbi.nt",
-                 "p.tb", "p.tbr","p.tb.death", "p.death", "p.emigrate")
-
-
+                 "p.tb", "p.tbr", "p.tb.death", "p.death", "p.emigrate")
 
 # Number of states
 state.number <- length(state.names)
@@ -130,43 +132,51 @@ treatmentyearRR.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
 utility.dt <- data.table(treatment = c("", "4R", "9H", "3HP", "6H"))
 utility.dt[, c(state.names) := as.numeric(NA)]
 
-
-utility.dt[treatment == "6H", c(state.names) := .(1, 1, 1, 1, 0.75,
-                                                  0, 1, 1,
-                                                  1, 1, 1, 1, 0.75,
-                                                  0, 1, 1,
-                                                  0.88, 1, 0, 0, 0)]
-
-utility.dt[treatment == "9H", c(state.names) := .(1, 1, 1, 1, 0.75,
-                                                  0, 1, 1,
-                                                  1, 1, 1, 1, 0.75,
-                                                  0, 1, 1,
-                                                  0.88, 1, 0, 0, 0)]
-
-utility.dt[treatment == "4R", c(state.names) := .(1, 1, 1, 1, 0.75,
-                                                  0, 1, 1,
-                                                  1, 1, 1, 1, 0.75,
-                                                  0, 1, 1,
-                                                  0.88, 1, 0, 0, 0)]
-
-utility.dt[treatment == "3HP", c(state.names) := .(1, 1, 1, 1, 0.75,
-                                                   0, 1, 1,
-                                                   1, 1, 1, 1, 0.75,
-                                                   0, 1, 1,
-                                                   1, 1, 0, 0, 0)]
-
-utility.dt[treatment == "", c(state.names) := .(1, 1, 1, 1, 0.75,
-                                                0, 1, 1,
-                                                1, 1, 1, 1, 0.75,
-                                                0, 1, 1,
-                                                0.88, 1, 0, 0, 0)]
+# Utility values
+uhealthy <- 0.870
+# Bauer et al 2015
+uactivetb <- 0.803
+uactivetbr <- 1
+# Bauer et al 2015
+ultbi4R <- 0.823
+# Bauer et al 2015
+ultbi9H <- 0.823
+# Bauer et al 2015
+ultbi3HP <- 0.823
+ultbi6H <- 0.823
+ultbitreatsae <- 0.75 #to do
 
 
-# Active TB utility weight - 0.88 (Campbell et al 2019)
-# Healthy utility weight - 1 (Campbell et al 2019)
-# LTBI utility weight - 1 (Campbell et al 2019)
-# Treatment for LTBI utility weight - 1 (to do)
-# SAE utility weight - 0.75 (to do)
+utility.dt[treatment == "6H", c(state.names) := .(uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
+                                                  0, uhealthy, uhealthy,
+                                                  uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
+                                                  0, uhealthy, uhealthy,
+                                                  uactivetb, uactivetbr, 0, 0, 0)]
+
+utility.dt[treatment == "9H", c(state.names) := .(uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
+                                                  0, uhealthy, uhealthy,
+                                                  uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
+                                                  0, uhealthy, uhealthy,
+                                                  uactivetb, uactivetbr, 0, 0, 0)]
+
+utility.dt[treatment == "4R", c(state.names) := .(uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
+                                                  0, uhealthy, uhealthy,
+                                                  uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
+                                                  0, uhealthy, uhealthy,
+                                                  uactivetb, uactivetbr, 0, 0, 0)]
+
+utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
+                                                   0, uhealthy, uhealthy,
+                                                   uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
+                                                   0, uhealthy, uhealthy,
+                                                   uactivetb, uactivetbr, 0, 0, 0)]
+
+utility.dt[treatment == "", c(state.names) := .(uhealthy, NA, NA, NA, NA,
+                                                0, NA, uhealthy,
+                                                uhealthy, NA, NA, NA, NA,
+                                                NA, NA, uhealthy,
+                                                uactivetb, uactivetbr, 0, 0, 0)]
+
 
 unevaluated.flow.cost <- lazy(c(0, 0, 0, param$TESTC, 0,
                                 0, 0, 0,
@@ -216,28 +226,30 @@ arglist <- CreateArgumentList(state.names, state.number)
 # S2.TM
 # BASELINE.TM
 
-arglist.S1.TM <- arglist$load.list("S1.TM")
+# arglist.S1.TM <- arglist$load.list("S1.TM")
+arglist.S1.TM <- arglist$load.list("S1.TMKD")
 arglist.S2.TM <- arglist$load.list("S2.TM")
 arglist.BASELINE.TM <- arglist$load.list("BASELINE.TM")
-arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TM")
+#arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TM")
+arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TMKD")
 
 CreateStates(state.names) # instantiates a set of states objects with default values
 
 # Create a set of strategies
-S1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t,p.sus.fp.t.sae,
+S1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
                      p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-                     p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t,p.ltbi.tp.t.sae,
+                     p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
                      p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-                     p.tb, p.tbr,p.tb.death, p.death, p.emigrate,
+                     p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
                      transition.matrix = do.call(DefineTransition, arglist.S1.TM))
 
 
 
-S2 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t,p.sus.fp.t.sae,
+S2 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
                      p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-                     p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t,p.ltbi.tp.t.sae,
+                     p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
                      p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-                     p.tb, p.tbr,p.tb.death, p.death, p.emigrate,
+                     p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
                      transition.matrix = do.call(DefineTransition, arglist.S2.TM))
 
 # The same transition matrix is used for scenario 3(5%) , 4(10%). The object name triggers the Get.POP function
@@ -247,22 +259,22 @@ S3 <- S2
 S4 <- S2
 S5 <- S2
 
-S0_12 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t,p.sus.fp.t.sae,
+S0_12 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
                         p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-                        p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t,p.ltbi.tp.t.sae,
+                        p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
                         p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-                        p.tb, p.tbr,p.tb.death, p.death, p.emigrate,
+                        p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
                         transition.matrix = do.call(DefineTransition, arglist.BASELINE.TM))
 
 #Baselines use the same transition matrix
 S0_345 <- S0_12
 
 # New baseline for S1
-S0_1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t,p.sus.fp.t.sae,
+S0_1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
                        p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-                       p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t,p.ltbi.tp.t.sae,
+                       p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
                        p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-                       p.tb, p.tbr,p.tb.death, p.death, p.emigrate,
+                       p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
                        transition.matrix = do.call(DefineTransition, arglist.BASELINE.S1.TM))
 
 
@@ -273,20 +285,18 @@ S0_1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t,p.sus.fp.t.sae,
 parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                RR = Get.RR(DT, year),
                                RR = Get.RR(DT, year),
-                      
                                ATTEND = 0.836,
                                # Proportion of migrants referred following off-shore screening (CXR) 
                                # that attend follow-up appointment once onshore. 
                                # Source: Flynn MG, Brown LK. Treatment of latent tuberculosis in migrants 
                                # to Victoria. Commun Dis Intell Q Rep 2015; 39(4): E578-83.
-                               BEGINTREAT = 
-                                 # BEGINTREAT = Get.BEGINTREAT(DT, year),
-                                 # Work out if the chance of beginning treatment is age-dependent. Will that depend on treatment as well??
-                                 TBDURINGFOLLOWUP = Get.TBDURINGFOLLOWUP(DT, year, treatment),
+                               BEGINTREAT = 0.47,
+                               # BEGINTREAT = Get.BEGINTREAT(DT, year),
+                               # Work out if the chance of beginning treatment is age-dependent. Will that depend on treatment as well??
+                               TBDURINGFOLLOWUP = Get.TBDURINGFOLLOWUP(DT, year, treatment),
                                SAE = Get.SAE(DT, treatment),
                                SAEMR = Get.SAEMR(DT, treatment),
                                EMIGRATE = Get.EMIGRATE(DT, year),
-                               
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
                                TESTC = Get.TEST(S = "cost.primary", testing),
