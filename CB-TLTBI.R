@@ -245,29 +245,29 @@ S1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
 
 
 
-S2 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
-                     p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-                     p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
-                     p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-                     p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
-                     transition.matrix = do.call(DefineTransition, arglist.S2.TM))
+# S2 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
+#                      p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
+#                      p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
+#                      p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
+#                      p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
+#                      transition.matrix = do.call(DefineTransition, arglist.S2.TM))
 
 # The same transition matrix is used for scenario 3(5%) , 4(10%). The object name triggers the Get.POP function
 # to return the testing percentage.
 
-S3 <- S2
-S4 <- S2
-S5 <- S2
+# S3 <- S2
+# S4 <- S2
+# S5 <- S2
 
-S0_12 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
-                        p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-                        p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
-                        p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-                        p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
-                        transition.matrix = do.call(DefineTransition, arglist.BASELINE.TM))
+# S0_12 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
+#                         p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
+#                         p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
+#                         p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
+#                         p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
+#                         transition.matrix = do.call(DefineTransition, arglist.BASELINE.TM))
 
-#Baselines use the same transition matrix
-S0_345 <- S0_12
+# Baselines use the same transition matrix
+# S0_345 <- S0_12
 
 # New baseline for S1
 S0_1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
@@ -284,7 +284,7 @@ S0_1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
 # Creates an unevaluated set of parameters
 parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                RR = Get.RR(DT, year),
-                               RR = Get.RR(DT, year),
+                               TBMR = Get.TBMR(DT, year),
                                ATTEND = 0.836,
                                # Proportion of migrants referred following off-shore screening (CXR) 
                                # that attend follow-up appointment once onshore. 
@@ -302,12 +302,15 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                TESTC = Get.TEST(S = "cost.primary", testing),
                                TREATR = Get.TREAT(S = "rate", treatment),
                                TREATC = Get.TREAT(S = "cost.primary", treatment),
-                               #TREATSAE = Get.TREAT(S ="sae", treatment),
+                               # TREATSAE = Get.TREAT(S ="sae", treatment),
                                POP = Get.POP(DT, strategy, markov.cycle),
                                UTILITY = Get.UTILITY(treatment),
                                TBCOST = 11408.84
                                )
 
+# Create a sample data table to give the reactivation rate reduction in the treatment year
+treatmentyearRR.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
+                                 ratereduction = c(0.4, 0.8, 0.3, 0.6))
 
 
 # Uses aust.vic.rds file to create a sample input

@@ -198,24 +198,28 @@ Get.BEGINTREAT <- function(xDT, year) {
 }
 
 # Look up SAE rate from sae.rate (age and treatment dependent)
-Get.SAE <- function(xDT, treat) {
+Get.SAE <- function(xDT, treatment) {
   
   DT <- copy(xDT[, .(AGERP)])
   
   DT[AGERP > 110, AGERP := 110]
   
-  sae.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP, treat = treat)]
+  DT$treatment <- treatment
+  
+  sae.rate[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
   
 }
 
 # Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
-Get.SAEMR <- function(xDT, treat) {
+Get.SAEMR <- function(xDT, treatment) {
   
   DT <- copy(xDT[, .(AGERP)])
   
   DT[AGERP > 110, AGERP := 110]
   
-  sae.mortality[DT[, .(AGERP)], Rate, on = .(Age = AGERP, treat = treat)]
+  DT$treatment <- treatment
+  
+  sae.mortality[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
   
 }
 
@@ -236,8 +240,10 @@ Get.EMIGRATE <- function(xDT, year) {
 }
 
 
-# Look up the reactivation rate from RRates and then reduce the rate by a certain proprtion (treatmentyearRR.dt)
-# to reflect that some people will reactivate with TB in their treatment year before they complete follow-up and treatment.
+# Look up the reactivation rate from RRates and then reduce the rate by a 
+# certain proprtion (treatmentyearRR.dt)
+# to reflect that some people will reactivate with TB in their treatment year 
+# before they complete follow-up and treatment.
 
 Get.TBDURINGFOLLOWUP <- function(xDT, year, treat) {
   
@@ -427,11 +433,12 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
     parameters$TESTC$env <- environment()
     parameters$TREATR$env <- environment()
     parameters$TREATC$env <- environment()
-    parameters$TREATSAE$env <- environment()
+    parameters$TBDURINGFOLLOWUP$env <- environment()
+    # parameters$TREATSAE$env <- environment()
     parameters$POP$env <- environment()
     parameters$UTILITY$env <- environment()
     parameters$TBCOST$env <- environment()
-
+    
     unevaluated.flow.cost$env <- environment()
     unevaluated.state.cost$env <- environment()
 
