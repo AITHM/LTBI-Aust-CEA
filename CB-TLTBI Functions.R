@@ -11,11 +11,6 @@ DefineTransition <- function(..., state.names) {
       sprintf("cell_%i_%i",
               rep(seq_len(n.expected.states), each = n.expected.states),
               rep(seq_len(n.expected.states), n.expected.states))
-    state.names <- c("p.sus", "p.sus.fp", "p.sus.fp.a", "p.sus.fp.t", "p.sus.fp.t.sae",
-                     "p.sus.fp.sae.death", "p.sus.fp.tc", "p.sus.nt",
-                     "p.ltbi", "p.ltbi.tp", "p.ltbi.tp.a", "p.ltbi.tp.t","p.ltbi.tp.t.sae",
-                     "p.ltbi.tp.sae.death", "p.ltbi.tp.tc", "p.ltbi.nt",
-                     "p.tb", "p.tbr", "p.tb.death", "p.death", "p.emigrate")
     # Perform checks
     if (length(state.names) != n.expected.states) {
         stop("Transition matrix is not the square of the number of states")
@@ -50,11 +45,6 @@ DefineStrategy <- function(..., transition.matrix) {
 
     state.list <- list(...)
     states <- structure(state.list, class = c("uneval_state_list", class(state.list)))
-    state.names <- c("p.sus", "p.sus.fp", "p.sus.fp.a", "p.sus.fp.t", "p.sus.fp.t.sae",
-                     "p.sus.fp.sae.death", "p.sus.fp.tc", "p.sus.nt",
-                     "p.ltbi", "p.ltbi.tp", "p.ltbi.tp.a", "p.ltbi.tp.t","p.ltbi.tp.t.sae",
-                     "p.ltbi.tp.sae.death", "p.ltbi.tp.tc", "p.ltbi.nt",
-                     "p.tb", "p.tbr", "p.tb.death", "p.death", "p.emigrate")
     names(states) <- state.names
     structure(list(transition = transition.matrix, states = states),
               class = "uneval_model")
@@ -198,26 +188,27 @@ Get.BEGINTREAT <- function(xDT, year) {
 }
 
 # Look up SAE rate from sae.rate (age and treatment dependent)
-Get.SAE <- function(xDT, treatment) {
+Get.SAE <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGERP)])
   
   DT[AGERP > 110, AGERP := 110]
   
-  DT$treatment <- treatment
+  DT$treatment <- as.character(treat)
   
   sae.rate[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
   
 }
 
+
 # Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
-Get.SAEMR <- function(xDT, treatment) {
+Get.SAEMR <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGERP)])
   
   DT[AGERP > 110, AGERP := 110]
   
-  DT$treatment <- treatment
+  DT$treatment <- as.character(treat)
   
   sae.mortality[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
   
@@ -438,6 +429,7 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
     parameters$POP$env <- environment()
     parameters$UTILITY$env <- environment()
     parameters$TBCOST$env <- environment()
+    parameters$SAECOST$env <- environment()
     
     unevaluated.flow.cost$env <- environment()
     unevaluated.state.cost$env <- environment()

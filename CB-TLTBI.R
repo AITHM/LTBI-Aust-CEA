@@ -177,24 +177,24 @@ utility.dt[treatment == "", c(state.names) := .(uhealthy, NA, NA, NA, NA,
                                                 NA, NA, uhealthy,
                                                 uactivetb, uactivetbr, 0, 0, 0)]
 
-
+# FC prefix
 unevaluated.flow.cost <- lazy(c(0, 0, 0, param$TESTC, 0,
                                 0, 0, 0,
                                 0, 0, 0, param$TESTC, 0,
                                 0, 0, 0,
                                 0, 0, 0, 0, 0))
 
-
-unevaluated.state.cost <- lazy(c(0, 0, 0, param$TREATC, param$SAE,
+# SC prefix
+unevaluated.state.cost <- lazy(c(0, 0, 0, param$TREATC, param$SAECOST,
                                  0, 0, 0,
-                                 0, 0, 0, param$TREATC, param$SAE,
+                                 0, 0, 0, param$TREATC, param$SAECOST,
                                  0, 0, 0,
                                  param$TBCOST, 0, 0, 0, 0))
 
-
-unevaluated.state.utility <- lazy(c(0, 0, 0, param$TREATC, param$SAE,
+# SQ prefix
+unevaluated.state.utility <- lazy(c(0, 0, 0, param$TREATC, param$SAECOST,
                                     0, 0, 0,
-                                    0, 0, 0, param$TREATC, param$SAE,
+                                    0, 0, 0, param$TREATC, param$SAECOST,
                                     0, 0, 0,
                                     param$TBCOST, 0, 0, 0, 0))
 
@@ -220,6 +220,70 @@ arglist <- CreateArgumentList(state.names, state.number)
 
 # Save the argument list. 
 # arglist$save.list("BASELINE.S1.TM")
+
+
+# BASELINE.S1.TM
+# manually create list of values ()
+list.values <- c(0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$RR),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$TBMR),	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$MR),	quote(param$EMIGRATE),
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1)
+arglist$update.list(list.values) # For passing a entire list
+arglist$add.state.name(state.names)
+# saveRDS(S1.TMKD,file = "Data/BASELINE.S1.TM.rds")
+arglist$save.list("BASELINE.S1.TM")
+
+
+# S1.TM
+# manually create list of values ()
+list.values <- c(0,	quote(param$POP * (1 - param$TESTSP)),	0,	0,	0,	0,	0,	quote(param$POP * param$TESTSP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+             0,	0,	quote(param$ATTEND),	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+             0,	0,	0,	quote(param$BEGINTREAT),	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	quote(param$SAE),	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	quote(param$SAEMR),	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+             0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$POP * param$TESTSN),	0,	0,	0,	0,	0,	quote(param$POP *(1- param$TESTSN)),	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$ATTEND),	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$BEGINTREAT),	0,	0,	0,	quote(CMP),	quote(param$TBDURINGFOLLOWUP),	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$SAE),	0,	quote(param$TREATR),	quote(CMP),	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$SAEMR),	0,	quote(CMP),	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$RR),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$TBMR),	0,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$MR),	quote(param$EMIGRATE),
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,
+             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1)
+arglist$update.list(list.values) # For passing a entire list
+arglist$add.state.name(state.names)
+# saveRDS(S1.TMKD,file = "Data/S1.TMKD.rds")
+arglist$save.list("S1.TMKD")
+
+# # BASELINE.S1.TM
+# arglist$update.list(listvalues) # For passing a entire list
+# arglist$add.state.name(state.names)
+# arglist$save.list("BASELINE.S1.TMKD")
+
 
 # Load the argument list
 # S1.TM
@@ -305,13 +369,9 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                # TREATSAE = Get.TREAT(S ="sae", treatment),
                                POP = Get.POP(DT, strategy, markov.cycle),
                                UTILITY = Get.UTILITY(treatment),
-                               TBCOST = 11408.84
+                               TBCOST = 11408.84,
+                               SAECOST = 2000
                                )
-
-# Create a sample data table to give the reactivation rate reduction in the treatment year
-treatmentyearRR.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
-                                 ratereduction = c(0.4, 0.8, 0.3, 0.6))
-
 
 # Uses aust.vic.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
@@ -329,7 +389,7 @@ discount <- 0.03
 start.year <- 2020
 year <- start.year # Initialise year with start.year
 markov.cycle <- 0 # Tracks the current cycle
-cycles <- 30 # Model run cycles
+cycles <- 5 # Model run cycles
 
 #--------------------- S0_1 ---------------------------#
 #---------------Baseline for S1 --------------------#
@@ -338,7 +398,7 @@ DoRunModel(S0_1, start.year, cycles)
 
 #--------------------- S0_12 ---------------------------#
 #---------------Baseline for S2 --------------------#
-DoRunModel(S0_12, start.year, cycles)
+# DoRunModel(S0_12, start.year, cycles)
 
 #--------------------- END OF S0_12 ---------------------------#
 
@@ -349,9 +409,12 @@ discount <- 0.03
 start.year <- 2020
 year <- start.year # Initialise year with start.year
 markov.cycle <- 0 # Tracks the current cycle
-cycles <- 30 # Model run cycles
+cycles <- 5 # Model run cycles
 
 DoRunModel(S1, start.year, cycles)
+
+
+
 DoRunModel(S2, start.year, cycles)
 
 
