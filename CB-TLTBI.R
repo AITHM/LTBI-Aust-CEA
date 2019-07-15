@@ -12,7 +12,7 @@
 #library(diagram)
 #library(heemod)
 
-library(RevoScaleR)
+# library(RevoScaleR)
 library(lazyeval) # required
 library(data.table) # required
 
@@ -81,11 +81,17 @@ emigrate.rate <- as.data.table(emigrate.rate)
 #                  "p.ltbi.tp.nt.tbr", "p.ltbi.fn", "p.ltbi.fn.tb", "p.ltbi.fn.tbr", "p.ltbi.tb",
 #                  "p.ltbi.tbr", "p.ltbi.tp.nt.tb.death", "p.ltbi.fn.tb.death", "p.ltbi.tb.death", "p.death")
 # Creating a vector of state names - KD
-state.names <- c("p.sus", "p.sus.fp", "p.sus.fp.a", "p.sus.fp.t", "p.sus.fp.t.sae",
-                 "p.sus.fp.sae.death", "p.sus.fp.tc", "p.sus.nt",
-                 "p.ltbi", "p.ltbi.tp", "p.ltbi.tp.a", "p.ltbi.tp.t","p.ltbi.tp.t.sae",
-                 "p.ltbi.tp.sae.death", "p.ltbi.tp.tc", "p.ltbi.nt",
-                 "p.tb", "p.tbr", "p.tb.death", "p.death", "p.emigrate")
+# state.names <- c("p.sus", "p.sus.fp", "p.sus.fp.a", "p.sus.fp.t", "p.sus.fp.t.sae",
+#                  "p.sus.fp.sae.death", "p.sus.fp.tc", "p.sus.nt",
+#                  "p.ltbi", "p.ltbi.tp", "p.ltbi.tp.a", "p.ltbi.tp.t","p.ltbi.tp.t.sae",
+#                  "p.ltbi.tp.sae.death", "p.ltbi.tp.tc", "p.ltbi.nt",
+#                  "p.tb", "p.tbr", "p.tb.death", "p.death", "p.emigrate")
+state.names <- c("p.sus",	"p.sus.tc",	"p.sus.nt",	
+                 "p.sus.sae",	"p.sus.sae.death",	
+                 "p.ltbi",	"p.ltbi.tc",	"p.ltbi.nt",	
+                 "p.ltbi.sae",	"p.ltbi.sae.death",	
+                 "p.tb",	"p.tbr",	"p.tb.death",	"p.death",	"p.emigrate")
+
 
 # Number of states
 state.number <- length(state.names)
@@ -147,55 +153,55 @@ ultbi6H <- 0.823
 ultbitreatsae <- 0.75 #to do
 
 
-utility.dt[treatment == "6H", c(state.names) := .(uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
-                                                  0, uhealthy, uhealthy,
-                                                  uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
-                                                  0, uhealthy, uhealthy,
+utility.dt[treatment == "6H", c(state.names) := .(uhealthy, ultbi6H, uhealthy,
+                                                  ultbitreatsae, 0,
+                                                  uhealthy, ultbi6H, uhealthy,
+                                                  ultbitreatsae, 0,
                                                   uactivetb, uactivetbr, 0, 0, 0)]
 
-utility.dt[treatment == "9H", c(state.names) := .(uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
-                                                  0, uhealthy, uhealthy,
-                                                  uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
-                                                  0, uhealthy, uhealthy,
+utility.dt[treatment == "9H", c(state.names) := .(uhealthy, ultbi9H, uhealthy,
+                                                  ultbitreatsae, 0,
+                                                  uhealthy, ultbi9H, uhealthy,
+                                                  ultbitreatsae, 0,
                                                   uactivetb, uactivetbr, 0, 0, 0)]
 
-utility.dt[treatment == "4R", c(state.names) := .(uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
-                                                  0, uhealthy, uhealthy,
-                                                  uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
-                                                  0, uhealthy, uhealthy,
+utility.dt[treatment == "4R", c(state.names) := .(uhealthy, ultbi4R, uhealthy,
+                                                  ultbitreatsae, 0,
+                                                  uhealthy, ultbi4R, uhealthy,
+                                                  ultbitreatsae, 0,
                                                   uactivetb, uactivetbr, 0, 0, 0)]
 
-utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
-                                                   0, uhealthy, uhealthy,
-                                                   uhealthy, uhealthy, uhealthy, ultbi6H, ultbitreatsae,
-                                                   0, uhealthy, uhealthy,
+utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, ultbi3HP, uhealthy,
+                                                   ultbitreatsae, 0,
+                                                   uhealthy, ultbi3HP, uhealthy,
+                                                   ultbitreatsae, 0,
                                                    uactivetb, uactivetbr, 0, 0, 0)]
 
-utility.dt[treatment == "", c(state.names) := .(uhealthy, NA, NA, NA, NA,
-                                                0, NA, uhealthy,
-                                                uhealthy, NA, NA, NA, NA,
-                                                NA, NA, uhealthy,
+utility.dt[treatment == "", c(state.names) := .(uhealthy, NA, NA,
+                                                NA, NA,
+                                                uhealthy, NA, NA,
+                                                NA, NA,
                                                 uactivetb, uactivetbr, 0, 0, 0)]
 
 # FC prefix
-unevaluated.flow.cost <- lazy(c(0, 0, 0, param$TESTC, 0,
-                                0, 0, 0,
-                                0, 0, 0, param$TESTC, 0,
-                                0, 0, 0,
+unevaluated.flow.cost <- lazy(c(0, param$TESTC, 0,
+                                0, 0,
+                                0, param$TESTC, 0,
+                                0, 0,
                                 0, 0, 0, 0, 0))
 
 # SC prefix
-unevaluated.state.cost <- lazy(c(0, 0, 0, param$TREATC, param$SAECOST,
-                                 0, 0, 0,
-                                 0, 0, 0, param$TREATC, param$SAECOST,
-                                 0, 0, 0,
+unevaluated.state.cost <- lazy(c(0, param$TREATC, 0,
+                                 param$SAECOST, 0,
+                                 0, param$TREATC, 0,
+                                 param$SAECOST, 0,
                                  param$TBCOST, 0, 0, 0, 0))
 
 # SQ prefix
-unevaluated.state.utility <- lazy(c(0, 0, 0, param$TREATC, param$SAECOST,
-                                    0, 0, 0,
-                                    0, 0, 0, param$TREATC, param$SAECOST,
-                                    0, 0, 0,
+unevaluated.state.utility <- lazy(c(0, param$TREATC, 0,
+                                    param$SAECOST, 0,
+                                    0, param$TREATC, 0,
+                                    param$SAECOST, 0,
                                     param$TBCOST, 0, 0, 0, 0))
 
 #Sample commands demonstrating the functional argument list.
@@ -223,67 +229,53 @@ arglist <- CreateArgumentList(state.names, state.number)
 
 
 # BASELINE.S1.TM
-# manually create list of values ()
-list.values <- c(0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$RR),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$TBMR),	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$MR),	quote(param$EMIGRATE),
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,
-                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1)
-arglist$update.list(list.values) # For passing a entire list
-arglist$add.state.name(state.names)
-# saveRDS(S1.TMKD,file = "Data/BASELINE.S1.TM.rds")
-arglist$save.list("BASELINE.S1.TM")
+# # # manually create list of values ()
+# list.values <- c(0,	0,	quote(param$POP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	quote(param$POP * (param$RR * param$RRADJUST)),	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	quote(param$POP * (param$RR * param$RRADJUST)),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$TBMR),	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1)
+# arglist$update.list(list.values) # For passing a entire list
+# arglist$add.state.name(state.names)
+# # saveRDS(S1.TMKD,file = "Data/BASELINE.S1.TM.rds")
+# arglist$save.list("BASELINE.S1.TMKD")
 
-
-# S1.TM
-# manually create list of values ()
-list.values <- c(0,	quote(param$POP * (1 - param$TESTSP)),	0,	0,	0,	0,	0,	quote(param$POP * param$TESTSP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-             0,	0,	quote(param$ATTEND),	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-             0,	0,	0,	quote(param$BEGINTREAT),	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	quote(param$SAE),	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	quote(param$SAEMR),	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-             0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$POP * param$TESTSN),	0,	0,	0,	0,	0,	quote(param$POP *(1- param$TESTSN)),	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$ATTEND),	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$BEGINTREAT),	0,	0,	0,	quote(CMP),	quote(param$TBDURINGFOLLOWUP),	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$SAE),	0,	quote(param$TREATR),	quote(CMP),	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$SAEMR),	0,	quote(CMP),	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$RR),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$TBMR),	0,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$MR),	quote(param$EMIGRATE),
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,
-             0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1)
-arglist$update.list(list.values) # For passing a entire list
-arglist$add.state.name(state.names)
-# saveRDS(S1.TMKD,file = "Data/S1.TMKD.rds")
-arglist$save.list("S1.TMKD")
+# 
+# # S1.TM
+# # manually create list of values ()
+# list.values <- c(0,	quote(param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote((param$POP * param$TSTSP) + (param$POP * (1 - param$TSTSP) * (1 - param$ATTEND)) + (param$POP * (1 - param$TSTSP) * param$ATTEND * (1 - param$BEGINTREAT)) + ((param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT) - (param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$SAE) - (param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$TREATR))),	quote(param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	quote(CMP),	0,	quote(param$SAEMR),	0,	0,	quote(CMP),	0,	quote(param$SAEMR),	0,	0,	0,	0,	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * (1-param$TSTSN) + (param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * (1 - param$ATTEND) + (param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN  * param$ATTEND * (1 - param$BEGINTREAT) + (param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT - (param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$SAE - (param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	quote(param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP)),	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	quote(CMP),	quote(0),	0,	0,	0,	0,	0,	quote(param$MR),	param$EMIGRATE,
+#                  0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$SAEMR),	0,	0,	0,	0,	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$TBMR),	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1)
+# arglist$add.state.name(state.names)
+# # saveRDS(S1.TMKD,file = "Data/S1.TMKD.rds")
+# arglist$save.list("S1.TMKD")
 
 # # BASELINE.S1.TM
 # arglist$update.list(listvalues) # For passing a entire list
 # arglist$add.state.name(state.names)
 # arglist$save.list("BASELINE.S1.TMKD")
-
 
 # Load the argument list
 # S1.TM
@@ -292,22 +284,26 @@ arglist$save.list("S1.TMKD")
 
 # arglist.S1.TM <- arglist$load.list("S1.TM")
 arglist.S1.TM <- arglist$load.list("S1.TMKD")
-arglist.S2.TM <- arglist$load.list("S2.TM")
-arglist.BASELINE.TM <- arglist$load.list("BASELINE.TM")
-#arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TM")
+# arglist.S2.TM <- arglist$load.list("S2.TM")
+# arglist.BASELINE.TM <- arglist$load.list("BASELINE.TM")
+# arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TM")
 arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TMKD")
 
 CreateStates(state.names) # instantiates a set of states objects with default values
 
 # Create a set of strategies
-S1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
-                     p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-                     p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
-                     p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-                     p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
-                     transition.matrix = do.call(DefineTransition, arglist.S1.TM))
-
-
+# S1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
+#                      p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
+#                      p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
+#                      p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
+#                      p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
+#                      transition.matrix = do.call(DefineTransition, arglist.S1.TM))
+S1 <- DefineStrategy(p.sus,	p.sus.tc,	p.sus.nt,	
+                 p.sus.sae,	p.sus.sae.death,	
+                 p.ltbi,	p.ltbi.tc,	p.ltbi.nt,	
+                 p.ltbi.sae,	p.ltbi.sae.death,	
+                 p.tb,	p.tbr,	p.tb.death,	p.death,	p.emigrate,
+                 transition.matrix = do.call(DefineTransition, arglist.S1.TM))
 
 # S2 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
 #                      p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
@@ -334,11 +330,11 @@ S1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
 # S0_345 <- S0_12
 
 # New baseline for S1
-S0_1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
-                       p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-                       p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
-                       p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-                       p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
+S0_1 <- DefineStrategy(p.sus,	p.sus.tc,	p.sus.nt,	
+                       p.sus.sae,	p.sus.sae.death,	
+                       p.ltbi,	p.ltbi.tc,	p.ltbi.nt,
+                       p.ltbi.sae,	p.ltbi.sae.death,	
+                       p.tb,	p.tbr,	p.tb.death,	p.death,	p.emigrate,
                        transition.matrix = do.call(DefineTransition, arglist.BASELINE.S1.TM))
 
 
@@ -349,15 +345,20 @@ S0_1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
 parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                RR = Get.RR(DT, year),
                                TBMR = Get.TBMR(DT, year),
+                               RRADJUST = 0.9,
+                               # RRADJUST takes into account the fact that a proportion (10% in Victoria)
+                               # of TB cases are picked up each year with existing TB control strategies, i.e.
+                               # during follow-up as a result of an abnormal CXR during pre-migration off-shore screening.
+                               BEGINTREAT = 0.47,
+                               # BEGINTREAT = Get.BEGINTREAT(DT, year),
+                               # Yet to finalise this parameter. i need to Work out if the chance of beginning treatment 
+                               # is age-dependent. May well depend on treatment as well??
+                               # TBFOLLOWUPADJUST = Get.TBFOLLOWUPADJUST(DT, year, treatment),
                                ATTEND = 0.836,
                                # Proportion of migrants referred following off-shore screening (CXR) 
                                # that attend follow-up appointment once onshore. 
                                # Source: Flynn MG, Brown LK. Treatment of latent tuberculosis in migrants 
                                # to Victoria. Commun Dis Intell Q Rep 2015; 39(4): E578-83.
-                               BEGINTREAT = 0.47,
-                               # BEGINTREAT = Get.BEGINTREAT(DT, year),
-                               # Work out if the chance of beginning treatment is age-dependent. Will that depend on treatment as well??
-                               TBDURINGFOLLOWUP = Get.TBDURINGFOLLOWUP(DT, year, treatment),
                                SAE = Get.SAE(DT, treatment),
                                SAEMR = Get.SAEMR(DT, treatment),
                                EMIGRATE = Get.EMIGRATE(DT, year),

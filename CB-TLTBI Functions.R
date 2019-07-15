@@ -236,24 +236,24 @@ Get.EMIGRATE <- function(xDT, year) {
 # to reflect that some people will reactivate with TB in their treatment year 
 # before they complete follow-up and treatment.
 
-Get.TBDURINGFOLLOWUP <- function(xDT, year, treat) {
-  
-  DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
-  
-  DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
-  
-  DT[ISO3 == "100-149" | ISO3 == "150+", COBI := "100+"]  
-  
-  DT[AGERP > 110, AGERP := 110]
-  
-  rawrate <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(Age = AGERP, Sex = SEXP, 
-                                                                    statetime = ST, cobi = COBI)]
-  
-  ratereduction <- as.numeric(treatmentyearRR.dt[treatment == treat, ratereduction])
-  
-  rawrate*ratereduction
-  
-}
+# Get.TBFOLLOWUPADJUST <- function(xDT, year, treat) {
+#   
+#   DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+#   
+#   DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
+#   
+#   DT[ISO3 == "100-149" | ISO3 == "150+", COBI := "100+"]  
+#   
+#   DT[AGERP > 110, AGERP := 110]
+#   
+#   rawrate <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(Age = AGERP, Sex = SEXP, 
+#                                                                     statetime = ST, cobi = COBI)]
+#   
+#   ratereduction <- as.numeric(treatmentyearRR.dt[treatment == treat, ratereduction])
+#   
+#   rawrate*ratereduction
+#   
+# }
 
 
 
@@ -299,7 +299,7 @@ Get.POP <- function(DT, strategy, markov.cycle) {
 
 Get.UTILITY <- function(t) {
 
-    as.numeric(utility.dt[treatment == t][, 2:22])
+    as.numeric(utility.dt[treatment == t][, 2:16])
 
 }
 
@@ -424,18 +424,15 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
     parameters$TESTC$env <- environment()
     parameters$TREATR$env <- environment()
     parameters$TREATC$env <- environment()
-    parameters$TBDURINGFOLLOWUP$env <- environment()
+    # parameters$TBFOLLOWUPADJUST$env <- environment()
+    parameters$RRADJUST$env <- environment()
     # parameters$TREATSAE$env <- environment()
     parameters$POP$env <- environment()
     parameters$UTILITY$env <- environment()
     parameters$TBCOST$env <- environment()
     parameters$SAECOST$env <- environment()
-    
     unevaluated.flow.cost$env <- environment()
     unevaluated.state.cost$env <- environment()
-
-
-
 
     # evaluate parameters 
     # NOTE: at this point both Get.MR() and Get.RR() functions are called by the evaluator.
