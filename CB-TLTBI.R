@@ -251,26 +251,27 @@ arglist <- CreateArgumentList(state.names, state.number)
 # arglist$save.list("BASELINE.S1.TMKD")
 
 # 
-# # S1.TM
-# # manually create list of values ()
-# list.values <- c(0,	quote(param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote(CMP),	quote(param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-#                  0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-#                  0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-#                  0,	0,	quote(CMP),	0,	quote(param$SAEMR),	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$EMIGRATE),
-#                  0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-#                  0,	0,	0,	0,	0,	0,	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote(CMP),	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	quote(param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP)),	0,	0,	0,	0,
-#                  0,	0,	0,	0,	0,	0,	quote(CMP),	quote(0),	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-#                  0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-#                  0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$SAEMR),	0,	0,	0,	0,	quote(param$EMIGRATE),
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$TBMR),	0,	0,
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$MR),	quote(param$EMIGRATE),
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1)
-# arglist$add.state.name(state.names)
-# # saveRDS(S1.TMKD,file = "Data/S1.TMKD.rds")
-# arglist$save.list("S1.TMKD")
+# S1.TM
+# manually create list of values ()
+list.values <- c(0,	quote(param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote(param$POP * param$TSTSP + (param$POP * (1-param$TSTSP) * (1 - param$ATTEND)) + (param$POP * (1-param$TSTSP) * param$ATTEND * (1 - param$BEGINTREAT)) + (param$POP * (1-param$TSTSP) * param$ATTEND * param$BEGINTREAT) -  (param$POP * (1-param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$SAE) - (param$POP * (1-param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$TREATR)),	quote(param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+                 0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+                 0,	0,	quote(CMP),	0,	quote(param$SAEMR),	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$EMIGRATE),
+                 0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote(((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * (1-param$TSTSN)) + ((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * (1 - param$ATTEND)) + ((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * (1 - param$BEGINTREAT)) +  (((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT) - ((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$SAE) - ((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))),	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	quote(param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP)),	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	quote(CMP),	quote(0),	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+                 0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+                 0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$SAEMR),	0,	0,	0,	0,	quote(param$EMIGRATE),
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$TBMR),	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$MR),	quote(param$EMIGRATE),
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,
+                 0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1)
+arglist$update.list(list.values)
+arglist$add.state.name(state.names)
+# saveRDS(S1.TMKD,file = "Data/S1.TMKD.rds")
+arglist$save.list("S1.TMKD")
 
 # # BASELINE.S1.TM
 # arglist$update.list(listvalues) # For passing a entire list
