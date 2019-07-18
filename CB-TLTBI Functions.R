@@ -299,7 +299,7 @@ Get.POP <- function(DT, strategy, markov.cycle) {
 
 Get.UTILITY <- function(t) {
 
-    as.numeric(utility.dt[treatment == t][, 2:16])
+    as.numeric(utility.dt[treatment == t][, 2:20])
 
 }
 
@@ -431,6 +431,8 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
     parameters$UTILITY$env <- environment()
     parameters$TBCOST$env <- environment()
     parameters$SAECOST$env <- environment()
+    parameters$ATTENDCOST$env <- environment()
+    parameters$PARTIALTREATCOST$env <- environment()
     unevaluated.flow.cost$env <- environment()
     unevaluated.state.cost$env <- environment()
 
