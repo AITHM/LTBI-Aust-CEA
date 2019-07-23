@@ -231,30 +231,16 @@ Get.EMIGRATE <- function(xDT, year) {
 }
 
 
-# Look up the reactivation rate from RRates and then reduce the rate by a 
+# Look up the reactivation rate from RRates and then reduce the rate by a
 # certain proprtion (treatmentyearRR.dt)
-# to reflect that some people will reactivate with TB in their treatment year 
+# to reflect that some people will reactivate with TB in their treatment year
 # before they complete follow-up and treatment.
 
-# Get.TBFOLLOWUPADJUST <- function(xDT, year, treat) {
-#   
-#   DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
-#   
-#   DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
-#   
-#   DT[ISO3 == "100-149" | ISO3 == "150+", COBI := "100+"]  
-#   
-#   DT[AGERP > 110, AGERP := 110]
-#   
-#   rawrate <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(Age = AGERP, Sex = SEXP, 
-#                                                                     statetime = ST, cobi = COBI)]
-#   
-#   ratereduction <- as.numeric(treatmentyearRR.dt[treatment == treat, ratereduction])
-#   
-#   rawrate*ratereduction
-#   
-# }
+Get.TIMETOTREAT <- function(S, treat) {
 
+  as.numeric(timetotreat.dt[treatment == treat, ..S])
+  
+}
 
 
 # Look up target population percentage
@@ -262,9 +248,7 @@ Get.POP <- function(DT, strategy, markov.cycle) {
 
     if ((strategy$myname == "S1" || strategy$myname == "S0_1") && markov.cycle <= 5) {
 
-        0.836 # Proportion of migrants referred following off-shore screening (CXR) that attend follow-up  
-        # appointment once onshore. Source: Flynn MG, Brown LK. Treatment of latent tuberculosis in migrants 
-        # to Victoria. Commun Dis Intell Q Rep 2015; 39(4): E578-83.
+        1
 
     } else if (strategy$myname == "S2" && markov.cycle <=5 ) {
 
@@ -433,6 +417,7 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
     parameters$SAECOST$env <- environment()
     parameters$ATTENDCOST$env <- environment()
     parameters$PARTIALTREATCOST$env <- environment()
+    parameters$TIMETOTREAT$env <- environment()
     unevaluated.flow.cost$env <- environment()
     unevaluated.state.cost$env <- environment()
 

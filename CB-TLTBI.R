@@ -107,25 +107,16 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST05", "TST10", "TST15"), SN = c(0.
                        cost.primary = c(79.75, 67.10, 67.10, 67.10),
                        cost.tertiary = c(122.71, 164.5, 164.5, 164.5))
 
-
-# Create a sample treatment data table
-treatment.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
-                           rate = c(.83, .78, .82, .63),
-                           cost.primary = c(437.13, 578.87, 440.34, 436.42),
-                           cost.tertiary = c(632.38, 969.37, 596.54, 709.77),
-                           sae = c(0.000000009, 0.00000025, 0.00000016, 0.0000002))
-
 # Create a sample treatment data table
 treatment.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
                            rate = c(.83, .78, .82, .63),
                            cost.primary = c(437.13, 578.87, 440.34, 436.42),
                            cost.tertiary = c(632.38, 969.37, 596.54, 709.77))
 
-#9H cost changed from 549.22 to 578.87 and 939.72 to 969.37 respectively. 
-
-# Create a sample data table to give the reactivation rate reduction in the treatment year
-treatmentyearRR.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
-                           ratereduction = c(0.4, 0.8, 0.3, 0.6))
+# Create a sample data table to give an idea about when those who receive LTBI treatment in the first 
+# year after migration are likely to have received that treatment, i.e. 0.75 by 3/4 through the year.
+timetotreat.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
+                           yearfraction = c(0.4, 0.8, 0.3, 0.6))
 # need to talk to Michael Flynn to establish how long it takes to complete treatment
 
 # Create a sample utility data table
@@ -231,15 +222,15 @@ arglist <- CreateArgumentList(state.names, state.number)
 
 
 # BASELINE.S1.TM
-# manually create list of values ()
-# list.values <- c(0,	quote(param$POP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+# # manually create list of values ()
+# list.values <- c(0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-#                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	quote(param$POP * param$RR * param$RRADJUST),	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	quote(param$RR * param$RRADJUST),	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	quote(param$RR * param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -259,14 +250,14 @@ arglist <- CreateArgumentList(state.names, state.number)
 # 
 # S1.TM
 # manually create list of values ()
-# list.values <- c(0,	quote(CMP),	quote((param$POP * (1 - param$TSTSP) * param$ATTEND) * (1 - param$BEGINTREAT)),	quote((param$POP * (1 - param$TSTSP) * param$ATTEND) * param$BEGINTREAT * (1 - param$TREATR - param$SAE) ),	quote(param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote(param$POP * (1 - param$TSTSP) * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+# list.values <- c(0,	quote(1 - (param$POP * (1-param$TESTSP) * param$ATTEND)),	quote(param$POP * (1 - param$TESTSP) * param$ATTEND * (1 - param$BEGINTREAT)),	quote(param$POP * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * (1 - param$TREATR - param$SAE)),	quote(param$POP * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote(param$POP * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	quote(CMP),	quote(param$SAEMR),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-#                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * (1 - param$BEGINTREAT)),	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * (1 - param$TREATR - param$SAE)),	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote((param$POP - (param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP))) * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	quote(param$POP * param$RR * param$RRADJUST * ((param$POP - (param$POP * param$TSTSN * param$ATTEND * param$BEGINTREAT * param$TREATR))/param$POP)),	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	quote(1 - (param$POP * param$TESTSN * param$ATTEND) - (param$RR * param$RRADJUST * (1 - (param$POP * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT)))),	quote(param$POP * param$TESTSN * param$ATTEND * (1 - param$BEGINTREAT)),	quote(param$POP * param$TESTSN * param$ATTEND * param$BEGINTREAT * (1 - param$TREATR - param$SAE)),	quote(param$POP * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote(param$POP * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	quote(param$RR * param$RRADJUST * (1 - (param$POP * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT))),	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
@@ -303,12 +294,6 @@ arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TMKD")
 CreateStates(state.names) # instantiates a set of states objects with default values
 
 # Create a set of strategies
-# S1 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
-#                      p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-#                      p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
-#                      p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-#                      p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
-#                      transition.matrix = do.call(DefineTransition, arglist.S1.TM))
 S1 <- DefineStrategy(p.sus,	p.sus.nf,	p.sus.nbt,	p.sus.nct,	p.sus.tc,
                      p.sus.sae,	p.sus.sae.death,
                      p.ltbi,	p.ltbi.nf,	p.ltbi.nbt,	p.ltbi.nct,	p.ltbi.tc,	
@@ -370,12 +355,15 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                # that attend follow-up appointment once onshore. 
                                # Source: Flynn MG, Brown LK. Treatment of latent tuberculosis in migrants 
                                # to Victoria. Commun Dis Intell Q Rep 2015; 39(4): E578-83.
-                               # SAE = Get.SAE(DT, treatment),
-                               # SAEMR = Get.SAEMR(DT, treatment),
-                               SAE = 0.0000003,
-                               SAEMR = 0.00000004,
-                               # EMIGRATE = Get.EMIGRATE(DT, year),
-                               EMIGRATE = 0.000000007,
+                               TIMETOTREAT = Get.TIMETOTREAT(S = "yearfraction", treatment),
+                               # TIMETOTREAT takes into account the fact that having follow-up and LTBI
+                               # treatment in the first year after migration will take time and so a migrant's
+                               # chance of reactivating will remain for a period of time before their 
+                               # follow-up and treatment process is complete. The time that they remain 
+                               # at risk will be dependent on the treatment regimen (see timetotreat.dt).
+                               SAE = Get.SAE(DT, treatment),
+                               SAEMR = Get.SAEMR(DT, treatment),
+                               EMIGRATE = Get.EMIGRATE(DT, year),
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
                                TESTC = Get.TEST(S = "cost.primary", testing),
