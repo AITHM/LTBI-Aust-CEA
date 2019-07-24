@@ -244,47 +244,18 @@ Get.TIMETOTREAT <- function(S, treat) {
 
 
 # Look up target population percentage
-Get.POP <- function(DT, strategy, markov.cycle) {
-
-    if ((strategy$myname == "S1" || strategy$myname == "S0_1") && markov.cycle <= 5) {
-
-        1
-
-    } else if (strategy$myname == "S2" && markov.cycle <=5 ) {
-
-        ifelse(DT[, YARP] == 2020 + markov.cycle, .684, 0)
-
-    } else if (strategy$myname == "S0_12" || strategy$myname == "S0_345") {
-
-        # not needed baseline transition matrix takes care of it but...
-        0
-
-    } else if (( strategy$myname == "S3" || strategy$myname == "S4"|| strategy$myname == "S5" ) &&
-               markov.cycle <= 5 ) {
-      
-      
-      # leaves S3, S4 & S5
-        ifelse(DT$YARP < 2020,
-            switch(strategy$myname,
-                S3 = 0.05,
-                S4 = 0.10,
-                S5 = 0.15,
-                stop("Error in Pop")
-            ),
-            stop("Error in Pop DT YARP")
-        )
-
-    } else {
-      
-      0
-    }
-
+Get.POP <- function(DT, strategy) {
+  
+  ifelse(DT[, ISO3] == "150+", 1, 0) &
+    ifelse(DT[, AGERP] > 10, 1, 0) &
+    ifelse(DT[, AGERP] < 35, 1, 0)
+  
 }
 
 Get.UTILITY <- function(t) {
-
-    as.numeric(utility.dt[treatment == t][, 2:20])
-
+  
+  as.numeric(utility.dt[treatment == t][, 2:22])
+  
 }
 
 Get.DISCOUNT <- function() {
@@ -408,9 +379,7 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
     parameters$TESTC$env <- environment()
     parameters$TREATR$env <- environment()
     parameters$TREATC$env <- environment()
-    # parameters$TBFOLLOWUPADJUST$env <- environment()
     parameters$RRADJUST$env <- environment()
-    # parameters$TREATSAE$env <- environment()
     parameters$POP$env <- environment()
     parameters$UTILITY$env <- environment()
     parameters$TBCOST$env <- environment()
@@ -605,22 +574,22 @@ DoRunModel <- function(strategy, start.year, cycles) {
 
                         pop.output <- pop.master[YARP >= year][, cycle := 0]
 
-                        # Run it for 1 cycle to move the cohort from p.sus and p.ltbi to post test/treatment states.
-                        pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles = 1, modelinflow = FALSE)
-
-                        # reset the output to align them with the other strategies.
-                        pop.output <- pop.output[cycle == 1]
-                        pop.output[, cycle := 0]
-                        pop.output[, AGEP := AGEP - 1]
-
-                        # Zero the flows and testing costs
-                        colname <- colnames(pop.output[, V.p.sus:V.p.death])
-                        colname <- c(colname, colnames(pop.output[, FC.p.sus:FC.p.death]))
-                        pop.output[, c(colname) := as.numeric(NA),]
-
-                        # Creates a adjusted pop.master for S1.
-                        assign("pop.master", pop.output, pos = 1,)
-                        pop.output <- pop.master[YARP == year][, cycle := 0]
+                        # # Run it for 1 cycle to move the cohort from p.sus and p.ltbi to post test/treatment states.
+                        # pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles = 1, modelinflow = FALSE)
+                        # 
+                        # # reset the output to align them with the other strategies.
+                        # pop.output <- pop.output[cycle == 1]
+                        # pop.output[, cycle := 0]
+                        # pop.output[, AGEP := AGEP - 1]
+                        # 
+                        # # Zero the flows and testing costs
+                        # colname <- colnames(pop.output[, V.p.sus:V.p.death])
+                        # colname <- c(colname, colnames(pop.output[, FC.p.sus:FC.p.death]))
+                        # pop.output[, c(colname) := as.numeric(NA),]
+                        # 
+                        # # Creates a adjusted pop.master for S1.
+                        # assign("pop.master", pop.output, pos = 1,)
+                        # pop.output <- pop.master[YARP == year][, cycle := 0]
 
 
                     } else if (strategy$myname == "S0_345" || strategy$myname == "S3" || strategy$myname == "S4"
