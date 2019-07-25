@@ -16,11 +16,19 @@ TIMETOTREAT <- 0.4
 # p.sus branch
 
 
+POP * (1-TESTSP) * (1-ATTEND) + POP*(TESTSP)
+not 
+POP * (1 - (1-TESTSP) * ATTEND)
+
+
+
 # p.sus to p.sus.notest transition
 a <- 1 - POP
 
 # p.sus to p.sus.nf transition
 b <- POP * (1 - (1-TESTSP) * ATTEND)
+
+z <- POP * (1-TESTSP) * (1-ATTEND) + POP*(TESTSP)
 
 # p.sus to p.sus.nbt transition
 c <- POP * (1 - TESTSP) * ATTEND * (1 - BEGINTREAT)

@@ -143,14 +143,6 @@ ultbipart6H <- 0.9
 ultbitreatsae <- 0.75 
 
 
-state.names <- c("p.sus",	"p.sus.notest", "p.sus.nf",	"p.sus.nbt",	"p.sus.nct",	"p.sus.tc",
-                 "p.sus.sae",	"p.sus.sae.death",
-                 "p.ltbi", "p.ltbi.notest",	"p.ltbi.nf",	"p.ltbi.nbt",	"p.ltbi.nct",	"p.ltbi.tc",
-                 "p.ltbi.sae",	"p.ltbi.sae.death",
-                 "p.tb",	"p.tbr",	"p.tb.death",	"p.death",	"p.emigrate")
-
-
-
 utility.dt[treatment == "6H", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
                                                   ultbitreatsae, 0,
                                                   uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
