@@ -32,8 +32,9 @@ source("CB-TLTBI Functions.R")
 # Read the data files (if required)
 
 # aust <- readRDS("Data/aust.rds")
-#aust.vic <- readRDS("Data/aust.vic.rds") # this is required for S1,S2,S3,S4 and S5
+# aust.vic <- readRDS("Data/aust.vic.rds") # this is required for S1,S2,S3,S4 and S5
 aust.vic <- readRDS("Data/Aust16byTBincid.rds") 
+# aust.vic <- subset(aust.vic, AGEP == 25 & ISO3 == "150+")
     # Australian 2016 census data extracted from Table Builder by country of birth
     # (place of usual residence), single year age and single year of arrival. 
 # aust.vic.LGA <- readRDS("Data/aust.vic.LGA.rds") # this is for S0
@@ -41,7 +42,7 @@ aust.vic <- readRDS("Data/Aust16byTBincid.rds")
 # tbhaz.200rep <- readRDS("Data/tbhaz.200rep.rds")
 # tbhaz.5000rep <- readRDS("Data/tbhaz.5000rep.rds")
 # vic.fertility <- readRDS("Data/vic.fertility.rds")
-#vic.mortality <- readRDS("Data/vic.mortality.rds") # this is also required
+# vic.mortality <- readRDS("Data/vic.mortality.rds") # this is also required
 vic.mortality <- readRDS("Data/aust.mortality.rds") # this is also required
 vic.mortality <- as.data.table(vic.mortality)
     # Projected mortality rates for Australia from:
@@ -50,11 +51,11 @@ vic.mortality <- as.data.table(vic.mortality)
     # in September 2018. Source: https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3101.0Sep%202018?OpenDocument
 # vic.migration <- readRDS("Data/vic.migration.rds")
 # vic.pop <- readRDS("Data/vic.pop.rds")
-#RRates <- readRDS("Data/RRates.rds") # this is also required
+# RRates <- readRDS("Data/RRates.rds") # this is also required
 RRates <- readRDS("Data/RRatescobincidnosex.rds") # this is also required
     # TB reactivation rate data from: Dale K, Trauer J, et al. Estimating long-term tuberculosis 
     # reactivation rates in Australian migrants. Clinical Infectious Diseases 2019 (in press)
-#vic.tb.mortality <- readRDS("Data/vic.tb.mortality.rds") # this is also required
+# vic.tb.mortality <- readRDS("Data/vic.tb.mortality.rds") # this is also required
 vic.tb.mortality <- readRDS("Data/tb.mortality.rds") # this is also required
 vic.tb.mortality <- as.data.table(vic.tb.mortality)
     # TB mortality data from: Dale K, Tay E, Trevan P, et al. Mortality among tuberculosis cases 

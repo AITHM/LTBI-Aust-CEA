@@ -12,94 +12,91 @@ CreateStates <- function(state.names) {
 
 # Creates a master migrant population table
 CreatePopulationMaster <- function(Modify = FALSE) {
-
-    # Create a pop.master table merging census (2006,2011, 2016) and ABS projection data.
-    # It must be a long format table with the following structure.
-    #
-    # Sex of person (SEXP), Age at census (AGEP), Year of arrival (YARP),
-    # Birth place of person (ISO3), local government area (LGA),
-    # Number of persons	(NUMP)
-    #__________________________________________________
-    # SEXP    | AGEP  |  YARP | ISO3 |  LGA    | NUMP |
-    #--------------------------------------------------
-    # Male	  | 10	  |  2006 | AFG	 |  Casey  | 4	  |  NUMP =  { average of 3 census (2006,2011,2016) datasets } 
-    # Female  |	12	  |  2007 |	IND	 |  Monash | 10	  |  NUMP =  { average of 2 census (2011,2016) datasets } 
-    # ?	      | ?	  |  ?	  |  ?	 |  ?	   | ?	  |  
-    # Male	  | 30	  |  2016 |	VNM	 |  Hume   | 7	  |  NUMP =  { census 2016 datasets } 
-    # ?	      | ?	  |  ?	  |  ?	 |  ?	   | ?	  |
-    # ------------------2017---------------------------	No data for YARP 2017
-    # Male	  | 50	  |  2018 |	?	 |  ?	   | 324  |	ABS migration projection with three assumptions (high, med & low ) by arrivals and departures
-    # Female  |	40	  |  2027 |	?	 |  ?	   | 721  |	Net overseas migration levels will remain constant from YARP>2027 onwards
-    #						
-    # TODO -> Based on census datasets (2006,2011,2016) estimate a NUMP distribution for YARP > 2018  by LGA and ISO3.						
-    #
-       
-    pop.master <- aust.vic[, .(AGEP, ISO3, YARP, NUMP, LTBP, AGERP = AGEP - (2016L - YARP), SEXP)]
-
-    # Also creating migrant cohort arrivals for YARP > 2016. i.e. 2017 to 2025.
-    # again this is for validating the model at runtime.
-
-    # deleted 2016 due to it being a census year with 1/2 half.
-    pop.master <- pop.master[YARP != 2016]
-
-
-    # Create new arrival cohorts 
-    pop.master.2016 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2016L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2017 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2017L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2018 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2018L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2019 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2019L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2020 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2020L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2021 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2021L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2022 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2022L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2023 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2023L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2024 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2024L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2025 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2025L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2026 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2026L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2027 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2027L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2028 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2028L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2029 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2029L, NUMP, LTBP, AGERP, SEXP),]
-    pop.master.2030 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2030L, NUMP, LTBP, AGERP, SEXP),]
-
-
-    pop.master <- rbind(pop.master, pop.master.2016, pop.master.2017, pop.master.2018, pop.master.2019,
-                        pop.master.2020, pop.master.2021, pop.master.2022, pop.master.2023,
-                        pop.master.2024, pop.master.2025, pop.master.2026, pop.master.2027,
-                        pop.master.2028, pop.master.2029, pop.master.2030)
-
-    rm(pop.master.2016, pop.master.2017, pop.master.2018, pop.master.2019, pop.master.2020, pop.master.2021,
-       pop.master.2022, pop.master.2023, pop.master.2024, pop.master.2025, pop.master.2026,
-       pop.master.2027, pop.master.2028, pop.master.2029, pop.master.2030)
-
-
-    # Must order the pop.master table by YARP due to sub-setting and recombining. 
-    setkey(pop.master, YARP, SEXP, AGEP, ISO3)
-    
-    # # Because we need to make the arriving cohort larger (beause 240,000 was the net arrival
-    # # not the total arriving) we multiply the inflow by 1.7
-    # pop.master[, NUMP := NUMP * 1.7]
-
-    # Calculate the susceptible and latent population
-
-    pop.master <- pop.master[, cycle := as.integer(NA)]
-    pop.master <- pop.master[, (new.state.names) := as.numeric(NA)]
-
-    # TODO - Fix this! It is hard coded for 20 states.
-    # pop.master <- pop.master[, (state.names) := .(NUMP - LTBP, 0, 0, 0, 0, LTBP, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)]
-    pop.master <- pop.master[, (state.names) := .(NUMP - LTBP, 0, 0, 0, 0, 0,
-                                                  0, 0, 
-                                                  LTBP, 0, 0, 0, 0, 0,
-                                                  0, 0,
-                                                  0, 0, 0, 0, 0)]
-    
-    # Because we are running the model from 2020 the retrospective cohort must be aged from 2016 to 2020
-    pop.master[YARP <= 2016, AGEP := AGEP + 4] # Census was taken in 2016
-    pop.master[YARP == 2017, AGEP := AGEP + 3]
-    pop.master[YARP == 2018, AGEP := AGEP + 2]
-    pop.master[YARP == 2019, AGEP := AGEP + 1]
-
-    pop.master
-
+  
+  # Create a pop.master table merging census (2006,2011, 2016) and ABS projection data.
+  # It must be a long format table with the following structure.
+  #
+  # Sex of person (SEXP), Age at census (AGEP), Year of arrival (YARP),
+  # Birth place of person (ISO3), local government area (LGA),
+  # Number of persons	(NUMP)
+  #__________________________________________________
+  # SEXP    | AGEP  |  YARP | ISO3 |  LGA    | NUMP |
+  #--------------------------------------------------
+  # Male	  | 10	  |  2006 | AFG	 |  Casey  | 4	  |  NUMP =  { average of 3 census (2006,2011,2016) datasets } 
+  # Female  |	12	  |  2007 |	IND	 |  Monash | 10	  |  NUMP =  { average of 2 census (2011,2016) datasets } 
+  # ?	      | ?	  |  ?	  |  ?	 |  ?	   | ?	  |  
+  # Male	  | 30	  |  2016 |	VNM	 |  Hume   | 7	  |  NUMP =  { census 2016 datasets } 
+  # ?	      | ?	  |  ?	  |  ?	 |  ?	   | ?	  |
+  # ------------------2017---------------------------	No data for YARP 2017
+  # Male	  | 50	  |  2018 |	?	 |  ?	   | 324  |	ABS migration projection with three assumptions (high, med & low ) by arrivals and departures
+  # Female  |	40	  |  2027 |	?	 |  ?	   | 721  |	Net overseas migration levels will remain constant from YARP>2027 onwards
+  #						
+  # TODO -> Based on census datasets (2006,2011,2016) estimate a NUMP distribution for YARP > 2018  by LGA and ISO3.						
+  #
+  
+  pop.master <- aust.vic[, .(AGEP, ISO3, YARP, NUMP, LTBP, AGERP = AGEP - (2016L - YARP), SEXP)]
+  
+  # Also creating migrant cohort arrivals for YARP > 2016. i.e. 2017 to 2025.
+  # again this is for validating the model at runtime.
+  
+  # deleted 2016 due to it being a census year with 1/2 half.
+  pop.master <- pop.master[YARP != 2016]
+  
+  
+  # Create new arrival cohorts 
+  pop.master.2016 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2016L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2017 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2017L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2018 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2018L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2019 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2019L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2020 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2020L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2021 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2021L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2022 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2022L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2023 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2023L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2024 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2024L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2025 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2025L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2026 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2026L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2027 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2027L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2028 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2028L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2029 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2029L, NUMP, LTBP, AGERP, SEXP),]
+  pop.master.2030 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2030L, NUMP, LTBP, AGERP, SEXP),]
+  
+  
+  pop.master <- rbind(pop.master, pop.master.2016, pop.master.2017, pop.master.2018, pop.master.2019,
+                      pop.master.2020, pop.master.2021, pop.master.2022, pop.master.2023,
+                      pop.master.2024, pop.master.2025, pop.master.2026, pop.master.2027,
+                      pop.master.2028, pop.master.2029, pop.master.2030)
+  
+  rm(pop.master.2016, pop.master.2017, pop.master.2018, pop.master.2019, pop.master.2020, pop.master.2021,
+     pop.master.2022, pop.master.2023, pop.master.2024, pop.master.2025, pop.master.2026,
+     pop.master.2027, pop.master.2028, pop.master.2029, pop.master.2030)
+  
+  
+  # Must order the pop.master table by YARP due to sub-setting and recombining. 
+  setkey(pop.master, YARP, SEXP, AGEP, ISO3)
+  
+  # Calculate the susceptible and latent population
+  
+  pop.master <- pop.master[, cycle := as.integer(NA)]
+  pop.master <- pop.master[, (new.state.names) := as.numeric(NA)]
+  
+  # TODO - Fix this! It is hard coded for 20 states.
+  pop.master <- pop.master[, (state.names) := .(NUMP - LTBP, 0, 0, 0, 0, 0,
+                                                0, 0,
+                                                LTBP, 0, 0, 0, 0, 0, 
+                                                0, 0, 
+                                                0, 0, 0, 0, 0)]
+  
+  # Because we are running the model from 2020 the retrospective cohort must be aged from 2016 to 2020
+  pop.master[YARP <= 2016, AGEP := AGEP + 4] # Census was taken in 2016
+  pop.master[YARP == 2017, AGEP := AGEP + 3]
+  pop.master[YARP == 2018, AGEP := AGEP + 2]
+  pop.master[YARP == 2019, AGEP := AGEP + 1]
+  
+  
+  pop.master
+  
 }
+
 
 CreateRDSDataFiles <- function() {
     # Uses the FixFertility, Fix Mortality & FixMigration functions to create RDS data.table objects.

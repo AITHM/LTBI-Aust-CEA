@@ -488,12 +488,12 @@ RunModel <- function(pop.output, strategy, testing, treatment, start.year, cycle
         # A conditional flag use this for testing.
         # modelinflow <- FALSE
 
-        # if ((strategy$myname == "S1" || strategy$myname == "S0_1"
-        #     || strategy$myname == "S2" || strategy$myname == "S0_12") && markov.cycle > 5) {
-        # 
-        #     modelinflow <- FALSE
-        # 
-        # }
+        if ((strategy$myname == "S1" || strategy$myname == "S0_1"
+            || strategy$myname == "S2" || strategy$myname == "S0_12") && markov.cycle > 5) {
+
+            modelinflow <- FALSE
+
+        }
 
         if (modelinflow) {
             pop.inflow <- pop.master[YARP == year,][, cycle := NA]
