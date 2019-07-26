@@ -73,6 +73,10 @@ CreatePopulationMaster <- function(Modify = FALSE) {
 
     # Must order the pop.master table by YARP due to sub-setting and recombining. 
     setkey(pop.master, YARP, SEXP, AGEP, ISO3)
+    
+    # # Because we need to make the arriving cohort larger (beause 240,000 was the net arrival
+    # # not the total arriving) we multiply the inflow by 1.7
+    # pop.master[, NUMP := NUMP * 1.7]
 
     # Calculate the susceptible and latent population
 
@@ -92,7 +96,6 @@ CreatePopulationMaster <- function(Modify = FALSE) {
     pop.master[YARP == 2017, AGEP := AGEP + 3]
     pop.master[YARP == 2018, AGEP := AGEP + 2]
     pop.master[YARP == 2019, AGEP := AGEP + 1]
-
 
     pop.master
 
