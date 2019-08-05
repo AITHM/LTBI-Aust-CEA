@@ -74,6 +74,17 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   # Must order the pop.master table by YARP due to sub-setting and recombining. 
   setkey(pop.master, YARP, SEXP, AGEP, ISO3)
   
+  # Multiply the population by 1.7 because the current population represents the net migrant arrivals
+  # rather than all migrant arrivals
+  
+  pop.master <- pop.master[, NUMP := NUMP * 1.7]
+  pop.master <- pop.master[, LTBP := LTBP * 1.7]
+  
+  
+  # Remove the populations who are under the age of 11 years
+  
+  pop.master <- subset (pop.master, AGERP > 10)
+  
   # Calculate the susceptible and latent population
   
   pop.master <- pop.master[, cycle := as.integer(NA)]
@@ -82,8 +93,10 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   # TODO - Fix this! It is hard coded for 20 states.
   pop.master <- pop.master[, (state.names) := .(NUMP - LTBP, 0, 0, 0, 0, 0,
                                                 0, 0,
+                                                0,
                                                 LTBP, 0, 0, 0, 0, 0, 
                                                 0, 0, 
+                                                0, 0,
                                                 0, 0, 0, 0, 0)]
   
   # Because we are running the model from 2020 the retrospective cohort must be aged from 2016 to 2020
