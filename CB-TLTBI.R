@@ -118,8 +118,7 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST05", "TST10", "TST15"), SN = c(0.
 treatment.dt <- data.table(treatment = c("4R", "9H", "3HP", "6H"),
                            rate = c(.83, .78, .82, .63),
                            cost.primary = c(719.52, 547.66, 461.54, 464.49),
-                           cost.partial = c(719.52/2, 547.66/2, 461.54/2, 464.49/2),
-                           cost.tertiary = c(632.38, 969.37, 596.54, 709.77))
+                           cost.partial = c(719.52/3, 547.66/3, 461.54/3, 464.49/3))
 
 # Create a sample data table to give an idea about when those who receive LTBI treatment in the first 
 # year after migration are likely to have received that treatment, i.e. 0.75 by 3/4 through the year.
@@ -133,24 +132,252 @@ utility.dt <- data.table(treatment = c("", "4R", "9H", "3HP", "6H"))
 utility.dt[, c(state.names) := as.numeric(NA)]
 
 # Utility values#################to do##############################
+# uhealthy <- 0.876
+# # Bauer et al 2015
+# uactivetb <- 0.781
+# uactivetbr <- 0.876
+# # Bauer et al 2015
+# ultbi4R <- 0.835
+# ultbipart4R <- 0.838
+# # Bauer et al 2015
+# ultbi9H <- 0.827
+# ultbipart9H <- 0.868
+# # Bauer et al 2015
+# ultbi3HP <- 0.835
+# ultbipart3HP <- 0.838
+# ultbi6H <- 0.832
+# ultbipart6H <- 0.837
+# ultbitreatsae <- 0.75
+
+# # Test 1 - no decrement for LTBI treatment
+# uhealthy <- 0.876
+# # Bauer et al 2015
+# uactivetb <- 0.781
+# uactivetbr <- 0.876
+# # Bauer et al 2015
+# ultbi4R <- 0.876
+# ultbipart4R <- 0.876
+# # Bauer et al 2015
+# ultbi9H <- 0.876
+# ultbipart9H <- 0.876
+# # Bauer et al 2015
+# ultbi3HP <- 0.876
+# ultbipart3HP <- 0.876
+# ultbi6H <- 0.876
+# ultbipart6H <- 0.876
+# ultbitreatsae <- 0.75
+
+# # Test 11 - no decrement for LTBI treatment, and minimal for SAE
 uhealthy <- 0.876
 # Bauer et al 2015
 uactivetb <- 0.781
 uactivetbr <- 0.876
 # Bauer et al 2015
-ultbi4R <- 0.835
-ultbipart4R <- 0.838
+ultbi4R <- 0.876
+ultbipart4R <- 0.876
 # Bauer et al 2015
-ultbi9H <- 0.827
-ultbipart9H <- 0.868
+ultbi9H <- 0.876
+ultbipart9H <- 0.876
 # Bauer et al 2015
-ultbi3HP <- 0.835
-ultbipart3HP <- 0.838
-ultbi6H <- 0.832
-ultbipart6H <- 0.837
-ultbitreatsae <- 0.75
+ultbi3HP <- 0.876
+ultbipart3HP <- 0.876
+ultbi6H <- 0.876
+ultbipart6H <- 0.876
+ultbitreatsae <- 0.8176
 
-#
+
+# # Test 2
+# uhealthy <- 0.876
+# # Bauer et al 2015
+# uactivetb <- 0.781
+# uactivetbr <- 0.876
+# # Bauer et al 2015
+# ultbi4R <- 0.87599
+# ultbipart4R <- 0.876
+# # Bauer et al 2015
+# ultbi9H <- 0.87599
+# ultbipart9H <- 0.876
+# # Bauer et al 2015
+# ultbi3HP <- 0.87599
+# ultbipart3HP <- 0.876
+# ultbi6H <- 0.87599
+# ultbipart6H <- 0.876
+# ultbitreatsae <- 0.75
+
+
+# # Test 3
+# uhealthy <- 0.876
+# # Bauer et al 2015
+# uactivetb <- 0.781
+# uactivetbr <- 0.876
+# # Bauer et al 2015
+# ultbi4R <- 0.8759
+# ultbipart4R <- 0.876
+# # Bauer et al 2015
+# ultbi9H <- 0.8759
+# ultbipart9H <- 0.876
+# # Bauer et al 2015
+# ultbi3HP <- 0.8759
+# ultbipart3HP <- 0.876
+# ultbi6H <- 0.8759
+# ultbipart6H <- 0.876
+# ultbitreatsae <- 0.75
+
+
+# # Test 4
+# uhealthy <- 0.876
+# # Bauer et al 2015
+# uactivetb <- 0.781
+# uactivetbr <- 0.876
+# # Bauer et al 2015
+# ultbi4R <- 0.875
+# ultbipart4R <- 0.876
+# # Bauer et al 2015
+# ultbi9H <- 0.875
+# ultbipart9H <- 0.876
+# # Bauer et al 2015
+# ultbi3HP <- 0.875
+# ultbipart3HP <- 0.876
+# ultbi6H <- 0.875
+# ultbipart6H <- 0.876
+# ultbitreatsae <- 0.75
+
+
+# # Test 5
+# uhealthy <- 0.876
+# # Bauer et al 2015
+# uactivetb <- 0.781
+# uactivetbr <- 0.876
+# # Bauer et al 2015
+# ultbi4R <- 0.874
+# ultbipart4R <- 0.876
+# # Bauer et al 2015
+# ultbi9H <- 0.874
+# ultbipart9H <- 0.876
+# # Bauer et al 2015
+# ultbi3HP <- 0.874
+# ultbipart3HP <- 0.876
+# ultbi6H <- 0.874
+# ultbipart6H <- 0.876
+# ultbitreatsae <- 0.75
+
+# # Test 6
+# uhealthy <- 0.876
+# # Bauer et al 2015
+# uactivetb <- 0.781
+# uactivetbr <- 0.876
+# # Bauer et al 2015
+# ultbi4R <- 0.873
+# ultbipart4R <- 0.876
+# # Bauer et al 2015
+# ultbi9H <- 0.873
+# ultbipart9H <- 0.876
+# # Bauer et al 2015
+# ultbi3HP <- 0.873
+# ultbipart3HP <- 0.876
+# ultbi6H <- 0.873
+# ultbipart6H <- 0.876
+# ultbitreatsae <- 0.75
+
+# # Test 7 - trying the 0.0035 decrement for LTBI treatment
+# # ...
+# uhealthy <- 1
+# # Bauer et al 2015
+# uactivetb <- 0.75
+# uactivetbr <- 0.94
+# # Bauer et al 2015
+# ultbi4R <- 0.9965
+# ultbipart4R <- 1
+# # Bauer et al 2015
+# ultbi9H <- 0.9965
+# ultbipart9H <- 1
+# # Bauer et al 2015
+# ultbi3HP <- 0.9965
+# ultbipart3HP <- 1
+# ultbi6H <- 0.9965
+# ultbipart6H <- 1
+# ultbitreatsae <- 0.75
+
+# Test 8 - trying the 0.005 decrement for LTBI treatment
+# ... no ongoing decrement for those with active TB
+# uhealthy <- 1
+# # Bauer et al 2015
+# uactivetb <- 0.75
+# uactivetbr <- 1
+# # Bauer et al 2015
+# ultbi4R <- 0.995
+# ultbipart4R <- 1
+# # Bauer et al 2015
+# ultbi9H <- 0.995
+# ultbipart9H <- 1
+# # Bauer et al 2015
+# ultbi3HP <- 0.995
+# ultbipart3HP <- 1
+# ultbi6H <- 0.995
+# ultbipart6H <- 1
+# ultbitreatsae <- 0.75
+
+# Test 9 - 
+# # ...no ongoing decrement for those with active TB
+# uhealthy <- 1
+# # Bauer et al 2015
+# uactivetb <- 0.75
+# uactivetbr <- 1
+# # Bauer et al 2015
+# ultbi4R <- 0.9965
+# ultbipart4R <- 1
+# # Bauer et al 2015
+# ultbi9H <- 0.9965
+# ultbipart9H <- 1
+# # Bauer et al 2015
+# ultbi3HP <- 0.9965
+# ultbipart3HP <- 1
+# ultbi6H <- 0.9965
+# ultbipart6H <- 1
+# ultbitreatsae <- 0.75
+
+# # Test 8 - seeing if getting rid of SAE loss makes any difference at all
+# uhealthy <- 0.876
+# # Bauer et al 2015
+# uactivetb <- 0.781
+# uactivetbr <- 0.876
+# # Bauer et al 2015
+# ultbi4R <- 0.873
+# ultbipart4R <- 0.876
+# # Bauer et al 2015
+# ultbi9H <- 0.873
+# ultbipart9H <- 0.876
+# # Bauer et al 2015
+# ultbi3HP <- 0.873
+# ultbipart3HP <- 0.876
+# ultbi6H <- 0.873
+# ultbipart6H <- 0.876
+# ultbitreatsae <- 0.876
+
+
+
+
+
+# # AUTUMN-LIKE QALYS
+# uhealthy <- 1
+# # Bauer et al 2015
+# uactivetb <- 0.75
+# uactivetbr <- 0.94
+# # Bauer et al 2015
+# ultbi4R <- 0.999
+# ultbipart4R <- 1
+# # Bauer et al 2015
+# ultbi9H <- 0.999
+# ultbipart9H <- 1
+# # Bauer et al 2015
+# ultbi3HP <- 0.999
+# ultbipart3HP <- 1
+# ultbi6H <- 0.999
+# ultbipart6H <- 1
+# ultbitreatsae <- 0.8
+
+
+# # RIDICULOUS QALYS
 # uhealthy <- 1
 # # Bauer et al 2015
 # uactivetb <- 0.75
@@ -166,7 +393,7 @@ ultbitreatsae <- 0.75
 # ultbipart3HP <- 1
 # ultbi6H <- 1
 # ultbipart6H <- 1
-# ultbitreatsae <- 0.8
+# ultbitreatsae <- 1
 
 
 utility.dt[treatment == "6H", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
@@ -209,11 +436,11 @@ utility.dt[treatment == "", c(state.names) := .(uhealthy, uhealthy, NA, NA, NA, 
                                                 uhealthy, NA,
                                                 uactivetb, uactivetbr, 0, 0, 0)]
 
-unevaluated.flow.cost <- lazy(c(0, 0, param$TESTC, param$ATTENDCOST + param$TESTC, param$PARTIALTREATCOST + param$TESTC, param$TREATC + param$TESTC,
-                                param$SAECOST + param$TESTC, 0,
+unevaluated.flow.cost <- lazy(c(0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, param$TESTC + param$ATTENDCOST + param$TREATC,
+                                param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 0,
                                 0,
-                                0, 0, param$TESTC, param$ATTENDCOST + param$TESTC, param$PARTIALTREATCOST + param$TESTC, param$TREATC + param$TESTC,
-                                param$SAECOST + param$TESTC, 0,
+                                0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, param$TESTC + param$ATTENDCOST + param$TREATC,
+                                param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 0,
                                 0, 0,
                                 0, 0, 0, 0, 0))
 
@@ -414,7 +641,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                SAE = Get.SAE(DT, treatment),
                                SAEMR = Get.SAEMR(DT, treatment),
                                # EMIGRATE = Get.EMIGRATE(DT, year),
-                               EMIGRATE = 0.03,
+                               EMIGRATE = 0.01,
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
                                TESTC = Get.TEST(S = "cost.primary", testing),
@@ -445,7 +672,7 @@ discount <- 0.03
 start.year <- 2020
 year <- start.year # Initialise year with start.year
 markov.cycle <- 0 # Tracks the current cycle
-cycles <- 30
+cycles <- 70
 #--------------------- S0_1 ---------------------------#
 #---------------Baseline for S1 --------------------#
 DoRunModel(S0_12, start.year, cycles)
@@ -464,7 +691,7 @@ discount <- 0.03
 start.year <- 2020
 year <- start.year # Initialise year with start.year
 markov.cycle <- 0 # Tracks the current cycle
-cycles <- 30 # Model run cycles
+cycles <- 70 # Model run cycles
 
 DoRunModel(S2, start.year, cycles)
 

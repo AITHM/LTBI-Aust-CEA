@@ -34,12 +34,16 @@ files<-lapply(files, function(dt) {
 # Define some model parameters that might be used below
   # Time horizon
 startyear <- 2020 
-finalyear <- 2050
+finalyear <- 2090
 cycleyears <- finalyear - startyear
 
   # Target population
 targetfunc <- function(dt) {
-  dt <- subset(dt, ISO3 == "150+"|ISO3 == "100-149" & AGERP > 10 & AGERP < 35)
+  dt <- subset(dt, ISO3 == "150+"|
+                 ISO3 == "100-149" &
+                 # ISO3 == "40-99" &
+                 AGERP > 10 & AGERP < 35)
+  # dt <- subset(dt, AGERP > 10 & AGERP < 65)
   dt
 }
 
@@ -128,21 +132,21 @@ tabfunc<-function(dt) {
   # total number attended during the whole time period
   cdt <- copy(dt)
   cdt <- as.data.table(cdt)
-  totatt <- cdt[YEAR == YARP + 1, sum(p.sus.nbt) + sum(p.sus.nct) +
+  totatt <- cdt[, sum(p.sus.nbt) + sum(p.sus.nct) +
                        sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
                        sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
   
   # total number treated (any treatment) during the whole time period
   cdt <- copy(dt)
   cdt <- as.data.table(cdt)
-  numberstarttreat <- cdt[YEAR == YARP + 1, sum(p.sus.nct) + sum(p.sus.sae) + sum(p.sus.tc) +
+  numberstarttreat <- cdt[, sum(p.sus.nct) + sum(p.sus.sae) + sum(p.sus.tc) +
                               sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
   
   # total number treated (effective) during the whole time period
   cdt <- copy(dt)
   cdt <- as.data.table(cdt)
   cdt[YEAR == YARP + 1, sum(p.sus.tc) + sum(p.ltbi.tc)] 
-  numbertreated <- cdt[YEAR == YARP + 1, sum(p.sus.tc) + sum(p.ltbi.tc)] 
+  numbertreated <- cdt[, sum(p.sus.tc) + sum(p.ltbi.tc)] 
   
   # total base cost
   totbasecost
@@ -303,10 +307,7 @@ write.table(table1, "clipboard", sep="\t", row.names=FALSE)
 
 #############################RUBBISH###########################################################
 
-base <- files[[1]]
-dt <- files[[10]]
-unique(dt$STRAT)
-# 
+
 # 
 # 
 # # total baseline cost
@@ -368,6 +369,11 @@ unique(dt$STRAT)
 # check <- subset(check, cycle>0)
 # 
 # 
+
+base <- files[[1]]
+dt <- files[[10]]
+unique(dt$STRAT)
+# 
 base[, p.sum := rowSums(.SD), .SDcols = c(9:29)]
 base[, sum(p.sum), by = cycle]
 base[, sum(p.tb), by = cycle]
@@ -380,20 +386,19 @@ dt[YARP == 2021, sum(NUMP), by = cycle]
 dt[YARP == 2022, sum(NUMP), by = cycle]
 dt[,sum(p.emigrate), by = cycle]
 
-check <- subset(dt,YARP == 2020)
-check <- subset(check,AGERP == 25)
-check <- subset(check,ISO3 == "150+")
+check <- subset(dt, YARP == 2020)
+check <- subset(check, AGERP == 25)
+check <- subset(check, ISO3 == "150+")
 
 
-bc <- subset(base,YARP == 2020)
-bc <- subset(bc,AGERP == 25)
-bc <- subset(bc,ISO3 == "150+")
+bc <- subset(base, YARP == 2020)
+bc <- subset(bc, AGERP == 25)
+bc <- subset(bc, ISO3 == "150+")
 
 
-# 
 # # Write the table to clipboard so I can paste it into Excel
-# write.table(bc, "clipboard", sep="\t", row.names=FALSE)
-
+ write.table(check, file="clipboard-16384", sep="\t", row.names=FALSE)
+ 
 
 # 
 # 

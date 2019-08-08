@@ -126,7 +126,7 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   DT <- copy(xDT[, .(AGEP, SEXP)])
   
   # To lookup all ages beyond 110
-  DT[AGEP > 110, AGEP := 110]
+  DT[AGEP > 100, AGEP := 100]
   
   vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
   
@@ -256,6 +256,7 @@ Get.POP <- function(DT, strategy) {
   
   ifelse(DT[, ISO3] == "150+", 1, 0)|
     ifelse(DT[, ISO3] == "100-149", 1, 0) &
+    # ifelse(DT[, ISO3] == "40-99", 1, 0) &
     ifelse(DT[, AGERP] > 10, 1, 0) &
     ifelse(DT[, AGERP] < 35, 1, 0)
   
@@ -267,11 +268,6 @@ Get.UTILITY <- function(t) {
   
 }
 
-Get.DISCOUNT <- function() {
-  
-  .03
-  
-}
 
 # Calculates the CMP value after evaluation of the promise objects in parameter and transition matrix.
 CalculateCMP <- function(tM, l, z) {
@@ -498,7 +494,7 @@ RunModel <- function(pop.output, strategy, testing, treatment, start.year, cycle
     # modelinflow <- FALSE
 
     if ((strategy$myname == "S1" || strategy$myname == "S0_1"
-         || strategy$myname == "S2" || strategy$myname == "S0_12") && markov.cycle > 5) {
+         || strategy$myname == "S2" || strategy$myname == "S0_12") && markov.cycle > 0) {
 
       modelinflow <- FALSE
 

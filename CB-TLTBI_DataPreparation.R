@@ -42,44 +42,56 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   # deleted 2016 due to it being a census year with 1/2 half.
   pop.master <- pop.master[YARP != 2016]
   
-  
-  # Create new arrival cohorts 
-  pop.master.2016 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2016L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2017 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2017L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2018 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2018L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2019 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2019L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2020 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2020L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2021 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2021L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2022 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2022L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2023 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2023L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2024 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2024L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2025 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2025L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2026 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2026L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2027 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2027L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2028 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2028L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2029 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2029L, NUMP, LTBP, AGERP, SEXP),]
-  pop.master.2030 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2030L, NUMP, LTBP, AGERP, SEXP),]
+  # Create new arrival cohorts
+  # Putting the years I want into a list
+  new.year.list <- c(2016:2050)
+
+  # Creating a function that will create a new arrival cohort for each of the years in my list
+  add.more.years.function <- function(new.year) {
+    pop.master.extra <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = new.year, NUMP, LTBP, AGERP, SEXP),]
+    pop.master.extra
+  }
+  pop.master.extra.years <- lapply(new.year.list, add.more.years.function)
+  pop.master.extra.years <- rbindlist(pop.master.extra.years)
+  pop.master <- rbind(pop.master, pop.master.extra.years)
   
   
-  pop.master <- rbind(pop.master, pop.master.2016, pop.master.2017, pop.master.2018, pop.master.2019,
-                      pop.master.2020, pop.master.2021, pop.master.2022, pop.master.2023,
-                      pop.master.2024, pop.master.2025, pop.master.2026, pop.master.2027,
-                      pop.master.2028, pop.master.2029, pop.master.2030)
+  # # Create new arrival cohorts 
+  # pop.master.2016 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2016L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2017 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2017L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2018 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2018L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2019 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2019L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2020 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2020L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2021 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2021L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2022 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2022L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2023 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2023L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2024 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2024L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2025 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2025L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2026 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2026L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2027 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2027L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2028 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2028L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2029 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2029L, NUMP, LTBP, AGERP, SEXP),]
+  # pop.master.2030 <- pop.master[YARP == 2015, .(AGEP = AGEP - 1, ISO3, YARP = 2030L, NUMP, LTBP, AGERP, SEXP),]
+  # 
+  # 
+  # pop.master <- rbind(pop.master, pop.master.2016, pop.master.2017, pop.master.2018, pop.master.2019,
+  #                     pop.master.2020, pop.master.2021, pop.master.2022, pop.master.2023,
+  #                     pop.master.2024, pop.master.2025, pop.master.2026, pop.master.2027,
+  #                     pop.master.2028, pop.master.2029, pop.master.2030)
+  # 
+  # rm(pop.master.2016, pop.master.2017, pop.master.2018, pop.master.2019, pop.master.2020, pop.master.2021,
+  #    pop.master.2022, pop.master.2023, pop.master.2024, pop.master.2025, pop.master.2026,
+  #    pop.master.2027, pop.master.2028, pop.master.2029, pop.master.2030)
   
-  rm(pop.master.2016, pop.master.2017, pop.master.2018, pop.master.2019, pop.master.2020, pop.master.2021,
-     pop.master.2022, pop.master.2023, pop.master.2024, pop.master.2025, pop.master.2026,
-     pop.master.2027, pop.master.2028, pop.master.2029, pop.master.2030)
-  
-  
+
   # Must order the pop.master table by YARP due to sub-setting and recombining. 
   setkey(pop.master, YARP, SEXP, AGEP, ISO3)
   
   # Multiply the population by 1.7 because the current population represents the net migrant arrivals
-  # rather than all migrant arrivals
+  # rather than all migrant arrivals, so the total number of arrivals needs to be higher
   
   pop.master <- pop.master[, NUMP := NUMP * 1.7]
   pop.master <- pop.master[, LTBP := LTBP * 1.7]
-  
   
   # Remove the populations who are under the age of 11 years
   
