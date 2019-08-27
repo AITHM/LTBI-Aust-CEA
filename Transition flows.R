@@ -1,6 +1,6 @@
 
 
-POP <- 0
+POP <- 1
 TESTSN <- 0.7
 TESTSP <- 0.7
 ATTEND <- 0.8
@@ -11,7 +11,7 @@ RRADJUST <- 0.9
 TREATR <- 0.7
 EMIGRATE <- 0.0002
 MR <- 0.000004
-TIMETOTREAT <- 0.4
+TIMETOTREAT <- 0.3
 
 # p.sus branch
 
@@ -58,10 +58,28 @@ PROPTREATED <- TESTSN * ATTEND * BEGINTREAT * TREATR
 a <- (1 - POP) * (1 - (RR * RRADJUST))
                   
 # p.ltbi to p.tb transition 
-b <- ((1 - POP) * RR * RRADJUST) + (POP * RR * RRADJUST * (1 - PROPTREATED * (1 - TIMETOTREAT)))
+# Explanation: if we assume the attenuated reactivation rate is 0.9, but 0.2 are treated (i.e. PROPTREATED) 
+# the react rate is then attenuated again to 0.72, i.e. 0.9 * (1 - 0.2). 
+# but because those 0.2 who are treated don't receive their treatment for 4 months 
+# (i.e. until a third of the way through the year, 0.3) they still have a risk of reactivation 
+# of 0.3 (timetotreat), so reducing the reactivation rate by 0.2 is too much.
+# 0.2 must be multiplied by 1 - timetotreat, i.e. the time they are protected for: 0.2 * (1 - 0.3) = 0.14
+# 0.9 * (1 - 0.14) = 0.774
+# timetotreat will be longer for longer regimens so the time of protection will be shorter
+# and the reduction that the PROPTREATED and TIMETOTREAT related terms
+# will make on the overall reactivation rate will be less.
+
+POP <- 1
+RR <- 1
+RRADJUST <- 0.9
+TREATR <- 0.7
+PROPTREATED <- 0.2
+TIMETOTREAT <- 0.3
+
+b <- ((1 - POP) * RR * RRADJUST) + (POP * RR * RRADJUST * (1 - (PROPTREATED * (1 - TIMETOTREAT))))
 
 # p.ltbi to p.ltbi.nf transition
-c <- POP * (1 - (TESTSN * ATTEND) - (RR * RRADJUST * (1 - PROPTREATED * (1 - TIMETOTREAT))))
+c <- POP * (1 - (TESTSN * ATTEND) - (RR * RRADJUST * (1 - (PROPTREATED * (1 - TIMETOTREAT)))))
 
 # p.ltbi to p.ltbi.tp.a transition
 d <- POP * TESTSN * ATTEND 
@@ -87,6 +105,9 @@ a + b + c + e + f + g + h
 ### Writing them out in long form...
 
 # p.sus branch
+
+
+
 
 
 # p.sus to p.sus.notest transition
@@ -123,14 +144,13 @@ PROPTREATED <- (param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR)
 a <- (1 - param$POP) * (1 - (param$RR * param$RRADJUST))
 
 # p.ltbi to p.tb transition 
-b <- ((1 - param$POP) * param$RR * param$RRADJUST) + (param$POP * param$RR * param$RRADJUST * (1 - (param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT)))
+b <- ((1 - param$POP) * param$RR * param$RRADJUST) + (param$POP * param$RR * param$RRADJUST * (1 - ((param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT))))
 
 # p.ltbi to p.ltbi.nf transition
-c <- param$POP * (1 - (param$TESTSN * param$ATTEND) - (param$RR * param$RRADJUST * (1 - (param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT))))
+c <- param$POP * (1 - (param$TESTSN * param$ATTEND) - (param$RR * param$RRADJUST * (1 - ((param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT)))))
 
 # p.ltbi to p.ltbi.tp.a transition
 d <- param$POP * param$TESTSN * param$ATTEND 
-
 
 # p.ltbi to p.ltbi.nbt transition
 e <- param$POP * param$TESTSN * param$ATTEND * (1 - param$BEGINTREAT)

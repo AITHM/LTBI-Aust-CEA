@@ -143,16 +143,17 @@ Get.RR <- function(xDT, year) {
   
   DT[AGERP > 110, AGERP := 110]
   
-  RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(Age = AGERP, Sex = SEXP,
-                                                                    statetime = ST, cobi = COBI)]
+  # Baseline reactivation rates
+  RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
+                                                                    ysa = ST, cobi = COBI)]
   
   # # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
-  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(Age = AGERP, Sex = SEXP,
-  #                                                                   statetime = ST, cobi = COBI)]
+  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                   ysa = ST, cobi = COBI)]
   
-  # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
-  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(Age = AGERP, Sex = SEXP,
-  #                                                                  statetime = ST, cobi = COBI)]
+  # # # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
+  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                  ysa = ST, cobi = COBI)]
   
 }
 
@@ -222,22 +223,47 @@ Get.SAEMR <- function(xDT, treat) {
   
 }
 
-# Look up the emigrate rate from emigrate.rate (age and  source country dependent)
-Get.EMIGRATE <- function(xDT, year) {
-  
-  DT <- copy(xDT[, .(year, AGERP, YARP, ISO3)])
-  
-  DT[year - YARP > 2, VISA := "perm"]  
-  
-  DT[year - YARP < 3, VISA := "temp"]  
-  
-  DT[AGERP > 110, AGERP := 110]
-  
-  emigrate.rate[DT[, .(AGERP, ISO3, VISA)], Rate, on = .(Age = AGERP, VISA = VISA,
-                                                         ISO3 = ISO3)]
-  
-}
+# # Look up the emigrate rate from emigrate.rate (age and  source country dependent)
+# Get.EMIGRATE <- function(xDT, year) {
+#   
+#   DT <- copy(xDT[, .(year, AGERP, YARP, ISO3)])
+#   
+#   DT[year - YARP > 2, VISA := "perm"]  
+#   
+#   DT[year - YARP < 3, VISA := "temp"]  
+#   
+#   DT[AGERP > 110, AGERP := 110]
+#   
+#   emigrate.rate[DT[, .(AGERP, ISO3, VISA)], Rate, on = .(Age = AGERP, VISA = VISA,
+#                                                          ISO3 = ISO3)]
+#   
+# }
 
+# # Look up the emigrate rate from emigrate.rate (age and VISA dependent)
+# Get.EMIGRATE <- function(xDT, year) {
+#   
+#   DT <- copy(xDT[, .(year, AGERP, YARP)])
+#   
+#   DT[year - YARP > 2, VISA := "perm"]  
+#   
+#   DT[year - YARP < 3, VISA := "temp"]  
+#   
+#   DT[AGERP > 110, AGERP := 110]
+#   
+#   emigrate.rate[DT[, .(AGERP, VISA)], Rate, on = .(Age = AGERP, VISA = VISA)]
+#   
+# }
+
+# Look up the emigrate rate from emigrate.rate (age and VISA dependent)
+Get.EMIGRATE <- function(xDT, year) {
+
+  DT <- copy(xDT[, .(year, AGERP, YARP)])
+
+  DT[AGERP > 110, AGERP := 110]
+
+  emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+
+}
 
 # Look up the reactivation rate from RRates and then reduce the rate by a
 # certain proprtion (treatmentyearRR.dt)
@@ -254,11 +280,11 @@ Get.TIMETOTREAT <- function(S, treat) {
 # Look up target population percentage
 Get.POP <- function(DT, strategy) {
   
-  ifelse(DT[, ISO3] == "150+", 1, 0)|
+  ifelse(DT[, ISO3] == "150+", 1, 0)  |
     ifelse(DT[, ISO3] == "100-149", 1, 0) &
-    # ifelse(DT[, ISO3] == "40-99", 1, 0) &
+    #ifelse(DT[, ISO3] == "40-99", 1, 0) &
     ifelse(DT[, AGERP] > 10, 1, 0) &
-    ifelse(DT[, AGERP] < 35, 1, 0)
+    ifelse(DT[, AGERP] < 36, 1, 0)
   
 }
 
@@ -495,7 +521,9 @@ RunModel <- function(pop.output, strategy, testing, treatment, start.year, cycle
 
     if ((strategy$myname == "S1" || strategy$myname == "S0_1"
          || strategy$myname == "S2" || strategy$myname == "S0_12") && markov.cycle > 0) {
-
+      # Migrant inflows are possible until 2050, so if the model begins in 2020
+      # don't have migrant inflows for more than 30 cycles.
+      
       modelinflow <- FALSE
 
     }

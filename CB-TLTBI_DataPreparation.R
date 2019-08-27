@@ -93,7 +93,7 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   pop.master <- pop.master[, NUMP := NUMP * 1.7]
   pop.master <- pop.master[, LTBP := LTBP * 1.7]
   
-  # Remove the populations who are under the age of 11 years
+  # Remove the populations who arrived under the age of 11 years
   
   pop.master <- subset (pop.master, AGERP > 10)
   

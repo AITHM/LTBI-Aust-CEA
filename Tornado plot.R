@@ -8,7 +8,7 @@ library(data.table)
 library(ggplot2)
 library(RColorBrewer)
 library(grid)
-
+library(scales)
 
 # Reading in the data from excel
 setwd("H:/Katie/PhD/CEA")
@@ -57,19 +57,19 @@ df.2 <- df %>%
          xmax=as.numeric(parameter)+width/2)
 
 
-order.parameters[3] <- "Estimated reactivation rates\nin migrant populations\n(lower and upper uncertainty limits)"
-order.parameters[5] <- "Estimated prevalence of LTBI in migrant\npopulations (lower and upper 95% CI)"
+#order.parameters[2] <- "LTBI prevalence and reactivation rate estimates\n(25th percentile LTBI prevalence estimate\nand upper uncertainty limit for reactivation\nrates - 75th percentile LTBI prevalence estimate and\nlower uncertainty limit for reactivation rate)"
 
 # create plot
 # (use scale_x_continuous to change labels in y axis to name of parameters)
 #png(width = 960, height = 540)
+options(scipen=5)
 
 dev.off()
 ggplot() + 
   geom_rect(data = df.2, 
             aes(ymax=ymax, ymin=ymin, xmax=xmax, xmin=xmin, fill=type)) +
   theme_bw() + 
-  labs(y = "Cost per QALY lost (AUS$)") +
+  labs(y = "Cost per QALY (AUS$)") +
   scale_fill_manual(values=c("steelblue2","darksalmon"))+
   theme(legend.position = 'bottom',
         legend.title = element_blank(),
@@ -79,9 +79,10 @@ ggplot() +
   geom_hline(yintercept = base.value) +
   scale_x_continuous(breaks = c(1:length(order.parameters)), 
                      labels = order.parameters) +
-  scale_y_continuous(position = "bottom") +
+  scale_y_continuous(position = "bottom", breaks = seq(0, 500000, 50000),
+                     labels = comma) +
   coord_flip()+
   theme(text = element_text(size=15))
 
-grid.text("Base case ICER: -$300", x = unit(0.58, "npc"), y = unit(0.2, "npc"))
+grid.text("Base case ICER: $95,867", x = unit(0.58, "npc"), y = unit(0.2, "npc"))
 

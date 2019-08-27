@@ -34,15 +34,15 @@ files<-lapply(files, function(dt) {
 # Define some model parameters that might be used below
   # Time horizon
 startyear <- 2020 
-finalyear <- 2090
+finalyear <- 2050
 cycleyears <- finalyear - startyear
 
   # Target population
 targetfunc <- function(dt) {
-  dt <- subset(dt, ISO3 == "150+"|
+  dt <- subset(dt, ISO3 == "150+" |
                  ISO3 == "100-149" &
-                 # ISO3 == "40-99" &
-                 AGERP > 10 & AGERP < 35)
+                  #ISO3 == "40-99" &
+                  AGERP > 10 & AGERP < 36)
   # dt <- subset(dt, AGERP > 10 & AGERP < 65)
   dt
 }
@@ -68,6 +68,9 @@ qalybase <- sum(base$SQsum)
 
 # total baseline tb cases
 basetbcount <- base[, sum(p.tb)]
+
+# total baseline tb cases
+basetbdeath <- base[YEAR == finalyear, sum(p.tb.death)]
 
 tabfunc<-function(dt) {
   
@@ -170,6 +173,15 @@ tabfunc<-function(dt) {
   # number of tb cases prevented
   tbprev <- basetbcount - tbtotal
   
+  # number of tb deaths 
+  tbdeath <- dt[YEAR == finalyear, sum(p.tb.death)]
+  
+  # number of tb deaths prevented
+  tbdeathprev <- basetbdeath - tbdeath
+  
+  #Cost per TB death prevented
+  costpertbdeath <- totcost/tbdeathprev
+  
   #Cost per TB case prevented
   costpertb <- totcost/tbprev
   
@@ -191,16 +203,16 @@ tabfunc<-function(dt) {
   
   
   # number of SAEs among those with ltbi
-  saeltbi <- dt[, sum(p.ltbi.sae)]
+  saeltbi <- dt[YEAR == YARP + 1, sum(p.ltbi.sae)]
   
   # number of SAEs among those without ltbi
-  saesus <- dt[, sum(p.sus.sae)]
+  saesus <- dt[YEAR == YARP + 1, sum(p.sus.sae)]
   
   # number of SAE deaths among those with ltbi
-  saedeathltbi <- dt[, sum(p.ltbi.sae.death)]
+  saedeathltbi <- dt[YEAR == YARP + 2, sum(p.ltbi.sae.death)]
   
   # number of SAE deaths among those without ltbi
-  saedeathusus <- dt[, sum(p.sus.sae.death)]
+  saedeathusus <- dt[YEAR == YARP + 2, sum(p.sus.sae.death)]
   
   # total baseline QALYS
   qalybase
@@ -232,6 +244,9 @@ tabfunc<-function(dt) {
                 totaddcost,
                 tbtotal,
                 tbprev,
+                tbdeath,
+                tbdeathprev,
+                costpertbdeath,
                 costpertb,
                 nns,
                 nnt,
@@ -262,6 +277,9 @@ tabfunc<-function(dt) {
               "total additional cost",
               "total TB cases",
               "TB cases prevented",
+              "total TB deaths",
+              "total TB deaths prevented",
+              "cost per TB death prevented",
               "cost per TB case prevented",
               "Number needed to screen",
               "Number needed to treat",
@@ -396,9 +414,9 @@ bc <- subset(bc, AGERP == 25)
 bc <- subset(bc, ISO3 == "150+")
 
 
-# # Write the table to clipboard so I can paste it into Excel
- write.table(check, file="clipboard-16384", sep="\t", row.names=FALSE)
- 
+# # # Write the table to clipboard so I can paste it into Excel
+#  write.table(check, file="clipboard-16384", sep="\t", row.names=FALSE)
+# 
 
 # 
 # 
