@@ -96,11 +96,6 @@ tabfunc<-function(dt) {
   # number referred annually
   # find name of screening test
   testing <- dt$Test[1]
-  # create a lookup table
-  tests.dt <- data.table(tests = c("QTFGIT", "TST05", "TST10", "TST15", ""), SN = c(0.6104, 0.74, 0.7532, 0.6753, 1),
-                         SP = c(0.7784, 0.56, 0.6679, 0.7726, 1))
-  TESTSN <- tests.dt[tests == testing, SN]
-  TESTSP <- tests.dt[tests == testing, SP]
   targetgroup <- targetfunc (dt)
   numref <- targetgroup[YEAR == 2020 & YARP == 2020, sum(LTBP),] * TESTSN + targetgroup[YEAR == 2020 & YARP == 2020, sum(NUMP) - sum(LTBP),] * (1 - TESTSP)
   
@@ -108,24 +103,6 @@ tabfunc<-function(dt) {
   numatt <- dt[YEAR == startyear+1 & YARP == 2020, sum(p.sus.nbt) + sum(p.sus.nct) +
        sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
        sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
-  
-  # total number screened during the whole time period (just multiply the annual number by ten?)
-      # Method 1
-      # testing <- dt$Test[1]
-      # create a lookup table
-      # tests.dt <- data.table(tests = c("QTFGIT", "TST05", "TST10", "TST15"), SN = c(0.6104, 0.74, 0.7532, 0.6753),
-      #                        SP = c(0.7784, 0.56, 0.6679, 0.7726))
-      # TESTSN <- tests.dt[tests == testing, SN]
-      # TESTSP <- tests.dt[tests == testing, SP]
-      # targetgroup <- targetfunc (dt)
-      # totscreen <- targetgroup[YEAR == YARP, sum(LTBP),] * TESTSN + targetgroup[YEAR == YARP , sum(NUMP) - sum(LTBP),] * (1 - TESTSP)
-      # Method two
-      # cdt <- copy(dt)
-      # cdt <- as.data.table(cdt)
-      # totscreen <- cdt[YEAR == YARP + 1, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
-      #                 sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nf) + sum(p.ltbi.nbt) +
-      #                 sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
-  #totscreen <- numscreened * cycleyears
   
   cdt <- copy(dt)
   totscreen <- cdt[, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +

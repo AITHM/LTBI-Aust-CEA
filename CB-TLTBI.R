@@ -34,15 +34,15 @@ source("CB-TLTBI Functions.R")
 
 # aust <- readRDS("Data/aust.rds")
 # aust.vic <- readRDS("Data/aust.vic.rds") # this is required for S1,S2,S3,S4 and S5
-aust.vic <- readRDS("Data/Aust16byTBincid.rds") 
+aust.vic <- readRDS("Data/Aust16byTBincid.rds")  # baseline
 
 # # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
-# aust.vic[, LTBP:= NULL]
-# setnames(aust.vic, "tfnum", "LTBP")
+# aust.vic[, LTBP:= NULL] # lower
+# setnames(aust.vic, "tfnum", "LTBP") # lower
 
 # # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
-# aust.vic[, LTBP:= NULL]
-# setnames(aust.vic, "sfnum", "LTBP")
+# aust.vic[, LTBP:= NULL] # upper
+# setnames(aust.vic, "sfnum", "LTBP") # upper
 
 # aust.vic <- subset(aust.vic, AGEP == 25 & ISO3 == "150+")
     # Australian 2016 census data extracted from Table Builder by country of birth
@@ -112,22 +112,28 @@ new.state.names <- c(state.names, paste("V.", state.names, sep = ""),
 
 
 # Create a sample data table of test sensitivity & specificity
-tests.dt <- data.table(tests = c("QTFGIT", "TST05", "TST10", "TST15"), SN = c(0.6104, 0.74, 0.7532, 0.6753),
-                       SP = c(0.7784, 0.56, 0.6679, 0.7726), 
+tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"), 
+                       SN = c(0.6104, 0.7532, 0.6753), # baseline
+                       SP = c(0.7784, 0.6679, 0.7726), # baseline
+                       # SN = c(0.4925, 0.6418, 0.5590), # lower
+                       # SP = c(0.7629, 0.6562, 0.7621), # lower
+                       # SN = c(0.7195, 0.8444, 0.7777), # upper
+                       # SP = c(0.7886, 0.6796, 0.7829), # upper
                        # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value 
                        # of interferon-gamma release assays and tuberculin skin test in predicting the development of active 
                        # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
-                       # cost.primary = c(74.34, 70.40, 70.40, 70.40))
-                        cost.primary = c(0, 0, 0, 0))
+                       # cost.primary = c(74.34, 70.40, 70.40))
+                       cost.primary = c(0, 0, 0)) # baseline
                        # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
                        # Australia's health system
 
 # Create a sample treatment data table
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
-                           rate = c(0.82, 0.83,  0.63, 0.78),
+                           rate = c(0.82, 0.83, 0.63, 0.78), # baseline
+                           #rate = c(0.74088, 0.82272, 0.5568, 0.735800), # mine
                            # rate = c(1, 1, 1, 1),
-                           cost.primary = c(310.47, 568.45, 353.39, 436.56),
-                           cost.partial = c(310.47/3, 568.45/3, 353.39/3, 436.56/3))
+                           cost.primary = c(310.47, 568.45, 353.39, 436.56), # baseline
+                           cost.partial = c(310.47/3, 568.45/3, 353.39/3, 436.56/3)) # baseline
 
 # Create a sample data table to give an idea about when those who receive LTBI treatment in the first 
 # year after migration are likely to have received that treatment.
@@ -630,9 +636,9 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                RR = Get.RR(DT, year),
                                TBMR = Get.TBMR(DT, year),
                                # TBMR = 0.001,
-                               # RRADJUST = 0.9,
+                               RRADJUST = 0.9,
                                # RRADJUST = 0.952, # lower, i.e. 4.8% captured
-                               RRADJUST = 0.875, # upper, i.e. 12.5% captured
+                               # RRADJUST = 0.875, # upper, i.e. 12.5% captured
                                # RRADJUST takes into account the fact that a proportion (10% in Victoria)
                                # of TB cases are picked up each year with existing TB control strategies, i.e.
                                # during follow-up as a result of an abnormal CXR during pre-migration off-shore screening.
