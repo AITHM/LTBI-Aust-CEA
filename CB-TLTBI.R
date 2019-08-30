@@ -32,9 +32,6 @@ source("CB-TLTBI Parameter values.R")
 # CreateRDSDataFiles()
 
 # Read the data files (if required)
-aust <- readRDS("Data/Aust16byTBincid.rds")
-    # Australian 2016 census data extracted from Table Builder by country of birth
-    # (place of usual residence), single year age and single year of arrival. 
 vic.mortality <- readRDS("Data/aust.mortality.rds") # this is also required
 vic.mortality <- as.data.table(vic.mortality)
     # Projected mortality rates for Australia from:

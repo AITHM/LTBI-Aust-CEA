@@ -17,38 +17,38 @@ finalinflow <- 0
 # Target population
 Get.POP <- function(DT, strategy) {
   
-  ifelse(DT[, ISO3] == "200+", 1, 0) &
-    # ifelse(DT[, ISO3] == "150-199", 1, 0) |
-    # ifelse(DT[, ISO3] == "100-149", 1, 0) &
+  ifelse(DT[, ISO3] == "200+", 1, 0) |
+    ifelse(DT[, ISO3] == "150-199", 1, 0) |
+    ifelse(DT[, ISO3] == "100-149", 1, 0) &
     # ifelse(DT[, ISO3] == "40-99", 1, 0) &
-    ifelse(DT[, AGERP] > 19, 1, 0) &
-    ifelse(DT[, AGERP] < 30, 1, 0)
+    ifelse(DT[, AGERP] > 10, 1, 0) &
+    ifelse(DT[, AGERP] < 36, 1, 0)
   
 }
 
 targetfunc <- function(DT) {
-  DT <- subset(DT, ISO3 == "200+")
-                 # ISO3 == "150+" |
-                 # ISO3 == "100-149")
+  DT <- subset(DT, ISO3 == "200+" |
+                 ISO3 == "150+" |
+                 ISO3 == "100-149")
                  # ISO3 == "40-99")
-  DT <- subset(DT, AGERP > 19 &
-                 AGERP < 30)
+  DT <- subset(DT, AGERP > 10 &
+                 AGERP < 36)
   DT
 }
 
 
 # LTBI prevalence and reactivation rates
-# aust <- readRDS("Data/aust.rds")
-# aust.vic <- readRDS("Data/aust.vic.rds") # this is required for S1,S2,S3,S4 and S5
-aust.vic <- readRDS("Data/Aust16byTBincid.rds") 
+aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
+# Australian 2016 census data extracted from Table Builder by country of birth
+# (place of usual residence), single year age and single year of arrival. 
 
 # # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
-# aust.vic[, LTBP:= NULL]
-# setnames(aust.vic, "tfnum", "LTBP")
+# aust[, LTBP := NULL]
+# setnames(aust, "tfnum", "LTBP")
 
 # # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
-# aust.vic[, LTBP:= NULL]
-# setnames(aust.vic, "sfnum", "LTBP")
+# aust[, LTBP := NULL]
+# setnames(aust, "sfnum", "LTBP")
 
 # Reactivation rates
 Get.RR <- function(xDT, year) {
@@ -165,23 +165,23 @@ Get.SAEMR <- function(xDT, treat) {
 
 # Emigrate rate from emigrate.rate (zero)
 
-# Get.EMIGRATE <- function(xDT, year) {
-# 
-#   0
-# 
-# }
-
-
-# Emigrate rate from emigrate.rate (age dependent)
 Get.EMIGRATE <- function(xDT, year) {
 
-  DT <- copy(xDT[, .(year, AGERP, YARP)])
-
-  DT[AGERP > 110, AGERP := 110]
-
-  emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+  0
 
 }
+
+
+# # Emigrate rate from emigrate.rate (age dependent)
+# Get.EMIGRATE <- function(xDT, year) {
+# 
+#   DT <- copy(xDT[, .(year, AGERP, YARP)])
+# 
+#   DT[AGERP > 110, AGERP := 110]
+# 
+#   emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+# 
+# }
 
 # # Emigrate rate from emigrate.rate (age and source country dependent)
 # Get.EMIGRATE <- function(xDT, year) {

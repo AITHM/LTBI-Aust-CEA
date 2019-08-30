@@ -21,8 +21,8 @@ files <- lapply(filenames, readRDS)
 
 # Create a list of the names of the output files
 namelist <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern = "*.rds")
-namelist <- gsub("\\b.rds\\b","", namelist)
-namelist <- gsub("\\bS2\\b","", namelist)
+namelist <- gsub("\\b.rds\\b", "", namelist)
+namelist <- gsub("\\bS2\\b", "", namelist)
 namelist <- substring(namelist, 2)
 
 # Name the files in the list
