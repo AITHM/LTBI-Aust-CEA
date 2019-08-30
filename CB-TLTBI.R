@@ -19,11 +19,12 @@ library(data.table) # required
 
 
 # Model setup located within this file.
-# It defines all the states, transition matrices, strategies, costs and parameters.
+# It defines all the states and transition matrices
+# The strategies and all parameters are defined in the "Parameter values" document.
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("CB-TLTBI_DataPreparation.R")
 source("CB-TLTBI Functions.R")
-
+source("CB-TLTBI Parameter values.R")
 
 # This function uses the above three Fix* functions. 
 # Run once to create the *.rds objects (vic.fertility, vic.mortality, vic.migration)
@@ -31,49 +32,23 @@ source("CB-TLTBI Functions.R")
 # CreateRDSDataFiles()
 
 # Read the data files (if required)
-
-# aust <- readRDS("Data/aust.rds")
-# aust.vic <- readRDS("Data/aust.vic.rds") # this is required for S1,S2,S3,S4 and S5
-aust.vic <- readRDS("Data/Aust16byTBincid.rds")  # baseline
-
-# # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
-# aust.vic[, LTBP:= NULL] # lower
-# setnames(aust.vic, "tfnum", "LTBP") # lower
-
-# # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
-# aust.vic[, LTBP:= NULL] # upper
-# setnames(aust.vic, "sfnum", "LTBP") # upper
-
-# aust.vic <- subset(aust.vic, AGEP == 25 & ISO3 == "150+")
+aust <- readRDS("Data/Aust16byTBincid.rds")
     # Australian 2016 census data extracted from Table Builder by country of birth
     # (place of usual residence), single year age and single year of arrival. 
-# aust.vic.LGA <- readRDS("Data/aust.vic.LGA.rds") # this is for S0
-# prob.Inf <- readRDS("Data/prob.Inf.rds") 
-# tbhaz.200rep <- readRDS("Data/tbhaz.200rep.rds")
-# tbhaz.5000rep <- readRDS("Data/tbhaz.5000rep.rds")
-# vic.fertility <- readRDS("Data/vic.fertility.rds")
-# vic.mortality <- readRDS("Data/vic.mortality.rds") # this is also required
 vic.mortality <- readRDS("Data/aust.mortality.rds") # this is also required
 vic.mortality <- as.data.table(vic.mortality)
     # Projected mortality rates for Australia from:
     # https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3222.02017%20(base)%20-%202066?OpenDocument
     # Results then aggregated by gender assuming a gender weighting by age equivalent to the Australian population
     # in September 2018. Source: https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3101.0Sep%202018?OpenDocument
-# vic.migration <- readRDS("Data/vic.migration.rds")
-# vic.pop <- readRDS("Data/vic.pop.rds")
-# RRates <- readRDS("Data/RRates.rds") # this is also required
-RRates <- readRDS("Data/RRatescobincidnosex.rds") # this is also required
+RRates <- readRDS("Data/RRatescobincidnosex.rds")
     # TB reactivation rate data from: Dale K, Trauer J, et al. Estimating long-term tuberculosis 
     # reactivation rates in Australian migrants. Clinical Infectious Diseases 2019 (in press)
-# vic.tb.mortality <- readRDS("Data/vic.tb.mortality.rds") # this is also required
-vic.tb.mortality <- readRDS("Data/tb.mortality.rds") # this is also required
+vic.tb.mortality <- readRDS("Data/tb.mortality.rds")
 vic.tb.mortality <- as.data.table(vic.tb.mortality)
     # TB mortality data from: Dale K, Tay E, Trevan P, et al. Mortality among tuberculosis cases 
     # in Victoria, 2002-2013: case fatality and factors associated with death. 
     # Int J Tuberc Lung Dis 2016;20(4):515-23. doi: 10.5588/ijtld.15.0659
-# begintreat.rate <- readRDS("Data/begintreat.rate.rds") # this is also required
-# begintreat.rate <- as.data.table(begintreat.rate)
-    # ??? data from: ...
 sae.rate <- readRDS("Data/sae.rate.rds") # this is also required
 sae.rate <- as.data.table(sae.rate)
     # SAE rate from: ...
@@ -84,14 +59,7 @@ emigrate.rate <- readRDS("Data/emigrate.rate.rds") # this is also required
 emigrate.rate <- as.data.table(emigrate.rate)
     # emigrate data from: ...
 
-
-
 # Creating a vector of state names
-# state.names <- c("p.sus", "p.sus.fp.t", "p.sus.fp.nt", "p.sus.fp.tc", "p.sus.tn",
-#                  "p.ltbi", "p.ltbi.tp.t", "p.ltbi.tp.tc", "p.ltbi.tp.nt", "p.ltbi.tp.nt.tb",
-#                  "p.ltbi.tp.nt.tbr", "p.ltbi.fn", "p.ltbi.fn.tb", "p.ltbi.fn.tbr", "p.ltbi.tb",
-#                  "p.ltbi.tbr", "p.ltbi.tp.nt.tb.death", "p.ltbi.fn.tb.death", "p.ltbi.tb.death", "p.death")
-# Creating a vector of state names - KD
 state.names <- c("p.sus",	"p.sus.notest", "p.sus.nf",	"p.sus.nbt",	"p.sus.nct",	"p.sus.tc",
                  "p.sus.sae",	"p.sus.sae.death",
                  "p.sus.no.risk",
@@ -110,308 +78,35 @@ new.state.names <- c(state.names, paste("V.", state.names, sep = ""),
                      paste("FC.", state.names, sep = ""),
                      paste("SQ.", state.names, sep = ""))
 
-
 # Create a sample data table of test sensitivity & specificity
 tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"), 
-                       SN = c(0.6104, 0.7532, 0.6753), # baseline
-                       SP = c(0.7784, 0.6679, 0.7726), # baseline
-                       # SN = c(0.4925, 0.6418, 0.5590), # lower
-                       # SP = c(0.7629, 0.6562, 0.7621), # lower
-                       # SN = c(0.7195, 0.8444, 0.7777), # upper
-                       # SP = c(0.7886, 0.6796, 0.7829), # upper
+                       SN = c(snqftgit, sntst10, sntst15),
+                       SP = c(spqftgit, sptst10, sptst15),
                        # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value 
                        # of interferon-gamma release assays and tuberculin skin test in predicting the development of active 
                        # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
                        # cost.primary = c(74.34, 70.40, 70.40))
-                       cost.primary = c(0, 0, 0)) # baseline
+                       cost.primary = c(cscreenqft, cscreentst10, cscreentst15))
                        # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
                        # Australia's health system
 
 # Create a sample treatment data table
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
-                           rate = c(0.82, 0.83, 0.63, 0.78), # baseline
-                           #rate = c(0.74088, 0.82272, 0.5568, 0.735800), # mine
-                           # rate = c(1, 1, 1, 1),
-                           cost.primary = c(310.47, 568.45, 353.39, 436.56), # baseline
-                           cost.partial = c(310.47/3, 568.45/3, 353.39/3, 436.56/3)) # baseline
+                           rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
+                           cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H),
+                           cost.partial = c(ctreat3HP * parttreat, ctreat4R * parttreat,
+                                            ctreat6H * parttreat, ctreat9H * parttreat))
 
-# Create a sample data table to give an idea about when those who receive LTBI treatment in the first 
-# year after migration are likely to have received that treatment.
+# This data table indicates when those who receive LTBI treatment in the first 
+# year after migration are likely to have received that treatment (as an annual proportion).
 timetotreat.dt <- data.table(treatment = c("3HP", "4R", "6H", "9H"),
-                           yearfraction = c(0.33, 0.42, 0.58, 0.83))
-                           # yearfraction = c(0.25, 0.33, 0.50, 0.75)) # low
-                           # yearfraction = c(0.50, 0.58, 0.75, 1)) # high
-# need to talk to Michael Flynn to establish how long it takes to complete treatment
+                           yearfraction = c(ttt3HP, ttt4R, ttt6H, ttt9H))
+# could talk to Michael Flynn to establish how long it takes to complete treatment
 
 # Create a sample utility data table
 # TODO: fix hard coded data table. It should take state.names and create the columns.
 utility.dt <- data.table(treatment = c("", "3HP", "4R", "6H", "9H"))
 utility.dt[, c(state.names) := as.numeric(NA)]
-
-# Utility values#################to do##############################
-# uhealthy <- 0.876
-# # Bauer et al 2015
-# uactivetb <- 0.781
-# uactivetbr <- 0.876
-# # Bauer et al 2015
-# ultbi4R <- 0.835
-# ultbipart4R <- 0.838
-# # Bauer et al 2015
-# ultbi9H <- 0.827
-# ultbipart9H <- 0.868
-# # Bauer et al 2015
-# ultbi3HP <- 0.835
-# ultbipart3HP <- 0.838
-# ultbi6H <- 0.832
-# ultbipart6H <- 0.837
-# ultbitreatsae <- 0.75
-
-# # Test 1 - no decrement for LTBI treatment
-# uhealthy <- 0.876
-# # Bauer et al 2015
-# uactivetb <- 0.781
-# uactivetbr <- 0.876
-# # Bauer et al 2015
-# ultbi4R <- 0.876
-# ultbipart4R <- 0.876
-# # Bauer et al 2015
-# ultbi9H <- 0.876
-# ultbipart9H <- 0.876
-# # Bauer et al 2015
-# ultbi3HP <- 0.876
-# ultbipart3HP <- 0.876
-# ultbi6H <- 0.876
-# ultbipart6H <- 0.876
-# ultbitreatsae <- 0.75
-
-# # Test 11 - no decrement for LTBI treatment, and minimal for SAE
-uhealthy <- 0.876
-# Bauer et al 2015
-uactivetb <- 0.781
-uactivetbr <- 0.876
-# Bauer et al 2015
-ultbi4R <- 0.876
-ultbipart4R <- 0.876
-# Bauer et al 2015
-ultbi9H <- 0.876
-ultbipart9H <- 0.876
-# Bauer et al 2015
-ultbi3HP <- 0.876
-ultbipart3HP <- 0.876
-ultbi6H <- 0.876
-ultbipart6H <- 0.876
-ultbitreatsae <- 0.8468
-
-
-# # Test 2
-# uhealthy <- 0.876
-# # Bauer et al 2015
-# uactivetb <- 0.781
-# uactivetbr <- 0.876
-# # Bauer et al 2015
-# ultbi4R <- 0.87599
-# ultbipart4R <- 0.876
-# # Bauer et al 2015
-# ultbi9H <- 0.87599
-# ultbipart9H <- 0.876
-# # Bauer et al 2015
-# ultbi3HP <- 0.87599
-# ultbipart3HP <- 0.876
-# ultbi6H <- 0.87599
-# ultbipart6H <- 0.876
-# ultbitreatsae <- 0.75
-
-
-# # Test 3
-# uhealthy <- 0.876
-# # Bauer et al 2015
-# uactivetb <- 0.781
-# uactivetbr <- 0.876
-# # Bauer et al 2015
-# ultbi4R <- 0.8759
-# ultbipart4R <- 0.876
-# # Bauer et al 2015
-# ultbi9H <- 0.8759
-# ultbipart9H <- 0.876
-# # Bauer et al 2015
-# ultbi3HP <- 0.8759
-# ultbipart3HP <- 0.876
-# ultbi6H <- 0.8759
-# ultbipart6H <- 0.876
-# ultbitreatsae <- 0.75
-
-
-# # Test 4
-# uhealthy <- 0.876
-# # Bauer et al 2015
-# uactivetb <- 0.781
-# uactivetbr <- 0.876
-# # Bauer et al 2015
-# ultbi4R <- 0.875
-# ultbipart4R <- 0.876
-# # Bauer et al 2015
-# ultbi9H <- 0.875
-# ultbipart9H <- 0.876
-# # Bauer et al 2015
-# ultbi3HP <- 0.875
-# ultbipart3HP <- 0.876
-# ultbi6H <- 0.875
-# ultbipart6H <- 0.876
-# ultbitreatsae <- 0.75
-
-
-# # Test 5
-# uhealthy <- 0.876
-# # Bauer et al 2015
-# uactivetb <- 0.781
-# uactivetbr <- 0.876
-# # Bauer et al 2015
-# ultbi4R <- 0.874
-# ultbipart4R <- 0.876
-# # Bauer et al 2015
-# ultbi9H <- 0.874
-# ultbipart9H <- 0.876
-# # Bauer et al 2015
-# ultbi3HP <- 0.874
-# ultbipart3HP <- 0.876
-# ultbi6H <- 0.874
-# ultbipart6H <- 0.876
-# ultbitreatsae <- 0.75
-
-# # Test 6
-# uhealthy <- 0.876
-# # Bauer et al 2015
-# uactivetb <- 0.781
-# uactivetbr <- 0.876
-# # Bauer et al 2015
-# ultbi4R <- 0.873
-# ultbipart4R <- 0.876
-# # Bauer et al 2015
-# ultbi9H <- 0.873
-# ultbipart9H <- 0.876
-# # Bauer et al 2015
-# ultbi3HP <- 0.873
-# ultbipart3HP <- 0.876
-# ultbi6H <- 0.873
-# ultbipart6H <- 0.876
-# ultbitreatsae <- 0.75
-
-# # Test 7 - trying the 0.0035 decrement for LTBI treatment
-# # ...
-# uhealthy <- 1
-# # Bauer et al 2015
-# uactivetb <- 0.75
-# uactivetbr <- 0.94
-# # Bauer et al 2015
-# ultbi4R <- 0.9965
-# ultbipart4R <- 1
-# # Bauer et al 2015
-# ultbi9H <- 0.9965
-# ultbipart9H <- 1
-# # Bauer et al 2015
-# ultbi3HP <- 0.9965
-# ultbipart3HP <- 1
-# ultbi6H <- 0.9965
-# ultbipart6H <- 1
-# ultbitreatsae <- 0.75
-
-# Test 8 - trying the 0.005 decrement for LTBI treatment
-# ... no ongoing decrement for those with active TB
-# uhealthy <- 1
-# # Bauer et al 2015
-# uactivetb <- 0.75
-# uactivetbr <- 1
-# # Bauer et al 2015
-# ultbi4R <- 0.995
-# ultbipart4R <- 1
-# # Bauer et al 2015
-# ultbi9H <- 0.995
-# ultbipart9H <- 1
-# # Bauer et al 2015
-# ultbi3HP <- 0.995
-# ultbipart3HP <- 1
-# ultbi6H <- 0.995
-# ultbipart6H <- 1
-# ultbitreatsae <- 0.75
-
-# Test 9 - 
-# # ...no ongoing decrement for those with active TB
-# uhealthy <- 1
-# # Bauer et al 2015
-# uactivetb <- 0.75
-# uactivetbr <- 1
-# # Bauer et al 2015
-# ultbi4R <- 0.9965
-# ultbipart4R <- 1
-# # Bauer et al 2015
-# ultbi9H <- 0.9965
-# ultbipart9H <- 1
-# # Bauer et al 2015
-# ultbi3HP <- 0.9965
-# ultbipart3HP <- 1
-# ultbi6H <- 0.9965
-# ultbipart6H <- 1
-# ultbitreatsae <- 0.75
-
-# # Test 8 - seeing if getting rid of SAE loss makes any difference at all
-# uhealthy <- 0.876
-# # Bauer et al 2015
-# uactivetb <- 0.781
-# uactivetbr <- 0.876
-# # Bauer et al 2015
-# ultbi4R <- 0.873
-# ultbipart4R <- 0.876
-# # Bauer et al 2015
-# ultbi9H <- 0.873
-# ultbipart9H <- 0.876
-# # Bauer et al 2015
-# ultbi3HP <- 0.873
-# ultbipart3HP <- 0.876
-# ultbi6H <- 0.873
-# ultbipart6H <- 0.876
-# ultbitreatsae <- 0.876
-
-
-
-
-
-# # AUTUMN-LIKE QALYS
-# uhealthy <- 1
-# # Bauer et al 2015
-# uactivetb <- 0.75
-# uactivetbr <- 0.94
-# # Bauer et al 2015
-# ultbi4R <- 0.999
-# ultbipart4R <- 1
-# # Bauer et al 2015
-# ultbi9H <- 0.999
-# ultbipart9H <- 1
-# # Bauer et al 2015
-# ultbi3HP <- 0.999
-# ultbipart3HP <- 1
-# ultbi6H <- 0.999
-# ultbipart6H <- 1
-# ultbitreatsae <- 0.8
-
-
-# # RIDICULOUS QALYS
-# uhealthy <- 1
-# # Bauer et al 2015
-# uactivetb <- 0.75
-# uactivetbr <- 0.94
-# # Bauer et al 2015
-# ultbi4R <- 1
-# ultbipart4R <- 1
-# # Bauer et al 2015
-# ultbi9H <- 1
-# ultbipart9H <- 1
-# # Bauer et al 2015
-# ultbi3HP <- 1
-# ultbipart3HP <- 1
-# ultbi6H <- 1
-# ultbipart6H <- 1
-# ultbitreatsae <- 1
-
 
 utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
                                                    ultbitreatsae, 0,
@@ -482,25 +177,6 @@ unevaluated.state.utility <- lazy(c(0, 0, 0, 0, 0, 0,
 
 arglist <- CreateArgumentList(state.names, state.number)
 
-# updates a row. Note: unevaluated parameter must be wrapped in a quote()
-# arglist$update.row(9, c(0, 0, 0, 0, 0, 0, 0, 0, 0, quote(CMP), 0, 0, 0, 0, 0, 0, 0, 0, quote(param$TBMR), 0, 0, 0, quote(param$MR)))
-# arglist$update.list(listvalues) # For passing a entire list
-# arglist$update.cell(7, 20, quote(param$MR+param$TREATSAE)) # update on cell
-
-
-# Show list with N x N state dimensions
-# arglist$show.list()[2,20]
-
-# Add the state names as the final argument
-# arglist$add.state.name(state.names)
-
-# Drop the state name and reset the dimension.
-# arglist$drop.state.name()
-
-# Save the argument list. 
-# arglist$save.list("BASELINE.S1.TM")
-
-
 # BASELINE.S1.TM
 # # manually create list of values ()
 # list.values <- c(0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -564,21 +240,7 @@ arglist <- CreateArgumentList(state.names, state.number)
 # # saveRDS(S1.TMKD,file = "Data/S1.TMKD.rds")
 # arglist$save.list("S1.TMKD")
 
-# # BASELINE.S1.TM
-# arglist$update.list(listvalues) # For passing a entire list
-# arglist$add.state.name(state.names)
-# arglist$save.list("BASELINE.S1.TMKD")
-
-# Load the argument list
-# S1.TM
-# S2.TM
-# BASELINE.TM
-
-# arglist.S1.TM <- arglist$load.list("S1.TM")
 arglist.S1.TM <- arglist$load.list("S1.TMKD")
-# arglist.S2.TM <- arglist$load.list("S2.TM")
-# arglist.BASELINE.TM <- arglist$load.list("BASELINE.TM")
-# arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TM")
 arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TMKD")
 
 CreateStates(state.names) # instantiates a set of states objects with default values
@@ -593,31 +255,7 @@ S2 <- DefineStrategy(p.sus,	p.sus.notest, p.sus.nf,	p.sus.nbt,	p.sus.nct,	p.sus.
                      p.tb,	p.tbr,	p.tb.death,	p.death,	p.emigrate,
                      transition.matrix = do.call(DefineTransition, arglist.S1.TM))
 
-# S2 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
-#                      p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-#                      p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
-#                      p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-#                      p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
-#                      transition.matrix = do.call(DefineTransition, arglist.S2.TM))
-
-# The same transition matrix is used for scenario 3(5%) , 4(10%). The object name triggers the Get.POP function
-# to return the testing percentage.
-
-# S3 <- S2
-# S4 <- S2
-# S5 <- S2
-
-# S0_12 <- DefineStrategy(p.sus, p.sus.fp, p.sus.fp.a, p.sus.fp.t, p.sus.fp.t.sae,
-#                         p.sus.fp.sae.death, p.sus.fp.tc, p.sus.nt,
-#                         p.ltbi, p.ltbi.tp, p.ltbi.tp.a, p.ltbi.tp.t, p.ltbi.tp.t.sae,
-#                         p.ltbi.tp.sae.death, p.ltbi.tp.tc, p.ltbi.nt,
-#                         p.tb, p.tbr, p.tb.death, p.death, p.emigrate,
-#                         transition.matrix = do.call(DefineTransition, arglist.BASELINE.TM))
-
-# Baselines use the same transition matrix
-# S0_345 <- S0_12
-
-# New baseline for S1
+# New baseline for S2
 S0_12 <- DefineStrategy(p.sus,	p.sus.notest, p.sus.nf,	p.sus.nbt,	p.sus.nct,	p.sus.tc,
                        p.sus.sae,	p.sus.sae.death,
                        p.sus.no.risk,
@@ -627,27 +265,20 @@ S0_12 <- DefineStrategy(p.sus,	p.sus.notest, p.sus.nf,	p.sus.nbt,	p.sus.nct,	p.s
                        p.tb,	p.tbr,	p.tb.death,	p.death,	p.emigrate,
                        transition.matrix = do.call(DefineTransition, arglist.BASELINE.S1.TM))
 
-
-
-
-
 # Creates an unevaluated set of parameters
 parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                RR = Get.RR(DT, year),
                                TBMR = Get.TBMR(DT, year),
                                # TBMR = 0.001,
-                               RRADJUST = 0.9,
-                               # RRADJUST = 0.952, # lower, i.e. 4.8% captured
-                               # RRADJUST = 0.875, # upper, i.e. 12.5% captured
+                               RRADJUST = rradj,
                                # RRADJUST takes into account the fact that a proportion (10% in Victoria)
                                # of TB cases are picked up each year with existing TB control strategies, i.e.
                                # during follow-up as a result of an abnormal CXR during pre-migration off-shore screening.
-                               BEGINTREAT = 0.7,
-                               # BEGINTREAT = Get.BEGINTREAT(DT, year),
+                               BEGINTREAT = begintrt,
                                # Yet to finalise this parameter. i need to Work out if the chance of beginning treatment 
                                # is age-dependent. May well depend on treatment as well??
                                # TBFOLLOWUPADJUST = Get.TBFOLLOWUPADJUST(DT, year, treatment),
-                               ATTEND = 0.836,
+                               ATTEND = att,
                                # Proportion of migrants referred following off-shore screening (CXR) 
                                # that attend follow-up appointment once onshore. 
                                # Source: Flynn MG, Brown LK. Treatment of latent tuberculosis in migrants 
@@ -660,23 +291,21 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                # at risk will be dependent on the treatment regimen (see timetotreat.dt).
                                SAE = Get.SAE(DT, treatment),
                                SAEMR = Get.SAEMR(DT, treatment),
-                               # EMIGRATE = Get.EMIGRATE(DT, year),
-                               EMIGRATE = 0.00,
+                               EMIGRATE = Get.EMIGRATE(DT, year),
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
                                TESTC = Get.TEST(S = "cost.primary", testing),
                                TREATR = Get.TREAT(S = "rate", treatment),
                                TREATC = Get.TREAT(S = "cost.primary", treatment),
-                               # TREATSAE = Get.TREAT(S ="sae", treatment),
                                POP = Get.POP(DT, strategy),
                                UTILITY = Get.UTILITY(treatment),
-                               ATTENDCOST = 143.18,
+                               ATTENDCOST = cattend,
                                PARTIALTREATCOST = Get.TREAT(S = "cost.partial", treatment),
-                               TBCOST = 11538,
-                               SAECOST = 1124
+                               TBCOST = ctb,
+                               SAECOST = csae
                                )
 
-# Uses aust.vic.rds file to create a sample input
+# Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
 
 #set.seed(10)
@@ -688,108 +317,25 @@ pop.master <- CreatePopulationMaster()
 #---------- Model parameters for STRATEGY 0 ----------------#
 
 # TODO - Need a new CreatePopulationMaster function to manage LGA column.
-discount <- 0.03
-start.year <- 2020
+discount <- disc
+start.year <- startyear
 year <- start.year # Initialise year with start.year
 markov.cycle <- 0 # Tracks the current cycle
-cycles <- 30  # The mortality data continues until 2100 and migrant inflows are
+cycles <- totalcycles  # The mortality data continues until 2100 and migrant inflows are
               # possible until 2050
 
-#--------------------- S0_1 ---------------------------#
 #---------------Baseline for S1 --------------------#
 DoRunModel(S0_12, start.year, cycles)
 
-
-#--------------------- S0_12 ---------------------------#
-#---------------Baseline for S2 --------------------#
-# DoRunModel(S0_12, start.year, cycles)
-
-#--------------------- END OF S0_12 ---------------------------#
-
-
 #-------- Model parameters for S1 & S2 --------#
 
-discount <- 0.03
-start.year <- 2020
+discount <- disc
+start.year <- startyear
 year <- start.year # Initialise year with start.year
 markov.cycle <- 0 # Tracks the current cycle
-cycles <- 30  # The mortality data continues until 2100 and migrant inflows are
+cycles <- totalcycles  # The mortality data continues until 2100 and migrant inflows are
               # possible until 2050
 
 
 
 DoRunModel(S2, start.year, cycles)
-
-# 
-# 
-# DoRunModel(S2, start.year, cycles)
-# 
-# 
-# #---------- Model parameters for S3 , S4 & S5----------------#
-# 
-# discount <- 0.03
-# start.year <- 2020
-# markov.cycle <- 0 # Tracks the current cycle
-# cycles <- 30 # Model run cycles
-# 
-# DoRunModel(S0_345, start.year, cycles)
-# 
-# DoRunModel(S3, start.year, cycles)
-# DoRunModel(S4, start.year, cycles)
-# DoRunModel(S5, start.year, cycles)
-# 
-# 
-# 
-# #------------ Manipulating output files------------- #
-# 
-# 
-# # output RDS files on external hard disk
-# setwd("D:/")
-# 
-# 
-# 
-# CreateOutput("S0_1")
-# CreateOutput("S0_12")
-# CreateOutput("S0_345")
-# CreateOutput("S1")
-# CreateOutput("S2")
-# CreateOutput("S3")
-# CreateOutput("S4")
-# CreateOutput("S5")
-# 
-# # Create output files for PowerBI i.e recombine each type of *.csv file into five  lookup files.
-# 
-# all.files <- list.files(path = "Data/Output", pattern = "S.csv")
-# mylist <- lapply(all.files, Readdata)
-# StateCount <- rbindlist(mylist, fill = TRUE)
-# rm(mylist)
-# fwrite(StateCount, "Data/Output/StateCount.csv")
-# rm(StateCount)
-# 
-# all.files <- list.files(path = "Data/Output", pattern = "SC.csv")
-# mylist <- lapply(all.files, Readdata)
-# StateCost <- rbindlist(mylist, fill = TRUE)
-# rm(mylist)
-# fwrite(StateCost, "Data/Output/StateCost.csv")
-# rm(StateCost)
-# 
-# all.files <- list.files(path = "Data/Output", pattern = "F.csv")
-# mylist <- lapply(all.files, Readdata)
-# FlowCount <- rbindlist(mylist, fill = TRUE)
-# rm(mylist)
-# fwrite(FlowCount, "Data/Output/FlowCount.csv")
-# rm(FlowCount)
-# 
-# all.files <- list.files(path = "Data/Output", pattern = "FC.csv")
-# mylist <- lapply(all.files, Readdata)
-# FlowCost <- rbindlist(mylist, fill = TRUE)
-# rm(mylist)
-# fwrite(FlowCost, "Data/Output/FlowCost.csv")
-# rm(FlowCost)
-# 
-# all.files <- list.files(path = "Data/Output", pattern = "SQ.csv")
-# mylist <- lapply(all.files, Readdata)
-# StateQALY <- rbindlist(mylist, fill = TRUE)
-# rm(mylist)
-# fwrite(StateQALY, "Data/Output/StateQALY.csv")
-# rm(StateQALY)

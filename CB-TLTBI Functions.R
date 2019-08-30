@@ -120,57 +120,6 @@ CreateArgumentList <- function(state.names, state.number) {
   
 }
 
-# Look up the mortality rate from vic.mortality
-Get.MR <- function(xDT, year, rate.assumption = "Med") {
-  
-  DT <- copy(xDT[, .(AGEP, SEXP)])
-  
-  # To lookup all ages beyond 110
-  DT[AGEP > 100, AGEP := 100]
-  
-  vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
-  
-}
-
-# Look up the Reactivation rate
-Get.RR <- function(xDT, year) {
-  
-  DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
-  
-  DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
-  
-  DT[ISO3 == "100-149" | ISO3 == "150+", COBI := "100+"]  
-  
-  DT[AGERP > 110, AGERP := 110]
-  
-  # Baseline reactivation rates
-  RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
-                                                                    ysa = ST, cobi = COBI)]
-  
-  # # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
-  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                   ysa = ST, cobi = COBI)]
-  
-  # # # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
-  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                  ysa = ST, cobi = COBI)]
-  
-}
-
-# Look up TB mortality rate
-Get.TBMR <- function(xDT, year) {
-  
-  DT <- copy(xDT[, .(AGEP, SEXP)])
-  
-  # To lookup all ages beyond 95 & 97
-  DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
-  DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
-  DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
-  
-  vic.tb.mortality[DT[, .(AGEP, SEXP)], Prob, on = .(age = AGEP, sex = SEXP)]
-  
-}
-
 # Look up test sensitivity / specificity 
 Get.TEST <- function(S, testing) {
   
@@ -185,89 +134,9 @@ Get.TREAT <- function(S, treat) {
   
 }
 
-# Look up the chance of beginning treatment (age and treatment??? dependent)
-Get.BEGINTREAT <- function(xDT, year) {
-  
-  DT <- copy(xDT[, .(AGERP)])
-  
-  DT[AGERP > 110, AGERP := 110]
-  
-  begintreat.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
-  
-}
-
-# Look up SAE rate from sae.rate (age and treatment dependent)
-Get.SAE <- function(xDT, treat) {
-  
-  DT <- copy(xDT[, .(AGERP)])
-  
-  DT[AGERP > 110, AGERP := 110]
-  
-  DT$treatment <- as.character(treat)
-  
-  sae.rate[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
-  
-}
-
-
-# Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
-Get.SAEMR <- function(xDT, treat) {
-  
-  DT <- copy(xDT[, .(AGERP)])
-  
-  DT[AGERP > 110, AGERP := 110]
-  
-  DT$treatment <- as.character(treat)
-  
-  sae.mortality[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
-  
-}
-
-# # Look up the emigrate rate from emigrate.rate (age and  source country dependent)
-# Get.EMIGRATE <- function(xDT, year) {
-#   
-#   DT <- copy(xDT[, .(year, AGERP, YARP, ISO3)])
-#   
-#   DT[year - YARP > 2, VISA := "perm"]  
-#   
-#   DT[year - YARP < 3, VISA := "temp"]  
-#   
-#   DT[AGERP > 110, AGERP := 110]
-#   
-#   emigrate.rate[DT[, .(AGERP, ISO3, VISA)], Rate, on = .(Age = AGERP, VISA = VISA,
-#                                                          ISO3 = ISO3)]
-#   
-# }
-
-# # Look up the emigrate rate from emigrate.rate (age and VISA dependent)
-# Get.EMIGRATE <- function(xDT, year) {
-#   
-#   DT <- copy(xDT[, .(year, AGERP, YARP)])
-#   
-#   DT[year - YARP > 2, VISA := "perm"]  
-#   
-#   DT[year - YARP < 3, VISA := "temp"]  
-#   
-#   DT[AGERP > 110, AGERP := 110]
-#   
-#   emigrate.rate[DT[, .(AGERP, VISA)], Rate, on = .(Age = AGERP, VISA = VISA)]
-#   
-# }
-
-# Look up the emigrate rate from emigrate.rate (age and VISA dependent)
-Get.EMIGRATE <- function(xDT, year) {
-
-  DT <- copy(xDT[, .(year, AGERP, YARP)])
-
-  DT[AGERP > 110, AGERP := 110]
-
-  emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
-
-}
 
 # Look up the reactivation rate from RRates and then reduce the rate by a
-# certain proprtion (treatmentyearRR.dt)
-# to reflect that some people will reactivate with TB in their treatment year
+# certain proprtion to reflect that some people will reactivate with TB in their treatment year
 # before they complete follow-up and treatment.
 
 Get.TIMETOTREAT <- function(S, treat) {
@@ -276,17 +145,6 @@ Get.TIMETOTREAT <- function(S, treat) {
   
 }
 
-
-# Look up target population percentage
-Get.POP <- function(DT, strategy) {
-  
-  ifelse(DT[, ISO3] == "150+", 1, 0)  |
-    ifelse(DT[, ISO3] == "100-149", 1, 0) &
-    #ifelse(DT[, ISO3] == "40-99", 1, 0) &
-    ifelse(DT[, AGERP] > 10, 1, 0) &
-    ifelse(DT[, AGERP] < 36, 1, 0)
-  
-}
 
 Get.UTILITY <- function(t) {
   
@@ -520,7 +378,7 @@ RunModel <- function(pop.output, strategy, testing, treatment, start.year, cycle
     # modelinflow <- FALSE
 
     if ((strategy$myname == "S1" || strategy$myname == "S0_1"
-         || strategy$myname == "S2" || strategy$myname == "S0_12") && markov.cycle > 0) {
+         || strategy$myname == "S2" || strategy$myname == "S0_12") && markov.cycle > finalinflow) {
       # Migrant inflows are possible until 2050, so if the model begins in 2020
       # don't have migrant inflows for more than 30 cycles.
       
@@ -570,8 +428,8 @@ DoRunModel <- function(strategy, start.year, cycles) {
     
   } else {
     
-    listoftests <- c("QTFGIT", "TST10", "TST15")
-    listoftreatments <- c("4R", "3HP", "6H", "9H")
+    listoftests <- testlist
+    listoftreatments <- treatmentlist
     
   }
   

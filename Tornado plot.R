@@ -1,3 +1,10 @@
+
+# This is the script that creates a tornado figure for the sensitivity analysis in
+# the cost-effectiveness analysis of LTBI screening and treatment.
+# The files CB-TLTBI.R and CEA analyses need to be run to create the output, which was then added into
+# an excel spreadsheet ("Model paramenter") into the sheet names "Sensitivity analysis"
+# and then thes results are transferred into the sheet called "Tornado plot", which is read by this script.
+
 library(ggplot2)
 library(plyr)
 library(dplyr)
@@ -56,8 +63,7 @@ df.2 <- df %>%
          xmin=as.numeric(parameter)-width/2,
          xmax=as.numeric(parameter)+width/2)
 
-
-#order.parameters[2] <- "LTBI prevalence and reactivation rate estimates\n(25th percentile LTBI prevalence estimate\nand upper uncertainty limit for reactivation\nrates - 75th percentile LTBI prevalence estimate and\nlower uncertainty limit for reactivation rate)"
+# order.parameters[2] <- "LTBI prevalence and reactivation rate estimates\n(25th percentile LTBI prevalence estimate\nand upper uncertainty limit for reactivation\nrates - 75th percentile LTBI prevalence estimate and\nlower uncertainty limit for reactivation rate)"
 
 # create plot
 # (use scale_x_continuous to change labels in y axis to name of parameters)
@@ -67,22 +73,23 @@ options(scipen=5)
 dev.off()
 ggplot() + 
   geom_rect(data = df.2, 
-            aes(ymax=ymax, ymin=ymin, xmax=xmax, xmin=xmin, fill=type)) +
+            aes(ymax = ymax, ymin = ymin, xmax = xmax, xmin = xmin, fill = type)) +
   theme_bw() + 
   labs(y = "Cost per QALY (AUS$)") +
-  scale_fill_manual(values=c("steelblue2","darksalmon"))+
+  scale_fill_manual(values=c("steelblue2", "darksalmon")) +
   theme(legend.position = 'bottom',
         legend.title = element_blank(),
-        legend.direction="vertical",
-        legend.margin=margin(0,0,0,0),
-        legend.box.margin=margin(50,50,50,50)) + 
+        legend.direction = "vertical",
+        legend.margin = margin(0,0,0,0),
+        legend.box.margin = margin(50,50,50,50)) + 
   geom_hline(yintercept = base.value) +
   scale_x_continuous(breaks = c(1:length(order.parameters)), 
                      labels = order.parameters) +
-  scale_y_continuous(position = "bottom", breaks = seq(0, 500000, 50000),
+  scale_y_continuous(position = "bottom", 
+                     breaks = seq(0, 500000, 50000),
                      labels = comma) +
-  coord_flip()+
-  theme(text = element_text(size=15))
+  coord_flip(ylim = c(50000, 275000))+
+  theme(text = element_text(size = 15))
 
-grid.text("Base case ICER: $95,867", x = unit(0.58, "npc"), y = unit(0.2, "npc"))
+grid.text("Base case ICER: $111,391", x = unit(0.58, "npc"), y = unit(0.2, "npc"))
 

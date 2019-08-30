@@ -34,7 +34,7 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   # TODO -> Based on census datasets (2006,2011,2016) estimate a NUMP distribution for YARP > 2018  by LGA and ISO3.						
   #
   
-  pop.master <- aust.vic[, .(AGEP, ISO3, YARP, NUMP, LTBP, AGERP = AGEP - (2016L - YARP), SEXP)]
+  pop.master <- aust[, .(AGEP, ISO3, YARP, NUMP, LTBP, AGERP = AGEP - (2016L - YARP), SEXP)]
   
   # Also creating migrant cohort arrivals for YARP > 2016. i.e. 2017 to 2025.
   # again this is for validating the model at runtime.

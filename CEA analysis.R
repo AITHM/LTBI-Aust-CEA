@@ -9,12 +9,18 @@ library(tidyverse)
 library(data.table)
 library(plyr)
 
+# Model setup located within this file.
+# It defines all the states, transition matrices, strategies, costs and parameters.
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+source("CB-TLTBI.R")
+source("CB-TLTBI Parameter values.R")
+
 # Read in the output files
-filenames <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern="*.rds", full.names=TRUE)
+filenames <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern = "*.rds", full.names = TRUE)
 files <- lapply(filenames, readRDS)
 
 # Create a list of the names of the output files
-namelist <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern="*.rds")
+namelist <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern = "*.rds")
 namelist <- gsub("\\b.rds\\b","", namelist)
 namelist <- gsub("\\bS2\\b","", namelist)
 namelist <- substring(namelist, 2)
@@ -24,32 +30,16 @@ files <- setNames(files, namelist)
 
 # Create a column with the YEAR and strategy name within each data table
 counter <- 0
-files<-lapply(files, function(dt) {
+files <- lapply(files, function(dt) {
   dt <- as.data.table(dt)
-  dt[, YEAR :=  cycle + 2020]
+  dt[, YEAR :=  cycle + startyear]
   counter <<- counter + 1
   dt[, STRAT := namelist[counter]]
 })
 
-# Define some model parameters that might be used below
-  # Time horizon
-startyear <- 2020 
-finalyear <- 2050
-cycleyears <- finalyear - startyear
-
-  # Target population
-targetfunc <- function(dt) {
-  dt <- subset(dt, ISO3 == "150+" |
-                 ISO3 == "100-149" &
-                  #ISO3 == "40-99" &
-                  AGERP > 10 & AGERP < 36)
-  # dt <- subset(dt, AGERP > 10 & AGERP < 65)
-  dt
-}
-
 # Finding the baseline quantities
 base <- files[[1]]
-dt <- files[[5]]
+dt <- files[[2]]
 
 # total baseline cost
 a <- which( colnames(base) == "SC.p.sus" )
@@ -57,13 +47,13 @@ b <- which( colnames(base) == "SC.p.emigrate" )
 base$SCsum <- rowSums(base[, a:b], na.rm = TRUE)
 a <- which( colnames(base) == "FC.p.sus" )
 b <- which( colnames(base) == "FC.p.emigrate" )
-base$FCsum <- rowSums(base[, a:b], na.rm =TRUE)
+base$FCsum <- rowSums(base[, a:b], na.rm = TRUE)
 totbasecost <- sum(base$SCsum) + sum(base$FCsum)
 
 # total baseline QALYS
 a <- which( colnames(base) == "SQ.p.sus" )
 b <- which( colnames(base) == "SQ.p.emigrate" )
-base$SQsum <- rowSums(base[, a:b], na.rm =TRUE)
+base$SQsum <- rowSums(base[, a:b], na.rm = TRUE)
 qalybase <- sum(base$SQsum)
 
 # total baseline tb cases
@@ -72,38 +62,47 @@ basetbcount <- base[, sum(p.tb)]
 # total baseline tb cases
 basetbdeath <- base[YEAR == finalyear, sum(p.tb.death)]
 
-tabfunc<-function(dt) {
+tabfunc <- function(dt) { 
+  dt <- as.data.table(dt)
   
   # Add the name of the strategy
   nameofdt <- dt$STRAT[1]
   
   # annual migrant inflow
-  migflow <- dt[YEAR == 2020 & YARP == 2020, sum(NUMP),]
+  migflow <- dt[YEAR == startyear & YARP == startyear, sum(NUMP),]
   
   # annual average emigration inflow
-  emigflow <- dt[, sum(p.emigrate)]/cycleyears
+  emigflow <- dt[, sum(p.emigrate)]/totalcycles
   
-  emigflow <- dt[YEAR == 2022 & YARP == 2020, sum(p.emigrate)]
+  emigflow <- dt[YEAR == startyear + 2 & YARP == startyear, sum(p.emigrate)]
   
-  # number screened/tested annually
-  # targetgroup <- targetfunc (dt)
-  # numscreened <- targetgroup[YEAR == 2020 & YARP == 2020, sum(NUMP),]
+  # annual number screened/tested
   cdt <- copy(dt)
-  numscreened <- cdt[YEAR == 2021 & YARP == 2020, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
+  numscreened <- cdt[YEAR == startyear + 1 & YARP == startyear, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
                   sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nf) + sum(p.ltbi.nbt) +
                   sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
   
   # number referred annually
   # find name of screening test
   testing <- dt$Test[1]
-  targetgroup <- targetfunc (dt)
-  numref <- targetgroup[YEAR == 2020 & YARP == 2020, sum(LTBP),] * TESTSN + targetgroup[YEAR == 2020 & YARP == 2020, sum(NUMP) - sum(LTBP),] * (1 - TESTSP)
+  # lookup test sensitivities and specificities	
+  tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15", ""), 
+                         SN = c(snqftgit, sntst10, sntst15, 0), # baseline
+                         SP = c(spqftgit, sptst10, sptst15, 0)) # baseline
+  TESTSN <- tests.dt[tests == testing, SN]	
+  TESTSP <- tests.dt[tests == testing, SP]
+  cdt <- copy(dt)
+  targetgroup <- targetfunc(cdt)
+  numref <- targetgroup[YEAR == startyear & YARP == startyear, sum(LTBP),] * 
+    TESTSN + targetgroup[YEAR == startyear & YARP == startyear, sum(NUMP) - sum(LTBP),] * (1 - TESTSP)
+  
   
   # number attending annually (should be 0.836 * the number referred)
-  numatt <- dt[YEAR == startyear+1 & YARP == 2020, sum(p.sus.nbt) + sum(p.sus.nct) +
+  numatt <- dt[YEAR == startyear + 1 & YARP == startyear, sum(p.sus.nbt) + sum(p.sus.nct) +
        sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
        sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
   
+  # total number screened/tested
   cdt <- copy(dt)
   totscreen <- cdt[, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
                        sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nf) + sum(p.ltbi.nbt) +
@@ -163,12 +162,9 @@ tabfunc<-function(dt) {
   costpertb <- totcost/tbprev
   
   # number needed to screen (to prevent a tb case)
-  targetgroup <- targetfunc (dt)
-  numberscreened <- targetgroup[YEAR == startyear, sum(NUMP)] * 10
-  nns <- numberscreened/tbprev
-  
-  
-  
+  #targetgroup <- targetfunc(dt)
+  #numberscreened <- targetgroup[YEAR == startyear, sum(NUMP)] * (finalinflow + 1)
+  nns <- totscreen/tbprev
   
   # number needed to effectively treat (to prevent a tb case)
   nnt <- numbertreated/tbprev
@@ -278,11 +274,7 @@ tabfunc<-function(dt) {
 table1 <- rbindlist(lapply(files, tabfunc))
 
 # Write the table to clipboard so I can paste it into Excel
-write.table(table1, "clipboard", sep="\t", row.names=FALSE)
-
-
-
-
+write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 
 
 
@@ -364,11 +356,11 @@ write.table(table1, "clipboard", sep="\t", row.names=FALSE)
 # check <- subset(check, cycle>0)
 # 
 # 
-
-base <- files[[1]]
-dt <- files[[10]]
-unique(dt$STRAT)
 # 
+base <- files[[1]]
+dt <- files[[2]]
+unique(dt$STRAT)
+#
 base[, p.sum := rowSums(.SD), .SDcols = c(9:29)]
 base[, sum(p.sum), by = cycle]
 base[, sum(p.tb), by = cycle]
@@ -383,12 +375,12 @@ dt[,sum(p.emigrate), by = cycle]
 
 check <- subset(dt, YARP == 2020)
 check <- subset(check, AGERP == 25)
-check <- subset(check, ISO3 == "150+")
+check <- subset(check, ISO3 == "200+")
 
 
 bc <- subset(base, YARP == 2020)
 bc <- subset(bc, AGERP == 25)
-bc <- subset(bc, ISO3 == "150+")
+bc <- subset(bc, ISO3 == "200+")
 
 
 # # # Write the table to clipboard so I can paste it into Excel

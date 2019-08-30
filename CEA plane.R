@@ -1,6 +1,9 @@
-# Creates a cost-effectivenes plane, showing incremental cost and effectiveness (in QALYs) of
+# This script creates a cost-effectivenes plane, showing incremental cost and effectiveness (in QALYs) of
 # different intervention strategies.
 # To be used in the cost-effectivness model for latent TB screening and treatment program.
+# The files CB-TLTBI.R and CEA analyses need to be run to create the output, which was then added into
+# an excel spreadsheet ("Model paramenter") into the sheet names "Table 3"
+# and then these results are transferred into the sheet called "CEA plane", which is read by this script.
 
 library(xlsx)
 library(data.table)
