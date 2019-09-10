@@ -62,7 +62,7 @@ ggplot(data, aes(x = incremental.qalys, y = incremental.cost/1000000,
             colour = "black") +
   scale_y_continuous(breaks = seq(-10, 25, 5)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-40, 225), ylim = c(-8000000/1000000, 25000000/1000000)) +
+  coord_cartesian(xlim = c(-40, 100), ylim = c(-8000000/1000000, 25000000/1000000)) +
   theme(text = element_text(size = 30, family = "TT Arial"),
         panel.border = element_blank())
         #legend.position = c(0.80, 0.8),

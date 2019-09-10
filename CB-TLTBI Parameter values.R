@@ -2,7 +2,8 @@
 
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
-totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant inflows are possible until 2050
+totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
+# inflows are possible until 2050
 finalyear <- startyear + totalcycles
 
 # The tests and treatments I want to consider in the run
@@ -17,20 +18,30 @@ finalinflow <- 0
 # Target population
 Get.POP <- function(DT, strategy) {
   
-  ifelse(DT[, ISO3] == "200+", 1, 0) |
-    ifelse(DT[, ISO3] == "150-199", 1, 0) |
-    ifelse(DT[, ISO3] == "100-149", 1, 0) &
-    # ifelse(DT[, ISO3] == "40-99", 1, 0) &
-    ifelse(DT[, AGERP] > 10, 1, 0) &
-    ifelse(DT[, AGERP] < 36, 1, 0)
+  # 200+
+  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  # 150+
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
+  # 100+
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  # 40+
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+  # Adjust age
+    (ifelse(DT[, AGERP] > 10, 1, 0) &
+    ifelse(DT[, AGERP] < 36, 1, 0))
   
 }
 
 targetfunc <- function(DT) {
-  DT <- subset(DT, ISO3 == "200+" |
-                 ISO3 == "150+" |
-                 ISO3 == "100-149")
-                 # ISO3 == "40-99")
+  # 200+
+  # DT <- subset(DT, ISO3 == "200+")
+  # 150+
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
+  # 100+
+  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  # 40+
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
+  # Adjust age
   DT <- subset(DT, AGERP > 10 &
                  AGERP < 36)
   DT
@@ -38,6 +49,7 @@ targetfunc <- function(DT) {
 
 
 # LTBI prevalence and reactivation rates
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
 # Australian 2016 census data extracted from Table Builder by country of birth
 # (place of usual residence), single year age and single year of arrival. 
@@ -75,6 +87,16 @@ Get.RR <- function(xDT, year) {
   
 }
 
+# Change the makeup of the migrant inflow by TB incidence in country of birth
+# Altering the COBI for all those who have arrived from 
+# a country with 100-149 to 40-99, i.e. mostly Vietnam
+# aust <- as.data.table(aust)
+# aust[ISO3 == "100-149", ISO3 := "40-99"]
+
+
+
+
+
 # Sensitivity and Specificity of screening tools
 snqftgit <- 0.6104 # QFTGIT sensitivity baseline 0.6104, low 0.4925, high 0.7195
 sntst10 <- 0.6591 # TST10 sensitivity baseline 0.7532, low 0.6418, high 0.8444
@@ -101,6 +123,8 @@ begintrt <- 0.7 # BEGINTREAT baseline 0.7, lower 0.331, upper 1
 #   begintreat.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
 #   
 # }
+
+
 # BEGINTREAT = Get.BEGINTREAT(DT, year),
 att <- 0.836 # ATTEND baseline 0.836, lower , upper
 
@@ -109,6 +133,8 @@ ttt3HP <- 0.33 # TREATR 3HP baseline 0.33, low 0.25, high 0.50
 ttt4R <- 0.42 # TREATR 4R baseline 0.42, low 0.33, high 0.58
 ttt6H <- 0.58 # TREATR 6H baseline 0.58, low 0.50, high 0.75
 ttt9H <- 0.83 # TREATR 9H baseline 0.83, low 0.75, high 1.0
+
+
 
 # Look up the mortality rate from vic.mortality
 Get.MR <- function(xDT, year, rate.assumption = "Med") {
@@ -124,17 +150,33 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
 
 # Look up TB mortality rate
 Get.TBMR <- function(xDT, year) {
-  
+
   DT <- copy(xDT[, .(AGEP, SEXP)])
-  
+
   # To lookup all ages beyond 95 & 97
   DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
   DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
   DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
-  
+
+
   vic.tb.mortality[DT[, .(AGEP, SEXP)], Prob, on = .(age = AGEP, sex = SEXP)]
-  
+
 }
+
+# Get.TBMR <- function(xDT, year) {
+#   
+#   DT <- copy(xDT[, .(AGEP, SEXP)])
+#   
+#   # To lookup all ages beyond 95 & 97
+#   DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
+#   DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
+#   DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
+#   
+#   vic.tb.mortality[DT[, .(AGEP, SEXP)], lowerProb, on = .(age = AGEP, sex = SEXP)]
+#   # vic.tb.mortality[DT[, .(AGEP, SEXP)], upperProb, on = .(age = AGEP, sex = SEXP)]
+#   
+# }
+
 
 # Look up SAE rate from sae.rate (age and treatment dependent)
 Get.SAE <- function(xDT, treat) {
@@ -164,6 +206,11 @@ Get.SAEMR <- function(xDT, treat) {
 }
 
 # Emigrate rate from emigrate.rate (zero)
+# Source emigrate data
+# emigrate.rate <- readRDS("Data/emigrate.rate.rds") # assumed rate incorporating both temp and permanent residents 
+emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # assumed rate among permanent residents
+emigrate.rate <- as.data.table(emigrate.rate)
+
 
 Get.EMIGRATE <- function(xDT, year) {
 
@@ -172,16 +219,16 @@ Get.EMIGRATE <- function(xDT, year) {
 }
 
 
-# # Emigrate rate from emigrate.rate (age dependent)
-# Get.EMIGRATE <- function(xDT, year) {
-# 
-#   DT <- copy(xDT[, .(year, AGERP, YARP)])
-# 
-#   DT[AGERP > 110, AGERP := 110]
-# 
-#   emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
-# 
-# }
+# Emigrate rate from emigrate.rate (age dependent)
+Get.EMIGRATE <- function(xDT, year) {
+
+  DT <- copy(xDT[, .(year, AGERP, YARP)])
+
+  DT[AGERP > 110, AGERP := 110]
+
+  emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+
+}
 
 # # Emigrate rate from emigrate.rate (age and source country dependent)
 # Get.EMIGRATE <- function(xDT, year) {
@@ -243,7 +290,7 @@ cscreentst15 <- 0 # cost of screening (tests.dt) baseline 0, high 70.40
 
 cattend <- 143.18 # cost of attending first follow up appointment
 
-ctreat3HP <- 310.47 # cost of ltbi treatment (treatment.dt) baseline 310.47, high 
+ctreat3HP <- 310.47 # cost of ltbi treatment (treatment.dt) baseline 310.47, low 274.47, high 454.47
 ctreat4R <- 568.45 # cost of ltbi treatment (treatment.dt) baseline 568.45, low , high 
 ctreat6H <- 353.39 # cost of ltbi treatment (treatment.dt) baseline 353.39, low , high 
 ctreat9H <- 436.56 # cost of ltbi treatment (treatment.dt) baseline 436.56, low , high 

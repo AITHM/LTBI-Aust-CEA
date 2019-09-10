@@ -12,7 +12,7 @@
 #library(diagram)
 #library(heemod)
 
-library(RevoScaleR)
+# library(RevoScaleR)
 library(lazyeval) # required
 library(data.table) # required
 
@@ -22,10 +22,9 @@ library(data.table) # required
 # It defines all the states and transition matrices
 # The strategies and all parameters are defined in the "Parameter values" document.
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-source("CB-TLTBI_DataPreparation.R")
 source("CB-TLTBI Functions.R")
 source("CB-TLTBI Parameter values.R")
-
+source("CB-TLTBI_DataPreparation.R")
 # This function uses the above three Fix* functions. 
 # Run once to create the *.rds objects (vic.fertility, vic.mortality, vic.migration)
 # based on ABS's population projection data
@@ -43,6 +42,7 @@ RRates <- readRDS("Data/RRatescobincidnosex.rds")
     # reactivation rates in Australian migrants. Clinical Infectious Diseases 2019 (in press)
 vic.tb.mortality <- readRDS("Data/tb.mortality.rds")
 vic.tb.mortality <- as.data.table(vic.tb.mortality)
+vic.tb.mortality[, age := as.integer(age)]
     # TB mortality data from: Dale K, Tay E, Trevan P, et al. Mortality among tuberculosis cases 
     # in Victoria, 2002-2013: case fatality and factors associated with death. 
     # Int J Tuberc Lung Dis 2016;20(4):515-23. doi: 10.5588/ijtld.15.0659
@@ -52,9 +52,7 @@ sae.rate <- as.data.table(sae.rate)
 sae.mortality <- readRDS("Data/sae.mortality.rds") # this is also required
 sae.mortality <- as.data.table(sae.mortality)
     # SAE mortality data from: ...
-emigrate.rate <- readRDS("Data/emigrate.rate.rds") # this is also required
-emigrate.rate <- as.data.table(emigrate.rate)
-    # emigrate data from: ...
+
 
 # Creating a vector of state names
 state.names <- c("p.sus",	"p.sus.notest", "p.sus.nf",	"p.sus.nbt",	"p.sus.nct",	"p.sus.tc",

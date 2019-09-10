@@ -7,12 +7,11 @@
 
 library(tidyverse)
 library(data.table)
-library(plyr)
+
 
 # Model setup located within this file.
 # It defines all the states, transition matrices, strategies, costs and parameters.
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-source("CB-TLTBI.R")
 source("CB-TLTBI Parameter values.R")
 
 # Read in the output files
@@ -156,10 +155,10 @@ tabfunc <- function(dt) {
   tbdeathprev <- basetbdeath - tbdeath
   
   #Cost per TB death prevented
-  costpertbdeath <- totcost/tbdeathprev
+  costpertbdeath <- totaddcost/tbdeathprev
   
   #Cost per TB case prevented
-  costpertb <- totcost/tbprev
+  costpertb <- totaddcost/tbprev
   
   # number needed to screen (to prevent a tb case)
   #targetgroup <- targetfunc(dt)
@@ -374,18 +373,18 @@ dt[YARP == 2022, sum(NUMP), by = cycle]
 dt[,sum(p.emigrate), by = cycle]
 
 check <- subset(dt, YARP == 2020)
-check <- subset(check, AGERP == 25)
-check <- subset(check, ISO3 == "200+")
+check <- subset(check, AGERP == 25 )
+check <- subset(check, ISO3 == "150-199")
 
 
 bc <- subset(base, YARP == 2020)
-bc <- subset(bc, AGERP == 25)
-bc <- subset(bc, ISO3 == "200+")
+bc <- subset(bc, AGERP == 25 )
+bc <- subset(bc, ISO3 == "150-199")
 
 
 # # # Write the table to clipboard so I can paste it into Excel
 #  write.table(check, file="clipboard-16384", sep="\t", row.names=FALSE)
-# 
+
 
 # 
 # 

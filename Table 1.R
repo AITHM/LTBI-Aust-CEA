@@ -6,35 +6,33 @@ library(dplyr)
 library(countrycode)
 library(ggplot2)
 library(scales)
+library(gridExtra)
+library(egg)
 # Summarise the population data 
-# Model setup located within this file.
-# It defines all the states, transition matrices, strategies, costs and parameters.
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("CB-TLTBI_DataPreparation.R")
 source("CB-TLTBI Functions.R")
+
 # Read the data file
-aust.vic <- readRDS("Data/Aust16byTBincid.rds") 
-dt <- subset(aust.vic, YARP == 2015)
-dt[, AGERP:= AGEP - (2016L - YARP)]
+aust <- readRDS("Data/Aust16byTBincid.rds") 
+dt <- subset(aust, YARP == 2015)
+dt[, AGERP := AGEP - (2016L - YARP)]
 dt <- subset(dt, AGERP > 10)
 sum(dt$NUMP) * 1.7
 371621.7
-dt[, NUMP := NUMP*1.7]
+dt[, NUMP := NUMP * 1.7]
 
-# Load the  object with country of birth information
+# Load the object with country of birth information
 raw <- readRDS("tab1data.rds")
-raw <- subset(raw, YARP == 2015)
-raw <- subset(raw, year == 2016)
-raw <- subset(raw, aaa > 10)
-sum(raw$pop) * 1.7
+raw[, AGERP := AGEP - (CNSY - YARP)]
+raw <- subset(raw, AGERP > 10)
+sum(raw$NUMP) * 1.7
 371621.7
-raw[, pop := pop*1.7]
 
-setnames(raw, "pop", "NUMP")
-setnames(raw, "aaa", "AGERP")
-setnames(raw, "mednum", "LTBP")
+raw[, LTBP := medrisk * NUMP]
+setnames(raw, "ISO3", "COBI")
 setnames(raw, "iso3", "ISO3")
-setnames(raw, "cobi", "COBI")
+
 
 
 #Functions:
@@ -42,8 +40,6 @@ options(scipen=2)
 agetab <- function(df) {
   df <- as.data.table(df)
   tot <- sum(df$NUMP) 
-  # fem <- df[df$SEXP == "female", sum(NUMP, na.rm=TRUE), by=ISO3]
-  # male <- df[df$SEXP == "male", sum(NUMP, na.rm=TRUE), by=ISO3]
   df$AAAG <- as.factor(cut(dt$AGERP, breaks=c(-1,14,19,24,29,
                                                   34,39,44,49,54,
                                                   59,64, 120),
@@ -57,7 +53,7 @@ agetab <- function(df) {
     group_by(AAAG) %>%
     summarise_all(list(sum))
   tabage <- as.data.table(tabage)
-  tabage[ , percent := (NUMP/tot)*100]
+  tabage[ , percent := (NUMP / tot) * 100]
   tabage
 }
 
@@ -77,32 +73,40 @@ iso3tab <- function(df) {
   setnames(keep, 2, "ISO3")
   check <- merge(keep, tabc, by = c("ISO3", "COBI"), all.x = TRUE)
   check <- merge(check, tot, by = c("COBI"), all.x = TRUE)
-  check[, percentofall := (NUMP/sumtot) * 100]
-  check[, percent := (NUMP/V1) * 100]
-  check <- check[order(COBI, -NUMP),]
+  check[, percentofall := (NUMP / sumtot) * 100]
+  check[, percent := (NUMP / V1) * 100]
+  check <- check[order(COBI, - NUMP),]
   check$ISO3 <- countrycode(check$ISO3, "iso3c", "country.name")
+  check$COBI <- factor(check$COBI, levels = c('0-39', '40-99', 
+                                                '100-149', '150-199','200+'))
+  check <- check[order(check$COBI), ]
   check
 }
+
 
 overall <- function(df) {
   df <- as.data.table(df)
   tot <- sum(df$NUMP) 
-  df[, sum(NUMP, na.rm=TRUE), by=ISO3]
+  df[, sum(NUMP, na.rm = TRUE), by = ISO3]
   tabage <- df[, c("NUMP", "ISO3")]
   tabage <- tabage %>%
     group_by(ISO3) %>%
     summarise_all(list(sum))
   tabage <- as.data.table(tabage)
-  tabage[ , percent := (NUMP/tot)*100]
+  tabage[, percent := (NUMP/tot) * 100]
+  tabage[, ISO3 := as.factor(ISO3)]
+  tabage$ISO3 <- factor(tabage$ISO3, levels = c('0-39', '40-99', 
+                                                '100-149', '150-199','200+'))
+  tabage <- tabage[order(tabage$ISO3), ]
   tabage
 }
   
 check <- agetab(dt)
-write.table(check, "clipboard", sep="\t", row.names=FALSE)
+write.table(check, "clipboard", sep = "\t", row.names = FALSE)
 check <- iso3tab(raw)
-write.table(check, "clipboard", sep="\t", row.names=FALSE)
+write.table(check, "clipboard", sep = "\t", row.names = FALSE)
 check <- overall(dt)
-write.table(check, "clipboard", sep="\t", row.names=FALSE)
+write.table(check, "clipboard", sep = "\t", row.names = FALSE)
 
 # Creating the figure
 agetabfig <- function(df) {
@@ -127,12 +131,17 @@ agetabfig <- function(df) {
   tabage
 }
 
+
 check <- split(dt, dt$ISO3)
 check <- lapply(check,agetabfig)
 check <- rbindlist(check)
+sizes <- ordered(sizes, levels = c("small", "medium", "large"))
+check$ISO3 <- ordered(check$ISO3, levels = c('0-39', '40-99', 
+                                    '100-149', '150-199','200+'))
 
-
-ggplot(check, aes(x = AAAG, colour = ISO3, y = NUMP, group = ISO3))+
+dev.off()
+plot1 <- 
+  ggplot(check, aes(x = AAAG, colour = ISO3, y = NUMP, group = ISO3))+
   geom_line(size = 2) +
   labs(x = "Age group at migration (years)", 
        y = "Number",
@@ -145,7 +154,38 @@ ggplot(check, aes(x = AAAG, colour = ISO3, y = NUMP, group = ISO3))+
     keywidth = 0.2,
     keyheight = 0.4,
     default.unit = "inch"))+
-  theme(text = element_text(size = 25),
-        legend.position = c(0.70, 0.7),
+  theme(text = element_text(size = 23),
+        legend.position = c(0.75, 0.57),
+        axis.text.x = element_blank(),
+        axis.title.x = element_blank(),
+        strip.text = element_blank())
+plot2 <- 
+  ggplot(check, aes(x = AAAG, colour = ISO3, y = percent, group = ISO3))+
+  geom_line(size = 2) +
+  labs(x = "Age group at migration (years)", 
+       y = "Percent",
+       colour = "TB incidence in country of birth\n at migration, per 100,000") +
+  scale_y_continuous(labels = comma) +
+  theme_bw() +
+  scale_color_brewer(palette="Dark2") +
+  # coord_cartesian(ylim = c(0,120)) +
+  guides(colour = guide_legend(
+    keywidth = 0.2,
+    keyheight = 0.4,
+    default.unit = "inch"))+
+  theme(text = element_text(size = 23),
+        legend.position = "none",
         axis.text.x = element_text(angle = 45, hjust = 1),
         strip.text = element_blank())
+
+
+
+
+# setwd("H:/Katie/PhD/CEA/R/Figures")
+# setEPS()
+# postscript("figure1.eps",onefile = FALSE, 
+#            paper = "special",
+#            width=11.69, height=8.27)
+egg::ggarrange(plot1, plot2, nrow = 2)
+
+dev.off()

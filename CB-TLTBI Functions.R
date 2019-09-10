@@ -120,6 +120,7 @@ CreateArgumentList <- function(state.names, state.number) {
   
 }
 
+
 # Look up test sensitivity / specificity 
 Get.TEST <- function(S, testing) {
   
@@ -296,9 +297,9 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
   
   # a Hack for YARP < 2016, vic mortality doesn?t have data to look up
   
-  param$MR[is.na(param$MR)] <- 0.01
-  param$RR[is.na(param$RR)] <- 0.0013
-  param$TBMR[is.na(param$TBMR)] <- 0.01
+  # param$MR[is.na(param$MR)] <- 0.01
+  # param$RR[is.na(param$RR)] <- 0.0013
+  # param$TBMR[is.na(param$TBMR)] <- 0.01
   
   
   # assign the current environment for evaluation. 
