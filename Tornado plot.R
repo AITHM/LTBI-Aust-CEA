@@ -17,23 +17,37 @@ library(RColorBrewer)
 library(grid)
 library(scales)
 
-# Reading in the data from excel
-setwd("H:/Katie/PhD/CEA")
+# Reading in the data from excel using XLSX, which has some sort of glitch
+# setwd("H:/Katie/PhD/CEA")
+# # Reading in the original base ICER
+# df <- read.xlsx("Model parameters.xlsx", 
+#                 sheetName = "Tornado plot input",
+#                 startRow = 1)
+# # original value of output
+# base.value <- as.numeric(as.character(df[1,2]))
+# # Reading in the rest of the sensitivity analysis data from excel
+# setwd("H:/Katie/PhD/CEA")
+# df <- read.xlsx("Model parameters.xlsx", 
+#                 sheetName = "Tornado plot input",
+#                 startRow = 3)
+
+# Reading in the data from excel using XLSX, which has some sort of glitch
+setwd("H:/Katie/PhD/CEA/Data")
 # Reading in the original base ICER
-df <- read.xlsx("Model parameters.xlsx", 
-                sheetName = "Tornado plot input",
-                startRow = 1)
+df <- read.csv("tornado plot.csv")
 # original value of output
-base.value <- as.numeric(as.character(df[1,2]))
+base.value <- (as.character(df[1,2]))
+base.value <-  as.numeric(gsub('\\D+','', base.value))
+
 # Reading in the rest of the sensitivity analysis data from excel
-setwd("H:/Katie/PhD/CEA")
-df <- read.xlsx("Model parameters.xlsx", 
-                sheetName = "Tornado plot input",
-                startRow = 3)
+setwd("H:/Katie/PhD/CEA/Data")
+df <- read.csv("tornado plot.csv", skip = 2)
 df <- as.data.table(df)
 df[, parameter := as.character(parameter)]
 setnames(df,"icer.lower.limit","lower")
 setnames(df,"icer.upper.limit","upper")
+df[, lower := as.numeric(gsub('\\D+','', lower))]
+df[, upper := as.numeric(gsub('\\D+','', upper))]
 df[, UL_Difference := abs(upper - lower)]
 
 # get order of parameters according to size of intervals
@@ -63,7 +77,11 @@ df.2 <- df %>%
          xmin=as.numeric(parameter)-width/2,
          xmax=as.numeric(parameter)+width/2)
 
-# order.parameters[2] <- "LTBI prevalence and reactivation rate estimates\n(25th percentile LTBI prevalence estimate\nand upper uncertainty limit for reactivation\nrates - 75th percentile LTBI prevalence estimate and\nlower uncertainty limit for reactivation rate)"
+order.parameters[14] <- "LTBI prevalence (25th-75th percentile) and\nreactivation rate estimates (upper - lower uncertainty limit)"
+order.parameters[5] <- "Proportion of annual TB cases captured\nduring off-shore CXR screening follow-up (4.8 - 12.5%)"
+order.parameters[13] <- "Proportion that began treatment\nwho were effectively treated (50-90%)"
+order.parameters[3] <- "Time to LTBI treatment commencement\nfollowing migration (0 - 3 months)"
+
 
 # create plot
 # (use scale_x_continuous to change labels in y axis to name of parameters)
@@ -71,25 +89,35 @@ df.2 <- df %>%
 options(scipen=5)
 
 dev.off()
-ggplot() + 
+myplot1 <- 
+  ggplot() + 
   geom_rect(data = df.2, 
-            aes(ymax = ymax, ymin = ymin, xmax = xmax, xmin = xmin, fill = type)) +
+            aes(ymax = ymax, ymin = ymin, 
+                xmax = xmax, xmin = xmin, fill = type)) +
   theme_bw() + 
   labs(y = "Cost per QALY (AUS$)") +
-  scale_fill_manual(values=c("steelblue2", "darksalmon")) +
+  scale_fill_manual(values = c("steelblue2", "darksalmon")) +
   theme(legend.position = 'bottom',
         legend.title = element_blank(),
         legend.direction = "vertical",
-        legend.margin = margin(0,0,0,0),
-        legend.box.margin = margin(50,50,50,50)) + 
+        legend.margin = margin(0, 0, 0, 0),
+        legend.box.margin = margin(50, 50, 50, 50)) + 
   geom_hline(yintercept = base.value) +
   scale_x_continuous(breaks = c(1:length(order.parameters)), 
                      labels = order.parameters) +
   scale_y_continuous(position = "bottom", 
                      breaks = seq(0, 500000, 50000),
                      labels = comma) +
-  coord_flip(ylim = c(50000, 275000))+
-  theme(text = element_text(size = 15))
+  coord_flip(ylim = c(0, 200000))+
+  theme(text = element_text(size = 12),
+        legend.position = c(0.75, 0.1))
 
-grid.text("Base case ICER: $111,391", x = unit(0.58, "npc"), y = unit(0.2, "npc"))
+# grid.text("Base case ICER: $82,795",
+#           x = unit(0.47, "npc"),
+#           y = unit(0.2, "npc"))
 
+setwd("H:/Katie/PhD/CEA/Health eco conference")
+tiff('tornado.tiff', units = "in", width = 14, height = 6,
+     res = 400)
+myplot1
+dev.off()

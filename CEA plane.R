@@ -13,23 +13,39 @@ library(RColorBrewer)
 # Need to obtain chance of having sae with different treatment regimens.
 # I have researched this and it is in an excel file in "Model parameters"
 
+# # Reading in the data from excel
+# setwd("H:/Katie/PhD/CEA")
+# data <- read.xlsx("Model parameters.xlsx", 
+#                   sheetName = "CEA plane input",
+#                   startRow = 2)
+
 # Reading in the data from excel
-setwd("H:/Katie/PhD/CEA")
-data <- read.xlsx("Model parameters.xlsx", 
-                  sheetName = "CEA plane input",
-                  startRow = 2)
+setwd("H:/Katie/PhD/CEA/Data")
+data <- read.csv("cea plane.csv")
 data <- as.data.table(data)
 
+data <- data[, c('strategy', 'total.additional.cost', 'Incremental.QALYS')]
+setnames(data, 'Incremental.QALYS', "incremental.qalys")
+setnames(data, 'total.additional.cost', "incremental.cost")
+data[strategy == "0_12...rds", strategy := "Baseline"]
+
+data[, incremental.cost := as.numeric(gsub('\\D+','', incremental.cost))]
+data[is.na(incremental.cost), incremental.cost := 0]
+data[is.na(incremental.qalys), incremental.qalys := 0]
+data[incremental.cost == 0, incremental.qalys := "0"]
+data[, incremental.qalys := as.character(incremental.qalys)]
+data[, incremental.qalys := as.numeric(incremental.qalys)]
 
 # Get the colour palatte
 # I need 4 fill colours
 getPalette<-brewer.pal(4, "Spectral")
 getPalette
 
-textsize <- 7
+textsize <- 6
 options(scipen=5)
 dev.off()
-ggplot(data, aes(x = incremental.qalys, y = incremental.cost/1000000,
+myplot1 <-
+  ggplot(data, aes(x = incremental.qalys, y = incremental.cost/1000000,
                  fill = strategy,
                  shape =  strategy)) +
   geom_point(size = 4, alpha = 1, na.rm = T) +
@@ -39,32 +55,38 @@ ggplot(data, aes(x = incremental.qalys, y = incremental.cost/1000000,
               colour = "grey",
               size = 1.5) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental/additional cost (AUS$millions)",
+       y = "Incremental cost (AUS$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values=c(19, 24, 24, 24, 24,
+  scale_shape_manual(values = c(24, 24, 24, 24,
                               21, 21, 21, 21,
-                              22, 22, 22, 22)) +
-  scale_fill_manual(values=c(19, getPalette, 
+                              22, 22, 22, 22, 19)) +
+  scale_fill_manual(values = c(getPalette, 
                              getPalette,
-                             getPalette)) +
+                             getPalette, 19)) +
   geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-            hjust = -0.03, vjust = 3, size = textsize, 
+            hjust = -0.03, vjust = 1.2, size = textsize, 
             colour = "black") +
   geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-            hjust = 1, vjust = 3, size = textsize, 
+            hjust = 1, vjust = 1.2, size = textsize, 
             colour = "black") +
   geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-            hjust = -0.03, vjust = -1, size = textsize, 
+            hjust = -0.03, vjust = -0.2, size = textsize, 
             colour = "black") +
   geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-            hjust = 1, vjust = -1, size = textsize, 
+            hjust = 1, vjust = -0.2, size = textsize, 
             colour = "black") +
   scale_y_continuous(breaks = seq(-10, 25, 5)) +
+  scale_x_continuous(breaks = seq(-10, 100, 10)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-40, 100), ylim = c(-8000000/1000000, 25000000/1000000)) +
-  theme(text = element_text(size = 30, family = "TT Arial"),
+  coord_cartesian(xlim = c(-17, 70), ylim = c(-5000000/1000000, 22000000/1000000)) +
+  theme(text = element_text(size = 20),
         panel.border = element_blank())
         #legend.position = c(0.80, 0.8),
         #axis.text.x = element_text(angle=45, hjust=1),
 
+setwd("H:/Katie/PhD/CEA/Health eco conference")
+tiff('ceaplane.tiff', units = "in", width = 10, height = 5,
+     res = 400)
+myplot1
+dev.off()
