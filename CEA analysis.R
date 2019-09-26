@@ -148,6 +148,9 @@ tabfunc <- function(dt) {
   # number of tb cases prevented
   tbprev <- basetbcount - tbtotal
   
+  # percentage of tb cases prevented
+  tbprevpercent <- (tbprev/basetbcount) * 100
+  
   # number of tb deaths 
   tbdeath <- dt[YEAR == finalyear, sum(p.tb.death)]
   
@@ -195,6 +198,9 @@ tabfunc <- function(dt) {
   dt$SQsum <- rowSums(dt[, a:b], na.rm =TRUE)
   qalytot <- sum(dt$SQsum)
   
+  #Incremental QALYs per 1000
+  incremqaly1000 <- ((qalytot - qalybase)/totscreen)*1000
+  
   #Incremental QALYs
   incremqaly <- qalytot - qalybase
   
@@ -216,6 +222,7 @@ tabfunc <- function(dt) {
                 totaddcost,
                 tbtotal,
                 tbprev,
+                tbprevpercent,
                 tbdeath,
                 tbdeathprev,
                 costpertbdeath,
@@ -229,6 +236,7 @@ tabfunc <- function(dt) {
                 saedeathusus,
                 qalybase,
                 qalytot,
+                incremqaly1000,
                 incremqaly,
                 costperqaly)
   
@@ -249,6 +257,7 @@ tabfunc <- function(dt) {
               "total additional cost",
               "total TB cases",
               "TB cases prevented",
+              "Percentage of all TB cases prevented",
               "total TB deaths",
               "total TB deaths prevented",
               "cost per TB death prevented",
@@ -262,6 +271,7 @@ tabfunc <- function(dt) {
               "number of SAE deaths among those without ltbi",
               "Baseline QALY total",
               "Strategy QALYS total",
+              "Incremental QALYS per 1000",
               "Incremental QALYS",
               "ICER, i.e. Cost per QALY")
   names(tablist) <- namelist
@@ -373,17 +383,17 @@ dt[YARP == 2022, sum(NUMP), by = cycle]
 dt[,sum(p.emigrate), by = cycle]
 
 check <- subset(dt, YARP == 2020)
-check <- subset(check, AGERP == 25 )
+check <- subset(check, AGERP == 30 )
 check <- subset(check, ISO3 == "150-199")
 
 
 bc <- subset(base, YARP == 2020)
-bc <- subset(bc, AGERP == 25 )
+bc <- subset(bc, AGERP == 30 )
 bc <- subset(bc, ISO3 == "150-199")
 
 
 # # # Write the table to clipboard so I can paste it into Excel
-#  write.table(check, file="clipboard-16384", sep="\t", row.names=FALSE)
+# write.table(dt, file="clipboard-16384", sep="\t", row.names=FALSE)
 
 
 # 

@@ -108,15 +108,17 @@ write.table(check, "clipboard", sep = "\t", row.names = FALSE)
 check <- overall(dt)
 write.table(check, "clipboard", sep = "\t", row.names = FALSE)
 
+df <- check[[1]]
+
 # Creating the figure
 agetabfig <- function(df) {
   df <- as.data.table(df)
   tot <- sum(df$NUMP)
   lab <- df$ISO3[1]
-  df$AAAG <- as.factor(cut(dt$AGERP, breaks=c(-1,14,19,24,29,
+  df$AAAG <- as.factor(cut(df$AGERP, breaks=c(-1, 14, 19, 24, 29,
                                               34,39,44,49,54,
                                               59,64, 120),
-                           labels=c('11-14','15-19','20-24',
+                           labels = c('11-14','15-19','20-24',
                                     '25-29', '30-34','35-39','40-44',
                                     '45-49','50-54','55-59','60-64',
                                     '65+')))
@@ -133,9 +135,8 @@ agetabfig <- function(df) {
 
 
 check <- split(dt, dt$ISO3)
-check <- lapply(check,agetabfig)
+check <- lapply(check, agetabfig)
 check <- rbindlist(check)
-sizes <- ordered(sizes, levels = c("small", "medium", "large"))
 check$ISO3 <- ordered(check$ISO3, levels = c('0-39', '40-99', 
                                     '100-149', '150-199','200+'))
 

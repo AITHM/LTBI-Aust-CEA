@@ -89,8 +89,8 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
                            rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
                            cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H),
-                           cost.partial = c(ctreat3HP * parttreat, ctreat4R * parttreat,
-                                            ctreat6H * parttreat, ctreat9H * parttreat))
+                           cost.partial = c(parttreat3HP, parttreat4R,
+                                            parttreat6H, parttreat9H))
 
 # This data table indicates when those who receive LTBI treatment in the first 
 # year after migration are likely to have received that treatment (as an annual proportion).
@@ -302,6 +302,16 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
 
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
+# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+# pop.master[, NUMP := NUMP/6.99]
+# pop.master[, LTBP := LTBP/6.99]
+# pop.master[, p.sus := p.sus/6.99]
+# pop.master[, p.ltbi := p.ltbi/6.99]
+# 
+# pop.master[, NUMP := NUMP/2.17]
+# pop.master[, LTBP := LTBP/2.17]
+# pop.master[, p.sus := p.sus/2.17]
+# pop.master[, p.ltbi := p.ltbi/2.17]
 
 #set.seed(10)
 #pop.master <- pop.master[sample(.N, 200)]
