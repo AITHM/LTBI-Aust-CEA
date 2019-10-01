@@ -392,7 +392,7 @@ bc <- subset(bc, AGERP == 30 )
 bc <- subset(bc, ISO3 == "150-199")
 
 
-# # # Write the table to clipboard so I can paste it into Excel
+# # # # Write the table to clipboard so I can paste it into Excel
 # write.table(dt, file="clipboard-16384", sep="\t", row.names=FALSE)
 
 

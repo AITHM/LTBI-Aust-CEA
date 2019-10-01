@@ -7,8 +7,8 @@ totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migr
 finalyear <- startyear + totalcycles
 
 # The tests and treatments I want to consider in the run
-testlist <- c("QTFGIT", "TST10", "TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("QTFGIT") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("3HP") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle
@@ -19,11 +19,11 @@ finalinflow <- 0
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
   # 40+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
   # Adjust age
@@ -34,11 +34,11 @@ Get.POP <- function(DT, strategy) {
 
 targetfunc <- function(DT) {
   # 200+
-  DT <- subset(DT, ISO3 == "200+")
+  # DT <- subset(DT, ISO3 == "200+")
   # 150+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
   # 100+
-  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
   # Adjust age
@@ -78,6 +78,7 @@ Get.RR <- function(xDT, year) {
   # Baseline reactivation rates
   RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
                                                                     ysa = ST, cobi = COBI)]
+  # 0.001
   
   # # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
   # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
@@ -203,7 +204,7 @@ emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incor
 # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
 emigrate.rate <- as.data.table(emigrate.rate)
 
-# Emigrate rate from emigrate.rate (age dependent)
+Emigrate rate from emigrate.rate (age dependent)
 Get.EMIGRATE <- function(xDT, year) {
 
   DT <- copy(xDT[, .(year, AGERP, YARP)])
@@ -290,7 +291,7 @@ parttreat4R <- 159.92 # cost of ltbi treatment (treatment.dt) baseline 299.10, l
 parttreat6H <- 104.35 # cost of ltbi treatment (treatment.dt) baseline 233.29, low , high 
 parttreat9H <- 145.56 # cost of ltbi treatment (treatment.dt) baseline 288.74, low , high 
 
-ctb <- 12550.52 # TBCOST baseline 12550.52, low 8000, high 15000
+ctb <- 12550.52 # TBCOST baseline 12550.52, low 8000, high 15000 ...10941
 
 csae <- 1124 # SAECOST cost of severe adverse event resulting in hospitalisation
 
