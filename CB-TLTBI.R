@@ -302,14 +302,14 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
 
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
-factor <- 11.64# 5.36 * 3.64 * 0.6  #* 1.21 * 1.68 * 2.18 # 5.36 for 3HP, 1.21 for TREATR, 1.68 for and
-
-pop.master[, NUMP := NUMP/factor]
-pop.master[, LTBP := LTBP/factor]
-pop.master[, p.sus := p.sus/factor]
-pop.master[, p.ltbi := p.ltbi/factor]
+# factor <- 11.64# 5.36 * 3.64 * 0.6  #* 1.21 * 1.68 * 2.18 # 5.36 for 3HP, 1.21 for TREATR, 1.68 for and
+# 
+# pop.master[, NUMP := NUMP/factor]
+# pop.master[, LTBP := LTBP/factor]
+# pop.master[, p.sus := p.sus/factor]
+# pop.master[, p.ltbi := p.ltbi/factor]
 
 
 #set.seed(10)
