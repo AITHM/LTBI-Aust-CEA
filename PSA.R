@@ -1,18 +1,17 @@
 
-# This code needs to replace the "parameter values" script
+# This is the code for the probabilistic sensitivity analysis (PSA)
+# The "Parameter values" script is not needed for PSA
+# All parameter values are defined below
 
-# parameters I need to get out of this:
-  # the incremental qalys and incremental cost
-
-# reactivation rates and any other lookup table:
-  # create 10,000 random variables using distribution and length the table by a factor of
-  # 10,000 with the variable SIM
-  # then when the PSA code needs to retrieve the RRate value, we just have to use the SIM
-  # ref too.
+# This script should run the modl 10,000 times
+# and output the incremental qalys and incremental costs of each run
+# so that the cost-effectiveness plane and acceptability curves can be plotted.
 
 options(scipen = 999)
 library(data.table)
 library(purrr)
+library(ggplot2)
+library(scales)
 
 WTP = 1000 # willingness to pay threshold
 WTP_compare1 = 500
@@ -488,7 +487,11 @@ psafunc <- function(begintrt, att, rradj, cattend, csae, cscreenqft,
     
     DT[AGERP > 110, AGERP := 110]
     
-    emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+    mid <- emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+    low <- emigrate.rate[DT[, .(AGERP)], lower, on = .(Age = AGERP)]
+    high <- emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)]
+    betaparam <- findbeta2(mid, low, high)
+    rbeta(1, betaparam[1], betaparam[2])
     
   }
   # Get.MR
@@ -648,6 +651,9 @@ proc.time() - ptm # Stop the clock
 # 44.05    2.37   59.23 
 
 
+
+
+
 simdata[, lapply(.SD, psafunc), by = group]
 
 
@@ -706,6 +712,47 @@ abline(c(0, WTP), col = 4, lwd = 3)
 
 #abline(c(0,WTP_compare1), lwd=3)
 table(simdata$CE)
+
+
+
+# Acceptability curve
+# work out the proportion cost-effective
+icerlist <- simdata$icer
+maxwtp <- 100000
+wtp <- c(0:maxwtp)
+propcosteffectivefunc <- function(wtp){
+  (sum(icerlist < wtp)/10000) * 100
+}
+propcosteffect <- unlist(lapply(wtp, propcosteffectivefunc))
+
+# create a new table, the accepty table 
+accepty <- data.frame(wtp, propcosteffect)
+
+# plot
+myplot1 <- 
+  ggplot(accepty, aes(x = wtp, y = propcosteffect))+
+  geom_line(size = 1, colour = "blue") +
+  labs(x = "Willingness-to-pay threshold (AUD$)", 
+       y = "Proportion cost-effective (%)") +
+  scale_y_continuous(breaks = seq(0, 100, 20)) +
+  scale_x_continuous(label = comma, breaks = seq(0, 150000, 20000)) +
+  theme_bw() +
+  theme(text = element_text(size = 25))
+        # panel.border = element_blank(),
+        # legend.position = "right",
+        # axis.text.x = element_text(angle = 45, hjust = 1))
+        # axis.text.y = element_text(size = 12))
+        # panel.grid.major = element_blank(),
+        # panel.grid.minor = element_blank(),
+
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
+tiff('acceptability.tiff', 
+     units = "in", width = 15, height = 12,
+     res = 600)
+myplot1
+dev.off()
+
+
 
 
 # 
