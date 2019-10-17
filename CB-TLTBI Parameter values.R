@@ -2,7 +2,7 @@
 
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
-totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 60  # cycles ... The mortality data continues until 2100 and migrant 
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
 
@@ -23,12 +23,12 @@ Get.POP <- function(DT, strategy) {
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
   # 40+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
   # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
-    ifelse(DT[, AGERP] < 36, 1, 0))
+    ifelse(DT[, AGERP] < 66, 1, 0))
   
 }
 
@@ -38,12 +38,12 @@ targetfunc <- function(DT) {
   # 150+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
   # 100+
-  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
-  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
+  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
   # Adjust age
   DT <- subset(DT, AGERP > 10 &
-                 AGERP < 36)
+                 AGERP < 66)
   DT
 }
 
@@ -78,7 +78,11 @@ Get.RR <- function(xDT, year) {
   # Baseline reactivation rates
   RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
                                                                     ysa = ST, cobi = COBI)]
-  # 0.001
+  
+  # # 10% lifetime reactivation rates
+  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate+0.000455, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                   ysa = ST, cobi = COBI)]
+  
   
   # # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
   # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
@@ -128,7 +132,6 @@ begintrt <- 0.596 # BEGINTREAT baseline 0.596, lower 0.331, upper 0.70
 # }
 
 
-# BEGINTREAT = Get.BEGINTREAT(DT, year),
 att <- 0.836 # ATTEND baseline 0.836, lower , upper
 
 # Time to complete LTBI treatment
@@ -204,7 +207,7 @@ emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incor
 # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
 emigrate.rate <- as.data.table(emigrate.rate)
 
-Emigrate rate from emigrate.rate (age dependent)
+# Emigrate rate from emigrate.rate (age dependent)
 Get.EMIGRATE <- function(xDT, year) {
 
   DT <- copy(xDT[, .(year, AGERP, YARP)])
@@ -241,12 +244,12 @@ Get.EMIGRATE <- function(xDT, year) {
 # UTILITIES
 # no decrement for LTBI treatment
 uhealthy <- 0.876 # utility for healthy state baseline 0.876, low , high
-uactivetb <- 0.780896666664 # utility for active TB state baseline 0.780896666664, low 0.7, high 0.8
+uactivetb <- 0.780730111 # utility for active TB state baseline 0.780730111, low 0.7, high 0.8
 uactivetbr <- 0.876 # utility for recovered TB state baseline 0.876, low , high
 ultbitreatsae <- 0.8343333 # utility of SAE baseline 0.8343333, low 0.7, high 0.87
 # 3HP
-ultbi3HP <- 0.876 # utility for 3HP LTBI treatment baseline 0.876, low , high
-ultbipart3HP <- 0.876 # utility for 3HP partial LTBI treatment baseline 0.876, low , high
+ultbi3HP <- 0.876 # utility for 3HP LTBI treatment baseline 0.876, low 0.8725, high
+ultbipart3HP <- 0.876 # utility for 3HP partial LTBI treatment baseline 0.876, low 0.884166667, high
 # 4R
 ultbi4R <- 0.876 # utility for 4R LTBI treatment baseline 0.876, low , high
 ultbipart4R <- 0.876 # utility for 4R partial LTBI treatment baseline 0.876, low , high
@@ -257,9 +260,14 @@ ultbipart6H <- 0.876 # utility for 6H partial LTBI treatment baseline 0.876, low
 ultbi9H <- 0.876 # utility for 9H LTBI treatment baseline 0.876, low , high
 ultbipart9H <- 0.876 # utility for 9H partial LTBI treatment baseline 0.876, low , high
 
-# # Utilities assuming a decrement with LTBI treatment
+# # Utilities assuming a decrement with 3HP LTBI treatment (3 months treatment and 9 months with the 12 month figure)
+# # and varying utility values for active TB, depending on symptom length
 # uhealthy <- 0.876 # utility for healthy state baseline 0.876, low , high
-# uactivetb <- 0.780896666664 # utility for active TB state baseline 0.781, low 0.7, high 0.8
+# uactivetb <- 0.780730111 # 6 MONTHS SYMPTOMS utility for active TB state baseline 0.780730111, low 0.7, high 0.8
+# uactivetb <- 0.802382333 # 4 MONTHS SYMPTOMS utility for active TB state baseline 0.802382333, low 0.7, high 0.8
+# uactivetb <- 0.818152333 # 3 MONTHS SYMPTOMS utility for active TB state baseline 0.818152333, low 0.7, high 0.8
+# uactivetb <- 0.780730111 # 2 MONTHS SYMPTOMS utility for active TB state baseline 0.780730111, low 0.7, high 0.8
+# uactivetb <- 0.780730111 # 1 MONTHS SYMPTOM utility for active TB state baseline 0.780730111, low 0.7, high 0.8
 # uactivetbr <- 0.876 # utility for recovered TB state baseline 0.876, low , high
 # ultbitreatsae <- 0.8343333
 # # 3HP
@@ -275,23 +283,70 @@ ultbipart9H <- 0.876 # utility for 9H partial LTBI treatment baseline 0.876, low
 # ultbi9H <- 0.827 # utility for 9H LTBI treatment baseline 0.876, low , high
 # ultbipart9H <- 0.868 # utility for 9H partial LTBI treatment baseline 0.876, low , high
 
-# COSTS
-cscreenqft <- 0 # cost of screening (tests.dt) baseline 0, high 74.34
-cscreentst10 <-  0 # cost of screening (tests.dt) baseline 0, high 70.40
-cscreentst15 <- 0 # cost of screening (tests.dt) baseline 0, high 70.40
 
-cattend <- 143.18 # cost of attending first follow up appointment
+# # Utilities assuming a decrement with LTBI treatment, but using the healthy values for
+# # 3HP utilities when not on treatment and varying symptom length for active TB
+# uhealthy <- 0.876 # utility for healthy state baseline 0.876, low , high
+# # uactivetb <- 0.780730111 # 6 MONTHS SYMPTOMS utility for active TB state baseline 0.780730111, low 0.7, high 0.8
+# # uactivetb <- 0.802382333 # 4 MONTHS SYMPTOMS utility for active TB state baseline 0.802382333, low 0.7, high 0.8
+# # uactivetb <- 0.818152333 # 3 MONTHS SYMPTOMS utility for active TB state baseline 0.818152333, low 0.7, high 0.8
+# # uactivetb <- 0.833922333 # 2 MONTHS SYMPTOMS utility for active TB state baseline 0.780730111, low 0.7, high 0.8
+# uactivetb <- 0.847017333 # 1 MONTHS SYMPTOM utility for active TB state baseline 0.780730111, low 0.7, high 0.8
+# uactivetbr <- 0.876 # utility for recovered TB state baseline 0.876, low , high
+# ultbitreatsae <- 0.8343333
+# # 3HP
+# ultbi3HP <- 0.8725 # utility for 3HP LTBI treatment baseline 0.876, low , high
+# ultbipart3HP <- 0.884166667 # utility for 3HP partial LTBI treatment baseline 0.876, low , high
+# # 4R
+# ultbi4R <- 0.86833 # utility for 4R LTBI treatment baseline 0.876, low , high
+# ultbipart4R <- 0.88417 # utility for 4R partial LTBI treatment baseline 0.876, low , high
+# # 6H
+# ultbi6H <- 0 # utility for 6H LTBI treatment baseline 0.876, low , high
+# ultbipart6H <- 0 # utility for 6H partial LTBI treatment baseline 0.876, low , high
+# # 9H
+# ultbi9H <- 0 # utility for 9H LTBI treatment baseline 0.876, low , high
+# ultbipart9H <- 0 # utility for 9H partial LTBI treatment baseline 0.876, low , high
 
-ctreat3HP <- 207.53 # cost of ltbi treatment (treatment.dt) baseline 350.71, low 298.15, high 560.95
-ctreat4R <- 427.61 # cost of ltbi treatment (treatment.dt) baseline 570.79, low , high 
-ctreat6H <- 252.93 # cost of ltbi treatment (treatment.dt) baseline 396.11, low , high 
-ctreat9H <- 357.46 # cost of ltbi treatment (treatment.dt) baseline 500.64, low , high 
-parttreat3HP <- 82.56 # cost of ltbi treatment (treatment.dt) baseline 225.74, low 208.22, high 295.82
-parttreat4R <- 159.92 # cost of ltbi treatment (treatment.dt) baseline 299.10, low , high 
-parttreat6H <- 104.35 # cost of ltbi treatment (treatment.dt) baseline 233.29, low , high 
-parttreat9H <- 145.56 # cost of ltbi treatment (treatment.dt) baseline 288.74, low , high 
 
-ctb <- 12550.52 # TBCOST baseline 12550.52, low 8000, high 15000 ...10941
+
+# # COSTS - LTBI screening off-shore - i.e. one specialist appointment
+cscreenqft <- 0 # cost of screening (tests.dt) baseline 0, high 94.69
+cscreentst <-  0 # cost of screening (tests.dt) baseline 0, high 70.40
+
+# cattend <- 143.18 # cost of attending first follow up appointment if it is with a specialist
+cattend <- 103.48 # cost of attending first follow up appointment if it is with a GP
+
+ctreat3HP <- 208.03 # cost of ltbi treatment (treatment.dt) baseline 350.71, low 298.15, high 560.95
+cparttreat3HP <- 82.81 # cost of ltbi treatment (treatment.dt) baseline 225.74, low 208.22, high 295.82
+
+ctreat4R <- 431.41 # cost of ltbi treatment (treatment.dt) baseline 570.79, low , high
+cparttreat4R <- 157.82 # cost of ltbi treatment (treatment.dt) baseline 299.10, low , high
+
+ctreat6H <- 239.53 # cost of ltbi treatment (treatment.dt) baseline 396.11, low , high
+cparttreat6H <- 97.65 # cost of ltbi treatment (treatment.dt) baseline 233.29, low , high
+
+ctreat9H <- 342.79 # cost of ltbi treatment (treatment.dt) baseline 500.64, low , high
+cparttreat9H <- 138.23 # cost of ltbi treatment (treatment.dt) baseline 288.74, low , high
+
+
+# # COSTS - LTBI screening on-shore: assuming GPs provide all screening and treatment
+# cscreenqft <- 94.69 # 94.69 # cost of screening (tests.dt) baseline 0, high
+# cscreentst10 <-  0 # cost of screening (tests.dt) baseline 0, high
+# cscreentst15 <- 0 # cost of screening (tests.dt) baseline 0, high
+# 
+# cattend <- 38.20 # cost of attending first follow up appointment (NA, see above)
+# 
+# ctreat3HP <- 235.11 # cost of ltbi treatment (treatment.dt) baseline 350.71, low 298.15, high 560.95
+# ctreat4R <- 476.19 # cost of ltbi treatment (treatment.dt) baseline 570.79, low , high
+# ctreat6H <- 0 # cost of ltbi treatment (treatment.dt) baseline 396.11, low , high
+# ctreat9H <- 0 # cost of ltbi treatment (treatment.dt) baseline 500.64, low , high
+# cparttreat3HP <- 96.35 # cost of ltbi treatment (treatment.dt) baseline 225.74, low 208.22, high 295.82
+# cparttreat4R <- 180.21 # cost of ltbi treatment (treatment.dt) baseline 299.10, low , high
+# cparttreat6H <- 0 # cost of ltbi treatment (treatment.dt) baseline 233.29, low , high
+# cparttreat9H <- 0 # cost of ltbi treatment (treatment.dt) baseline 288.74, low , high
+
+
+ctb <- 12000 # TBCOST baseline 12550.52, low 8000, high 15000 ...10941
 
 csae <- 1124 # SAECOST cost of severe adverse event resulting in hospitalisation
 

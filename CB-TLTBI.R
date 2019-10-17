@@ -81,7 +81,7 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
                        # of interferon-gamma release assays and tuberculin skin test in predicting the development of active 
                        # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
                        # cost.primary = c(74.34, 70.40, 70.40))
-                       cost.primary = c(cscreenqft, cscreentst10, cscreentst15))
+                       cost.primary = c(cscreenqft, cscreentst, cscreentst))
                        # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
                        # Australia's health system
 
@@ -89,8 +89,8 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
                            rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
                            cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H),
-                           cost.partial = c(parttreat3HP, parttreat4R,
-                                            parttreat6H, parttreat9H))
+                           cost.partial = c(cparttreat3HP, cparttreat4R,
+                                            cparttreat6H, cparttreat9H))
 
 # This data table indicates when those who receive LTBI treatment in the first 
 # year after migration are likely to have received that treatment (as an annual proportion).
@@ -302,14 +302,14 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
 
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
-# factor <- 11.64# 5.36 * 3.64 * 0.6  #* 1.21 * 1.68 * 2.18 # 5.36 for 3HP, 1.21 for TREATR, 1.68 for and
-# 
-# pop.master[, NUMP := NUMP/factor]
-# pop.master[, LTBP := LTBP/factor]
-# pop.master[, p.sus := p.sus/factor]
-# pop.master[, p.ltbi := p.ltbi/factor]
+factor <- 7.09 * 0.76# 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
+
+pop.master[, NUMP := NUMP/factor]
+pop.master[, LTBP := LTBP/factor]
+pop.master[, p.sus := p.sus/factor]
+pop.master[, p.ltbi := p.ltbi/factor]
 
 
 #set.seed(10)
