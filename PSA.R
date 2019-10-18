@@ -13,23 +13,24 @@ library(purrr)
 library(ggplot2)
 library(scales)
 
-WTP = 1000 # willingness to pay threshold
-WTP_compare1 = 500
+################## PSA #####################################
+
+# Defining the number of simulations
 Num_SIm = 10000
 
-# Sourcing useful functions for calculation of distribution parameters
+# Sourcing useful functions for calculation of parameter distributions
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("Distribution parameter calculations.R")
 
-################## PSA #####################################
-
+# Create a datatable that will eventually contain the
+# parameter values to be used for each simulation/model run.
 simrun = c(seq(1, Num_SIm))
 simdata = as.data.frame(simrun)
 
-# Define all the parameters that are fixed:
+# Define all the parameters that are don't have any uncertainty:
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
-totalcycles <- 60  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
 
@@ -74,20 +75,9 @@ targetfunc <- function(DT) {
 }
 
 
-# Define all the parameters that are uncertain:
-
-# aust, cscreenqft,
-# cscreentst10, cscreentst15, ctb, ctreat3HP, ctreat4R, 
-# ctreat6H, ctreat9H, emigrate.rate,
-# Get.EMIGRATE, Get.MR, Get.POP, Get.RR, Get.SAE,
-# Get.SAEMR, Get.TBMR, parttreat3HP, parttreat4R, 
-# parttreat6H, parttreat9H, rradj, snqftgit, sntst10, 
-# sntst15, spqftgit, sptst10, sptst15, targetfunc, 
-# treatr3HP, treatr4R, treatr6H, 
-# treatr9H, ttt3HP, ttt4R, ttt6H, ttt9H, uactivetb, 
-# uactivetbr, uhealthy, ultbi3HP, ultbi4R, ultbi6H, 
-# ultbi9H, ultbipart3HP, ultbipart4R, ultbipart6H, 
-# ultbipart9H, ultbitreatsae
+# Define all the parameters that are uncertain, but that
+# are also fixed for each model run (i.e. they aren't dependent
+# on age or year etc).
 
 # begintrt
 # probability of beginning treatment (beta)
@@ -106,7 +96,7 @@ betaparam <- findbeta2(mean, low, high)
 simdata$att = rbeta(Num_SIm, betaparam[1], betaparam[2])
 
 # rradj
-## probability of rradjust (beta)
+# probability of rradjust (beta)
 mean <- 0.9
 low <- 0.952
 high <- 0.875
@@ -437,23 +427,39 @@ betaparam <- findbeta2(mean, low, high)
 simdata$ultbipart9H = rbeta(Num_SIm, betaparam[1], betaparam[2])
 
 
-# For each row of simdata, take the parameters and run the function using the parameters
 simdata <- as.data.table(simdata)
-parameterlist <- colnames(simdata)
-psafunc <- function(begintrt, att, rradj, cattend, csae, cscreenqft,
-                    cscreentst, ctb, ctreat3HP, ctreat4R,
-                    ctreat6H, ctreat9H, cparttreat3HP, cparttreat4R,
-                    cparttreat6H, cparttreat9H, snqftgit, sntst10,
-                    sntst15, spqftgit, sptst10, sptst15,
-                    treatr3HP, treatr4R, treatr6H,
-                    treatr9H, ttt3HP, ttt4R, ttt6H, ttt9H, uactivetb,
-                    uactivetbr, uhealthy, ultbi3HP, ultbi4R, ultbi6H,
-                    ultbi9H, ultbipart3HP, ultbipart4R, ultbipart6H,
-                    ultbipart9H, ultbitreatsae){
-  # this function takes all of the parameter values, one from each column,
+
+snqftgit <- simdata[2, snqftgit]
+
+# The function below attempts to...
+# for each row of the simdata datatable, 
+# take the parameter values from that row 
+# and run "CB-TLTBI.R" 
+psafunc <- function(simnumber){
+  parameters <- c("begintrt", "att", "rradj", "cattend", "csae", "cscreenqft", 
+                     "cscreentst", "ctb", "ctreat3HP", "ctreat4R",
+                     "ctreat6H", "ctreat9H", "cparttreat3HP", "cparttreat4R",
+                     "cparttreat6H", "cparttreat9H", "snqftgit", "sntst10",
+                     "sntst15", "spqftgit", "sptst10", "sptst15",
+                     "treatr3HP", "treatr4R", "treatr6H",
+                     "treatr9H", "ttt3HP", "ttt4R", "ttt6H", "ttt9H", "uactivetb",
+                     "uactivetbr", "uhealthy", "ultbi3HP", "ultbi4R", "ultbi6H",
+                     "ultbi9H", "ultbipart3HP", "ultbipart4R", "ultbipart6H",
+                     "ultbipart9H", "ultbitreatsae")
+  # getparams <- function(x){
+  #   x <- simdata[simnumber, ..x]
+  # }
+  # lapply(parameters, getparams)
   
-  # The dependent variables need to be defined separately
+  snqftgit <- simdata[simnumber, snqftgit]
+  sntst10 <- simdata[simnumber, sntst10]
+  sntst15 <- simdata[simnumber, sntst15]
   
+  spqftgit <- simdata[simnumber, spqftgit]
+  sptst10 <- simdata[simnumber, sptst10]
+  sptst15 <- simdata[simnumber, sptst15]
+  
+  # The dependent variables need to be defined separately...
   # Get.RR
   # Reactivation rates
   Get.RR <- function(xDT, year) {
@@ -494,7 +500,7 @@ psafunc <- function(begintrt, att, rradj, cattend, csae, cscreenqft,
     rbeta(1, betaparam[1], betaparam[2])
     
   }
-  # Get.MR
+  # Get.MR ##### Do I need to incorporate uncertainty for this parameter?
   # Look up the mortality rate from vic.mortality
   Get.MR <- function(xDT, year, rate.assumption = "Med") {
     
@@ -518,9 +524,12 @@ psafunc <- function(begintrt, att, rradj, cattend, csae, cscreenqft,
     DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
     DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
     
-    mid <- vic.tb.mortality[DT[, .(AGEP, SEXP)], Prob, on = .(age = AGEP, sex = SEXP)]
-    low <- vic.tb.mortality[DT[, .(AGEP, SEXP)], lowerProb, on = .(age = AGEP, sex = SEXP)]
-    high <- vic.tb.mortality[DT[, .(AGEP, SEXP)], upperProb, on = .(age = AGEP, sex = SEXP)]
+    mid <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
+                            Prob, on = .(age = AGEP, sex = SEXP)]
+    low <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
+                            lowerProb, on = .(age = AGEP, sex = SEXP)]
+    high <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
+                             upperProb, on = .(age = AGEP, sex = SEXP)]
     betaparam <- findbeta2(mid, low, high)
     rbeta(1, betaparam[1], betaparam[2])
     
@@ -535,9 +544,12 @@ psafunc <- function(begintrt, att, rradj, cattend, csae, cscreenqft,
     
     DT$treatment <- as.character(treat)
     
-    mid <- sae.rate[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
-    low <- sae.rate[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
-    high <- sae.rate[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
+    mid <- sae.rate[DT[, .(AGERP, treatment)], 
+                    Rate, on = .(Age = AGERP, treatment = treatment)]
+    low <- sae.rate[DT[, .(AGERP, treatment)], 
+                    low, on = .(Age = AGERP, treatment = treatment)]
+    high <- sae.rate[DT[, .(AGERP, treatment)], 
+                     high, on = .(Age = AGERP, treatment = treatment)]
     betaparam <- findbeta2(mid, low, high)
     rbeta(1, betaparam[1], betaparam[2])
     
@@ -552,75 +564,36 @@ psafunc <- function(begintrt, att, rradj, cattend, csae, cscreenqft,
     
     DT$treatment <- as.character(treat)
 
-    mid <- sae.mortality[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
-    low <- sae.mortality[DT[, .(AGERP, treatment)], low, on = .(Age = AGERP, treatment = treatment)]
-    high <- sae.mortality[DT[, .(AGERP, treatment)], high, on = .(Age = AGERP, treatment = treatment)]
+    mid <- sae.mortality[DT[, .(AGERP, treatment)], 
+                         Rate, on = .(Age = AGERP, treatment = treatment)]
+    low <- sae.mortality[DT[, .(AGERP, treatment)], 
+                         low, on = .(Age = AGERP, treatment = treatment)]
+    high <- sae.mortality[DT[, .(AGERP, treatment)], 
+                          high, on = .(Age = AGERP, treatment = treatment)]
     betaparam <- findbeta2(mid, low, high)
     rbeta(1, betaparam[1], betaparam[2])
     
   }
-  # Below defines parameters for now, but will not be needed eventually
-  # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-  # source("CB-TLTBI Parameter values.R")
+  
   # run the CB-TLTBI.R code, i.e. 
   setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
   source("CB-TLTBI.R")
-  # then, instead of putting the output into the output folder it needs to use 
-  # it to calculate the incremental QALY and incremental cost
-  # this step could involve another file? 
-  # Finding the baseline quantities
-  
-  # # Calculating the incremental cost and effectiveness
-  # base <- files[[1]]
-  # dt <- files[[2]]
-  # 
-  # # total baseline cost
-  # a <- which( colnames(base) == "SC.p.sus" )
-  # b <- which( colnames(base) == "SC.p.emigrate" )
-  # base$SCsum <- rowSums(base[, a:b], na.rm = TRUE)
-  # a <- which( colnames(base) == "FC.p.sus" )
-  # b <- which( colnames(base) == "FC.p.emigrate" )
-  # base$FCsum <- rowSums(base[, a:b], na.rm = TRUE)
-  # totbasecost <- sum(base$SCsum) + sum(base$FCsum)
-  # 
-  # # total baseline QALYS
-  # a <- which( colnames(base) == "SQ.p.sus" )
-  # b <- which( colnames(base) == "SQ.p.emigrate" )
-  # base$SQsum <- rowSums(base[, a:b], na.rm = TRUE)
-  # qalybase <- sum(base$SQsum)
-  # 
-  # # total cost of strategy
-  # a <- which( colnames(dt) == "SC.p.sus" )
-  # b <- which( colnames(dt) == "SC.p.emigrate" )
-  # dt$SCsum <- rowSums(dt[, a:b], na.rm = TRUE)
-  # a <- which( colnames(dt) == "FC.p.sus" )
-  # b <- which( colnames(dt) == "FC.p.emigrate" )
-  # dt$FCsum <- rowSums(dt[, a:b], na.rm = TRUE)
-  # totcost <- sum(dt$SCsum) + sum(dt$FCsum)
-  # 
-  # # incremental cost of strategy
-  # totaddcost <- totcost - totbasecost
-  # 
-  # # total number of QALYS
-  # a <- which( colnames(dt) == "SQ.p.sus" )
-  # b <- which( colnames(dt) == "SQ.p.emigrate" )
-  # dt$SQsum <- rowSums(dt[, a:b], na.rm =TRUE)
-  # qalytot <- sum(dt$SQsum)
-  # 
-  # #Incremental QALYs
-  # incremqaly <- qalytot - qalybase
-  # 
-  # # Cost per QALY - ICER
-  # costperqaly <- totaddcost/incremqaly
   
 }
 
-test <- simdata[1:2, ]
-test <- as.data.table(test)
-# pmap is from the purrr package
+simdata <- simdata[1:2, ]
+simdata <- as.data.table(simdata)
+
+Num_SIm <- 2
+
+# To execute the psafunc function and model runs I could try...
+out <- lapply(Num_SIm, psafunc)
+
+
+
 
 ptm <- proc.time() # Start the clock!
-test[, value := pmap(.(begintrt, att, rradj, cattend, csae, cscreenqft,
+test[, value := pmap(.(begintrt, att, rradj, cattend, csae, cscreenqft, 
                        cscreentst, ctb, ctreat3HP, ctreat4R,
                        ctreat6H, ctreat9H, cparttreat3HP, cparttreat4R,
                        cparttreat6H, cparttreat9H, snqftgit, sntst10,
@@ -630,9 +603,15 @@ test[, value := pmap(.(begintrt, att, rradj, cattend, csae, cscreenqft,
                        uactivetbr, uhealthy, ultbi3HP, ultbi4R, ultbi6H,
                        ultbi9H, ultbipart3HP, ultbipart4R, ultbipart6H,
                        ultbipart9H, ultbitreatsae), psafunc)]
+# pmap is from the purrr package
 proc.time() - ptm # Stop the clock
 # user  system elapsed 
 # 43.29    3.24   54.63 
+
+
+# To execute the models runs I could try...
+
+
 
 
 ptm <- proc.time() # Start the clock!
@@ -654,44 +633,15 @@ proc.time() - ptm # Stop the clock
 
 
 
-simdata[, lapply(.SD, psafunc), by = group]
-
-
-## ER visits
-simdata$ER_visits_Treatment_A = sample(c(0,1,1,1,2,2,2,3), size = Num_SIm, replace = T)
-simdata$ER_visits_Treatment_B = sample(c(0,1,1,1,2,2,2,3), size = Num_SIm, replace = T)
-simdata$ER_visits_cost = rnorm(n = Num_SIm, mean = 600, sd = 50)
-simdata$ER_visits_cost_Treatment_A = simdata$ER_visits_Treatment_A * simdata$ER_visits_cost ###Treatment_A1
-simdata$ER_visits_cost_Treatment_B = simdata$ER_visits_Treatment_B * simdata$ER_visits_cost  
-
-## Hospitalization
-simdata$ALOS_Treatment_A = sample(c(0,1,2), size = Num_SIm, replace = T)
-simdata$ALOS_Treatment_B = sample(c(0,1,2), size = Num_SIm, replace = T)
-simdata$LOS_cost = rnorm(n=Num_SIm, mean = 1600, sd = 150)
-simdata$ALOS_cost_Treatment_A = simdata$ALOS_Treatment_A * simdata$LOS_cost ###Treatment_A2 
-simdata$ALOS_cost_Treatment_B = simdata$ALOS_Treatment_B * simdata$LOS_cost
-
-## Medication
-simdata$units_Treatment_A = sample(c(5,6,7,8,9), size = Num_SIm, replace = T)
-simdata$units_Treatment_B = sample(c(5,6,7,8,9), size = Num_SIm, replace = T)
-simdata$Treatment_A_unit_cost = rnorm(n=Num_SIm, mean = 481, sd = 10) 
-simdata$Treatment_B_unit_cost = rnorm(n=Num_SIm, mean = 170, sd = 10)
-
-simdata$unitS_cost_Treatment_A = simdata$units_Treatment_A * simdata$Treatment_A_unit_cost  ### Treatment_A3
-simdata$unitS_cost_Treatment_B = simdata$units_Treatment_B * simdata$Treatment_B_unit_cost
-
-## total Cost
-simdata$total_cost_Treatment_A = simdata$unitS_cost_Treatment_A + simdata$ALOS_cost_Treatment_A + simdata$ER_visits_cost_Treatment_A
-simdata$total_cost_Treatment_B = simdata$unitS_cost_Treatment_B + simdata$ALOS_cost_Treatment_B + simdata$ER_visits_cost_Treatment_B
-simdata$cost_diff = simdata$total_cost_Treatment_A - simdata$total_cost_Treatment_B
-
-## calculate ICER
-simdata$icer = simdata$cost_diff / simdata$Effect_prop_diff
-
-write.csv(simdata, "simdata.csv")
-
-# This bit works out whether the colour of the simulations should be green or red
+# Plot of PSA results on cost effectiveness plane.
+# The code below will plot the 10,000 model run outputs on a
+# cost effectiveness plane.
+# A blue willingness to pay line is drawn on the plane too
+# and the colour of the simulations will be either green or red
 # depending on whether the ICER value is under or over the WTP.
+
+WTP = 1000 # willingness to pay threshold
+WTP_compare1 = 500
 
 simdata$model = WTP * simdata$Effect_prop_diff 
 
@@ -709,13 +659,11 @@ abline(h = 0, lwd = 2 )
 abline(v = 0, lwd = 2 )
 abline(c(0, WTP), col = 4, lwd = 3)
 
-
-#abline(c(0,WTP_compare1), lwd=3)
-table(simdata$CE)
-
+# #abline(c(0,WTP_compare1), lwd=3)
+# table(simdata$CE)
 
 
-# Acceptability curve
+# Plot of acceptability curve
 # work out the proportion cost-effective
 icerlist <- simdata$icer
 maxwtp <- 100000
@@ -755,7 +703,7 @@ dev.off()
 
 
 
-# 
+# # Exploring density plots
 # # Beta distribution
 # # https://stephens999.github.io/fiveMinuteStats/beta.html
 # # where a = b
@@ -769,7 +717,6 @@ dev.off()
 #        lty = c(1,1,1,1),
 #        col = c(4,3,2,1))
 # 
-# 
 # # where a != b
 # p = seq(0,1, length=100)
 # 
@@ -779,9 +726,6 @@ dev.off()
 # 
 # plot(p, dbeta(p, 90.92, 82545.55), ylab="density", type = "l", col = 4, xlim = c(0, 0.02))
 # 
-# 
-# 
-# 
 # lines(p, dbeta(p, 90, 10), type ="l", col = 3)
 # lines(p, dbeta(p, 30, 70), col = 2) 
 # lines(p, dbeta(p, 3, 7), col = 1) 
@@ -790,77 +734,3 @@ dev.off()
 # 
 # dist <- dbeta(p, 90.92,82545.55)
 # dist
-# 
-# 
-# 
-# # Create the enormous datatables that will be needed to capture the 
-# # uncertainty of the reactivation rates, emigration rates, TB mortality rates,
-# # mortality rates, SAE mortality rates and risk of SAE.
-# 
-# # The strategies and all parameters are defined in the "Parameter values" document.
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-# RRates <- readRDS("Data/RRatescobincidnosex.rds")
-# # taking into account the uncertainty
-# finddistfunc <- function(x){
-#   betaparam <- findbeta2(RRates$Rate, RRates$LUI, RRates$UUI)
-#   rbeta(Num_SIm, betaparam[1], betaparam[2])
-# }
-# 
-# testbase <- RRates[1:4, ]
-# 
-# testresult <- apply(testbase, 1, finddistfunc)
-# 
-# 
-# RRates[, finddistfunc(simrun, begin, attend), by = seq_len(nrow(RRates))]
-# 
-# begintrt, 
-# att, 
-# rradj, 
-# cattend, 
-# csae, 
-# cscreenqft,
-# cscreentst, 
-# ctb, 
-# ctreat3HP, 
-# ctreat4R,
-# ctreat6H, 
-# ctreat9H, 
-# cparttreat3HP, 
-# cparttreat4R,
-# cparttreat6H, 
-# cparttreat9H, 
-# Get.EMIGRATE, 
-# Get.MR, 
-# Get.POP, 
-# Get.RR, 
-# Get.SAE,
-# Get.SAEMR, 
-# Get.TBMR, 
-# snqftgit, 
-# sntst10,
-# sntst15, 
-# spqftgit, 
-# sptst10, 
-# sptst15, 
-# targetfunc,
-# treatr3HP, 
-# treatr4R, 
-# treatr6H,
-# treatr9H, 
-# ttt3HP, 
-# ttt4R, 
-# ttt6H, 
-# ttt9H, 
-# uactivetb,
-# uactivetbr, 
-# uhealthy, 
-# ultbi3HP, 
-# ultbi4R, 
-# ultbi6H,
-# ultbi9H, 
-# ultbipart3HP, 
-# ultbipart4R, 
-# ultbipart6H,
-# ultbipart9H, 
-#ultbitreatsae <- ultbitreatsae
-
