@@ -1,11 +1,12 @@
 # PARAMETER ADJUSTMENT (now all in one place, i.e. below)
 
-disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
+disc <- 0.05 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
-totalcycles <- 60  # cycles ... The mortality data continues until 2100 and migrant 
+start.year <- startyear
+totalcycles <- 10  # cycles ... The mortality data continues until 2100 and migrant 
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
-
+final.year <- finalyear
 # The tests and treatments I want to consider in the run
 testlist <- c("QTFGIT") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("3HP") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")

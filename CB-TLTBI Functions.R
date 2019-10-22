@@ -414,80 +414,62 @@ RunModel <- function(pop.output, strategy, testing, treatment, start.year, cycle
 
 # convenience function to loop over all the testing, treatment and sampling model runs
 DoRunModel <- function(strategy, start.year, cycles) {
-  
+
   strategy$myname <- deparse(substitute(strategy))
-  
-  if (strategy$myname == "S0_1") {
-    
-    listoftests <- c("QTFGIT")
-    listoftreatments <- c("4R")
-    
-  } else if (strategy$myname == "S0_12" || strategy$myname == "S0_345") {
-    
+
+  if (strategy$myname == "S0_12" || strategy$myname == "S0_345") {
+
     listoftests <- c("")
     listoftreatments <- c("")
-    
+    modelinflow <- TRUE
+
   } else {
-    
+
     listoftests <- testlist
     listoftreatments <- treatmentlist
     
+
   }
+
   
-  
-  if (strategy$myname == "S1" || strategy$myname == "S2" || strategy$myname == "S0_12" || strategy$myname == "S0_1") {
-    
-    modelinflow <- TRUE
-    
-  } else {
-    
-    modelinflow <- FALSE
-    
-  }
-  
+  modelinflow <- TRUE
   year <- start.year
-  
+
   dostrategy <- function(strategy, listoftests, listoftreatments) {
-    
+
     dotest <- function(test) {
-      
+
       dotreatment <- function(treatment) {
-        
-        
-        if (nrow(pop.master) < 1001 || strategy$myname == "S1" || strategy$myname == "S2"
-            || strategy$myname == "S0_12" || strategy$myname == "S0_1") {
-          
+
+
+        if ((nrow(pop.master) < 1001 || strategy$myname == "S2"
+            || strategy$myname == "S0_12" || strategy$myname == "S0_1") & PSA == 0) {
+
+          if (strategy$myname == "S2" || strategy$myname == "S0_12") {
+
+            pop.output <- pop.master[YARP == year][, cycle := 0]
+
+          }
+
+          else {
+
+            stop("error in do strategy")
+
+          }
+
+
+          pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
+          pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
+          saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, ".rds", sep = ""))
+          #rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
+
+
+        } else if ((nrow(pop.master) < 1001 || strategy$myname == "S2"
+                    || strategy$myname == "S0_12" || strategy$myname == "S0_1") & PSA == 1) {
+
           if (strategy$myname == "S2" || strategy$myname == "S0_12") {
             
             pop.output <- pop.master[YARP == year][, cycle := 0]
-            
-          } else if (strategy$myname == "S1" || strategy$myname == "S0_1") {
-            
-            
-            pop.output <- pop.master[YARP >= year][, cycle := 0]
-            
-            # # Run it for 1 cycle to move the cohort from p.sus and p.ltbi to post test/treatment states.
-            # pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles = 1, modelinflow = FALSE)
-            # 
-            # # reset the output to align them with the other strategies.
-            # pop.output <- pop.output[cycle == 1]
-            # pop.output[, cycle := 0]
-            # pop.output[, AGEP := AGEP - 1]
-            # 
-            # # Zero the flows and testing costs
-            # colname <- colnames(pop.output[, V.p.sus:V.p.death])
-            # colname <- c(colname, colnames(pop.output[, FC.p.sus:FC.p.death]))
-            # pop.output[, c(colname) := as.numeric(NA),]
-            # 
-            # # Creates a adjusted pop.master for S1.
-            # assign("pop.master", pop.output, pos = 1,)
-            # pop.output <- pop.master[YARP == year][, cycle := 0]
-            
-            
-          } else if (strategy$myname == "S0_345" || strategy$myname == "S3" || strategy$myname == "S4"
-                     || strategy$myname == "S5") {
-            
-            pop.output <- pop.master[YARP < year][, cycle := 0]
             
           }
           
@@ -500,102 +482,44 @@ DoRunModel <- function(strategy, start.year, cycles) {
           
           pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
           pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
-          saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, ".rds", sep = ""))
-          #rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
+          # ADD THE OUTPUT THAT I WANT FROM THE PSA
+          # Calculating the total cost and effectiveness
+        
+          # total baseline cost
+          a <- which( colnames(pop.output) == "SC.p.sus" )
+          b <- which( colnames(pop.output) == "SC.p.emigrate" )
+          c <- which( colnames(pop.output) == "FC.p.sus" )
+          d <- which( colnames(pop.output) == "FC.p.emigrate" )
+          out1 <- sum(pop.output[, Reduce(`+`, .SD), .SDcols = c(a:b)], na.rm = TRUE) + 
+            sum(pop.output[, Reduce(`+`, .SD), .SDcols = c(c:d)], na.rm = TRUE)
           
-          if (strategy$myname == "S1") {
-            
-            pop.temp <- CreatePopulationMaster()
-            assign("pop.master", pop.temp, pos = 1,)
-            
-          }
+          # total baseline QALYS
+          e <- which( colnames(pop.output) == "SQ.p.sus" )
+          f <- which( colnames(pop.output) == "SQ.p.emigrate" )
+          out2 <- sum(pop.output[, Reduce(`+`, .SD), .SDcols = c(e:f)], na.rm = TRUE)
           
-        } else if (strategy$myname == "S0_345" || strategy$myname == "S3" || strategy$myname == "S4"
-                   || strategy$myname == "S5") {
+          outlist <- c(out1, out2)
           
-          pop.output <- pop.master[YARP < year][, cycle := 0][1:50000]
-          pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
-          pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
-          #rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
-          saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, "pop.output1.rds", sep = ""))
-          
-          
-          
-          pop.output <- pop.master[YARP < year][, cycle := 0][50001:100000]
-          pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
-          pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
-          #rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
-          saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, "pop.output2.rds", sep = ""))
-          
-          
-          lastrow <- nrow(pop.master[YARP < year])
-          
-          pop.output <- pop.master[YARP < year][, cycle := 0][100001:lastrow]
-          pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
-          pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
-          #rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
-          saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, "pop.output3.rds", sep = ""))
-          
-          
-          
-          #pop.output <- pop.master[YARP < year][, cycle := 0][150001:200000]
-          #pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
-          #pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
-          ##rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
-          #saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, "pop.output4.rds", sep = ""))
-          
-          
-          #pop.output <- pop.master[YARP < year][, cycle := 0][200001:250000]
-          #pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
-          #pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
-          ##rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
-          #saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, "pop.output5.rds", sep = ""))
-          
-          
-          
-          #pop.output <- pop.master[YARP < year][, cycle := 0][250001:300000]
-          #pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
-          #pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
-          ##rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
-          #saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, "pop.output6.rds", sep = ""))
-          
-          
-          
-          #pop.output <- pop.master[YARP < year][, cycle := 0][300001:lastrow]
-          #pop.output <- RunModel(pop.output, strategy, test, treatment, start.year, cycles, modelinflow)
-          #pop.output[, c("Strategy", "Test", "Treatment") := .(strategy$myname, test, treatment)]
-          ##rxDataStep(inData = pop.output, outFile = sql.pop.table, append = "rows")
-          #saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, "pop.output7.rds", sep = ""))
-          
-          #pop.output1 <- readRDS("Data/Output/pop.output1.rds")
-          #pop.output2 <- readRDS("Data/Output/pop.output2.rds")
-          #pop.output3 <- readRDS("Data/Output/pop.output3.rds")
-          #pop.output4 <- readRDS("Data/Output/pop.output4.rds")
-          #pop.output5 <- readRDS("Data/Output/pop.output5.rds")
-          #pop.output6 <- readRDS("Data/Output/pop.output6.rds")
-          #pop.output7 <- readRDS("Data/Output/pop.output7.rds")
-          
-          #pop.output <- rbind(pop.output1, pop.output2, pop.output3, pop.output4, pop.output5, pop.output6, pop.output7)
-          #saveRDS(pop.output, paste("Data/Output/", strategy$myname, ".", test, ".", treatment, ".rds", sep = ""))
+          return(outlist)
           
         } else {
-          
+
           stop("Another error in do strategy")
         }
-        
+
       }
-      
+
       lapply(listoftreatments, dotreatment)
-      
+
     }
-    
+
     lapply(listoftests, dotest)
-    
+
   }
-  
+
   dostrategy(strategy, listoftests, listoftreatments)
-  
-  
+
+
 }
 
 

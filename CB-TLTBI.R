@@ -240,7 +240,7 @@ arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TMKD")
 
 CreateStates(state.names) # instantiates a set of states objects with default values
 
-# Create a set of strategies
+# Defining additional strategy
 S2 <- DefineStrategy(p.sus,	p.sus.notest, p.sus.nf,	p.sus.nbt,	p.sus.nct,	p.sus.tc,
                      p.sus.sae,	p.sus.sae.death,
                      p.sus.no.risk,
@@ -250,7 +250,7 @@ S2 <- DefineStrategy(p.sus,	p.sus.notest, p.sus.nf,	p.sus.nbt,	p.sus.nct,	p.sus.
                      p.tb,	p.tbr,	p.tb.death,	p.death,	p.emigrate,
                      transition.matrix = do.call(DefineTransition, arglist.S1.TM))
 
-# New baseline for S2
+# Defining baseline strategy
 S0_12 <- DefineStrategy(p.sus,	p.sus.notest, p.sus.nf,	p.sus.nbt,	p.sus.nct,	p.sus.tc,
                        p.sus.sae,	p.sus.sae.death,
                        p.sus.no.risk,
@@ -302,7 +302,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
 
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 # 
 # factor <- 7.09 * 0.76# 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 
@@ -321,6 +321,7 @@ pop.master <- CreatePopulationMaster()
 #---------- Model parameters for STRATEGY 0 ----------------#
 
 # TODO - Need a new CreatePopulationMaster function to manage LGA column.
+PSA <- 0
 discount <- disc
 start.year <- startyear
 year <- start.year # Initialise year with start.year
@@ -333,12 +334,12 @@ DoRunModel(S0_12, start.year, cycles)
 
 #-------- Model parameters for S1 & S2 --------#
 
-discount <- disc
-start.year <- startyear
-year <- start.year # Initialise year with start.year
-markov.cycle <- 0 # Tracks the current cycle
-cycles <- totalcycles  # The mortality data continues until 2100 and migrant inflows are
-              # possible until 2050
+# discount <- disc
+# start.year <- startyear
+# year <- start.year # Initialise year with start.year
+# markov.cycle <- 0 # Tracks the current cycle
+# cycles <- totalcycles  # The mortality data continues until 2100 and migrant inflows are
+#               # possible until 2050
 
 
 

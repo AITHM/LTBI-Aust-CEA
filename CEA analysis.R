@@ -31,7 +31,7 @@ files <- setNames(files, namelist)
 counter <- 0
 files <- lapply(files, function(dt) {
   dt <- as.data.table(dt)
-  dt[, YEAR :=  cycle + startyear]
+  dt[, YEAR :=  cycle + start.year]
   counter <<- counter + 1
   dt[, STRAT := namelist[counter]]
 })
@@ -59,7 +59,7 @@ qalybase <- sum(base$SQsum)
 basetbcount <- base[, sum(p.tb)]
 
 # total baseline tb cases
-basetbdeath <- base[YEAR == finalyear, sum(p.tb.death)]
+basetbdeath <- base[YEAR == final.year, sum(p.tb.death)]
 
 tabfunc <- function(dt) { 
   dt <- as.data.table(dt)
@@ -68,21 +68,21 @@ tabfunc <- function(dt) {
   nameofdt <- dt$STRAT[1]
   
   # annual migrant inflow
-  migflow <- dt[YEAR == startyear & YARP == startyear, sum(NUMP),]
+  migflow <- dt[YEAR == start.year & YARP == start.year, sum(NUMP),]
   
   # annual average emigration inflow
   emigflow <- dt[, sum(p.emigrate)]/totalcycles
   
-  emigflow <- dt[YEAR == startyear + 2 & YARP == startyear, sum(p.emigrate)]
+  emigflow <- dt[YEAR == start.year + 2 & YARP == start.year, sum(p.emigrate)]
   
   # annual number screened/tested
   cdt <- copy(dt)
-  numscreened <- cdt[YEAR == startyear + 1 & YARP == startyear, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
+  numscreened <- cdt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
                   sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nf) + sum(p.ltbi.nbt) +
                   sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
   
   # number referred annually
-  # find name of screening test
+  # ld name of screening test
   testing <- dt$Test[1]
   # lookup test sensitivities and specificities	
   tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15", ""), 
@@ -92,12 +92,12 @@ tabfunc <- function(dt) {
   TESTSP <- tests.dt[tests == testing, SP]
   cdt <- copy(dt)
   targetgroup <- targetfunc(cdt)
-  numref <- targetgroup[YEAR == startyear & YARP == startyear, sum(LTBP),] * 
-    TESTSN + targetgroup[YEAR == startyear & YARP == startyear, sum(NUMP) - sum(LTBP),] * (1 - TESTSP)
+  numref <- targetgroup[YEAR == start.year & YARP == start.year, sum(LTBP),] * 
+    TESTSN + targetgroup[YEAR == start.year & YARP == start.year, sum(NUMP) - sum(LTBP),] * (1 - TESTSP)
   
   
   # number attending annually (should be 0.836 * the number referred)
-  numatt <- dt[YEAR == startyear + 1 & YARP == startyear, sum(p.sus.nbt) + sum(p.sus.nct) +
+  numatt <- dt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nbt) + sum(p.sus.nct) +
        sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
        sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
   
@@ -152,7 +152,7 @@ tabfunc <- function(dt) {
   tbprevpercent <- (tbprev/basetbcount) * 100
   
   # number of tb deaths 
-  tbdeath <- dt[YEAR == finalyear, sum(p.tb.death)]
+  tbdeath <- dt[YEAR == final.year, sum(p.tb.death)]
   
   # number of tb deaths prevented
   tbdeathprev <- basetbdeath - tbdeath
@@ -165,7 +165,7 @@ tabfunc <- function(dt) {
   
   # number needed to screen (to prevent a tb case)
   #targetgroup <- targetfunc(dt)
-  #numberscreened <- targetgroup[YEAR == startyear, sum(NUMP)] * (finalinflow + 1)
+  #numberscreened <- targetgroup[YEAR == start.year, sum(NUMP)] * (finalinflow + 1)
   nns <- totscreen/tbprev
   
   # number needed to effectively treat (to prevent a tb case)
