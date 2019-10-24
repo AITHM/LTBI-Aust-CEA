@@ -108,10 +108,10 @@ Get.RR <- function(xDT, year) {
 # Sensitivity and Specificity of screening tools
 snqftgit <- 0.6104 # QFTGIT sensitivity baseline 0.6104, low 0.4925, high 0.7195
 sntst10 <- 0.7532 # TST10 sensitivity baseline 0.6591, low 0.6418, high 0.8444
-sntst15 <- 0.6341 # TST15 sensitivity baseline 0.6341, low 0.5590, high 0.7777
-spqftgit <- 0.95820 # QFTGIT specificity baseline 0.95820, low 0.7784, high 1
-sptst10 <- 0.82227 # TST10 specificity new 0.858132898 baseline 0.6679, low 0.6562, high 0.6796
-sptst15 <- 0.95117 # TST15 specificity new 0.992662046 baseline 0.7726, low 0.7621, high 0.7829
+sntst15 <- 0.6753 # TST15 sensitivity baseline 0.6341, low 0.5590, high 0.7777
+spqftgit <- 0.95820 # QFTGIT specificity baseline 0.95820, low 0.95700, high 0.95948
+sptst10 <- 0.82227 # TST10 specificity baseline 0.82227, low 0.81780, high 0.92686
+sptst15 <- 0.95117 # TST15 specificity baseline 0.95117, low 0.94978, high 0.95255
   
 # Effectiveness of LTBI treatment (TREATR)
 treatr3HP <- 0.74088 # TREATR 3HP baseline 0.74088, low 0.5, high 0.9

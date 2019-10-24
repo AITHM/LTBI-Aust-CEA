@@ -74,353 +74,46 @@ Get.POP <- function(DT, strategy) {
 # Define all the parameters that are uncertain, but that
 # are also fixed for each model run (i.e. they aren't dependent
 # on age or year etc).
+# this data is in the PSA.csv and needs to be read in
+setwd("H:/Katie/PhD/CEA")
+dt <- read.csv("PSA.csv", header = TRUE)
+dt <- as.data.table(dt)
 
-# begintrt
-# probability of beginning treatment (beta)
-mean <- 0.596
-low <- 0.331
-high <- 0.8
-betaparam <- findbeta2(mean, low, high)
-simdata$begintrt = rbeta(Num_SIm, betaparam[1], betaparam[2])
+dt[, X := NULL]
+dt[, parameters := as.character(parameters)]
+dt[, abbreviation := as.character(abbreviation)]
+dt[, mid := as.numeric(as.character(mid))]
+dt[, low := as.numeric(as.character(mid))]
+dt[, high := as.numeric(as.character(mid))]
+dt[, distribution := as.character(distribution)]
 
-# att
-# probability of attending follow-up (beta)
-mean <- 0.836
-low <- 0.5
-high <- 1.0
-betaparam <- findbeta2(mean, low, high)
-simdata$att = rbeta(Num_SIm, betaparam[1], betaparam[2])
+dt <- subset(dt, abbreviation == "snqftgit" |
+                abbreviation == "spqftgit" |
+                abbreviation == "snqftgit" |
+                abbreviation == "sntst15" |
+                abbreviation == "sntst10")
 
-# rradj
-# probability of rradjust (beta)
-mean <- 0.9
-low <- 0.952
-high <- 0.875
-betaparam <- findbeta2(mean, low, high)
-simdata$rradj = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# COSTS
-
-# cattend
-# cost of attending treatment (gamma??)
-mean <- 103.48
-low <- 103.48
-high <- 103.48
-betaparam <- findgamma2(mean, low, high)
-simdata$cattend = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# csae
-# cost of severe adverse event (gamma??)
-mean <- 1124
-low <- 1124
-high <- 1124
-betaparam <- findgamma2(mean, low, high)
-simdata$csae = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# cscreenqft
-# cost of QFT screen (gamma??)
-mean <- 1124
-low <- 1124
-high <- 1124
-betaparam <- findgamma2(mean, low, high)
-simdata$cscreenqft = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# cscreentst
-# cost of TST screen (gamma??)
-mean <- 1124
-low <- 1124
-high <- 1124
-betaparam <- findgamma2(mean, low, high)
-simdata$cscreentst = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# ctb
-# cost of active TB (gamma) WRONG!!!
-mean <- 12000
-low <- 5000
-high <- 178000
-betaparam <- findgamma2(mean, low, high)
-simdata$ctb = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# ctreat3HP 
-# cost of 3HP (gamma) WRONG!!!
-mean <- 208.03
-low <- 50
-high <- 300
-betaparam <- findgamma2(mean, low, high)
-simdata$ctreat3HP = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# cparttreat3HP
-# cost of partial 3HP (gamma) WRONG!!!
-mean <- 82.81
-low <- 50
-high <- 100
-betaparam <- findgamma2(mean, low, high)
-simdata$cparttreat3HP = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# ctreat4R
-# cost of 4R (gamma) WRONG!!!
-mean <- 431.41
-low <- 300
-high <- 500
-betaparam <- findgamma2(mean, low, high)
-simdata$ctreat4R = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# cparttreat4R
-# cost of partial 4R (gamma) WRONG!!!
-mean <- 157.82
-low <- 50
-high <- 200
-betaparam <- findgamma2(mean, low, high)
-simdata$cparttreat4R = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# ctreat6H
-# cost of 6H (gamma) WRONG!!!
-mean <- 239.53
-low <- 50
-high <- 300
-betaparam <- findgamma2(mean, low, high)
-simdata$ctreat6H = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# cparttreat6H
-# cost of partial 6H (gamma) WRONG!!!
-mean <- 97.65
-low <- 50
-high <- 200
-betaparam <- findgamma2(mean, low, high)
-simdata$cparttreat6H = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# ctreat9H
-# cost of 9H (gamma) WRONG!!!
-mean <- 342.79
-low <- 50
-high <- 400
-betaparam <- findgamma2(mean, low, high)
-simdata$ctreat9H = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# cparttreat9H
-# cost of partial 9H (gamma) WRONG!!!
-mean <- 138.23
-low <- 50
-high <- 200
-betaparam <- findgamma2(mean, low, high)
-simdata$cparttreat9H = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-
-# SENSITIVITIES AND SPECIFICITIES
-
-# snqftgit
-## sensitivity of the qftgit (beta)
-mean <- 0.6104
-low <- 0.4925
-high <- 0.7195
-betaparam <- findbeta2(mean, low, high)
-simdata$snqftgit = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# spqftgit
-## probability of rradjust (beta)
-mean <- 0.95820
-low <- 0.7784
-high <- 1
-betaparam <- findbeta2(mean, low, high)
-simdata$spqftgit = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# sntst15
-## probability of rradjust (beta)
-mean <- 0.6341
-low <- 0.5590
-high <- 0.7777
-betaparam <- findbeta2(mean, low, high)
-simdata$sntst15 = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# sptst15
-## probability of rradjust (beta)
-mean <- 0.95117
-low <- 0.7726
-high <- 1
-betaparam <- findbeta2(mean, low, high)
-simdata$sptst15 = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# sntst10
-## probability of rradjust (beta)
-mean <- 0.7532
-low <- 0.6418
-high <- 0.8444
-betaparam <- findbeta2(mean, low, high)
-simdata$sntst10 = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# sptst10
-## probability of rradjust (beta)
-mean <- 0.82227
-low <- 0.6562
-high <- 1
-betaparam <- findbeta2(mean, low, high)
-simdata$sptst10 = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# TREATR
-
-# treatr3HP 
-# cost of 3HP (gamma) WRONG!!!
-mean <- 0.74088
-low <- 0.5
-high <- 1
-betaparam <- findgamma2(mean, low, high)
-simdata$treatr3HP = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# treatr4R
-# cost of 4R (gamma) WRONG!!!
-mean <- 0.82272
-low <- 0.5
-high <- 1
-betaparam <- findgamma2(mean, low, high)
-simdata$treatr4R = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# treatr6H
-# cost of 6H (gamma) WRONG!!!
-mean <- 0.5568
-low <- 0.5
-high <- 1
-betaparam <- findgamma2(mean, low, high)
-simdata$treatr6H = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# treatr9H
-# cost of 9H (gamma) WRONG!!!
-mean <- 0.735800
-low <- 0.5
-high <- 1
-betaparam <- findgamma2(mean, low, high)
-simdata$treatr9H = rgamma(Num_SIm, betaparam[1], betaparam[2])
-
-# TIME TO TREATMENT
-
-# ttt3HP
-## Time to complete LTBI treatment (beta)
-mean <- 0.375
-low <- 0.292
-high <- 0.500
-betaparam <- findbeta2(mean, low, high)
-simdata$ttt3HP = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ttt4R
-## Time to complete LTBI treatment (beta)
-mean <- 0.458
-low <- 0.375
-high <- 0.583
-betaparam <- findbeta2(mean, low, high)
-simdata$ttt4R = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ttt6H
-## Time to complete LTBI treatment (beta)
-mean <- 0.625
-low <- 0.542
-high <- 0.750
-betaparam <- findbeta2(mean, low, high)
-simdata$ttt6H = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ttt9H
-## Time to complete LTBI treatment (beta)
-mean <- 0.875
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ttt9H = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-#UTILITIES
-
-# uactivetb
-## utility of active TB (beta)
-mean <- 0.780730111
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$uactivetb = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# uactivetbr
-## utility of recovered TB (beta)
-mean <- 0.876
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$uactivetbr = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# uhealthy
-## utility of healthy state (beta)
-mean <- 0.876
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$uhealthy = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbitreatsae
-## utility of SAE (beta)
-mean <- 0.8343333
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbitreatsae = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbi3HP
-## utility of 3HP (beta)
-mean <- 0.876
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbi3HP = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbi4R
-## utility of 4R (beta)
-mean <- 0.875
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbi4R = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbi6H
-## utility of 6H (beta)
-mean <- 0.875
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbi6H = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbi9H
-## utility of 9H (beta)
-mean <- 0.875
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbi9H = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbipart3HP
-## utility of part 3HP (beta)
-mean <- 0.875
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbipart3HP = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbipart4R
-## utility of part 4R (beta)
-mean <- 0.875
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbipart4R = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbipart6H
-## utility of part 6H (beta)
-mean <- 0.875
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbipart6H = rbeta(Num_SIm, betaparam[1], betaparam[2])
-
-# ultbipart9H
-## utility of part 9H (beta)
-mean <- 0.875
-low <- 0.792
-high <- 1.00
-betaparam <- findbeta2(mean, low, high)
-simdata$ultbipart9H = rbeta(Num_SIm, betaparam[1], betaparam[2])
+# The loop below adds one column to the simdata table based on the
+# data in each row of the dt data frame
+# i.e. it creates 10,000 samples for each variable to represent their uncertainty
+for(i in 1:nrow(dt)) {
+  abbreviation <- dt[i, abbreviation]
+  mid <- dt[i, mid]
+  low <- dt[i, low]
+  high <- dt[i, high]
+  distribution <- dt[i, distribution]
+  if (distribution == "beta") {
+    betaparam <- findbeta2(mid, low, high)
+    simdata[, newcol := rbeta(Num_SIm, betaparam[1], betaparam[2])]
+    setnames(simdata, "newcol", abbreviation)
+  }
+  else {
+    betaparam <- findgamma2(mid, low, high)
+    simdata[, newcol := rgamma(Num_SIm, betaparam[1], betaparam[2])]
+    setnames(simdata, "newcol", abbreviation)
+  }
+}
+  
 
 # The dependent variables need to be defined separately...
 # Get.RR
@@ -792,7 +485,7 @@ for(i in 1:Num_SIm) {
   cparttreat4R <- simdata[simnumber, cparttreat4R]
   cparttreat6H <- simdata[simnumber, cparttreat6H]
   cparttreat9H <- simdata[simnumber, cparttreat9H]
-  snqftgit <- simdata[simnumber, snqftgit]
+  # snqftgit <- simdata[simnumber, snqftgit]
   sntst10 <- simdata[simnumber, sntst10]
   sntst15 <- simdata[simnumber, sntst15]
   spqftgit <- simdata[simnumber, spqftgit]
@@ -896,7 +589,7 @@ for(i in 1:Num_SIm) {
   strat <- DoRunModel(S2, start.year, cycles)
   strat <- unlist(strat)
   simrun.output[simnumber, stratcost := strat[1]]
-  simrun.output[simnumber, stratqaly := strat[1]]
+  simrun.output[simnumber, stratqaly := strat[1]] 
   
 }
 
