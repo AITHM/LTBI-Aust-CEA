@@ -1,6 +1,6 @@
 # PARAMETER ADJUSTMENT (now all in one place, i.e. below)
 
-disc <- 0.05 # discount rate baseline 0.03, low 0.00, high 0.05
+disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
 start.year <- startyear
 totalcycles <- 10  # cycles ... The mortality data continues until 2100 and migrant 

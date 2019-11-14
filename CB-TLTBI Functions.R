@@ -485,7 +485,7 @@ DoRunModel <- function(strategy, start.year, cycles) {
           # ADD THE OUTPUT THAT I WANT FROM THE PSA
           # Calculating the total cost and effectiveness
         
-          # total baseline cost
+          # total cost
           a <- which( colnames(pop.output) == "SC.p.sus" )
           b <- which( colnames(pop.output) == "SC.p.emigrate" )
           c <- which( colnames(pop.output) == "FC.p.sus" )
@@ -493,10 +493,10 @@ DoRunModel <- function(strategy, start.year, cycles) {
           out1 <- sum(pop.output[, Reduce(`+`, .SD), .SDcols = c(a:b)], na.rm = TRUE) + 
             sum(pop.output[, Reduce(`+`, .SD), .SDcols = c(c:d)], na.rm = TRUE)
           
-          # total baseline QALYS
+          # total QALYS
           e <- which( colnames(pop.output) == "SQ.p.sus" )
           f <- which( colnames(pop.output) == "SQ.p.emigrate" )
-          out2 <- sum(pop.output[, Reduce(`+`, .SD), .SDcols = c(e:f)], na.rm = TRUE)
+          out2 <- sum(rowSums(pop.output[, e:f], na.rm = TRUE))
           
           outlist <- c(out1, out2)
           

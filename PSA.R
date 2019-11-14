@@ -1,13 +1,16 @@
 
 # This is the code for the probabilistic sensitivity analysis (PSA)
 
-# The model setup and all parameter values are defined below
 # The "CB-TLTBI.R" and "Parameter values" scripts are not needed for PSA...
-# ...the model setup and parameter values are all located within this file.
+# ...the model setup and parameter values are all located within this file, below.
 
-# This script should run the model Num_SIm times
-# and output the incremental qalys and incremental costs of each run
+# This script should run the model "Num_SIm" times
+# and output incremental qalys and incremental costs for each run
 # so that the cost-effectiveness plane and acceptability curves can be plotted.
+
+# Parameters that aren't dependent on other variables (age, year of arrival, year etc)
+# are defined in the csv spreadsheet called "PSA.csv" in the CEA folder.
+
 
 # Coding style
 # https://google.github.io/styleguide/Rguide.xml
@@ -19,6 +22,9 @@ library(ggplot2)
 library(scales)
 library(lazyeval) 
 library(data.table) 
+library(doParallel)
+library(foreach)
+library(mc2d)
 
 # Sourcing required functions from other scripts
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
@@ -36,7 +42,7 @@ Num_SIm <- 10000
 simrun <- c(seq(1, Num_SIm))
 simdata <- as.data.frame(simrun)
 simdata <- as.data.table(simdata)
-
+ 
 # Define all the parameters that are don't have any uncertainty:
 discount <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 start.year <- 2020 # start.year
@@ -72,48 +78,114 @@ Get.POP <- function(DT, strategy) {
 }
 
 # Define all the parameters that are uncertain, but that
-# are also fixed for each model run (i.e. they aren't dependent
-# on age or year etc).
-# this data is in the PSA.csv and needs to be read in
+# are also fixed for each model run 
+# (i.e. they aren't dependent on age or year etc).
+# the upper and lower limirs for this data 
+# is defined in the PSA.csv and needs to be read in:
 setwd("H:/Katie/PhD/CEA")
 dt <- read.csv("PSA.csv", header = TRUE)
 dt <- as.data.table(dt)
 
+# reformat data table
 dt[, X := NULL]
 dt[, parameters := as.character(parameters)]
 dt[, abbreviation := as.character(abbreviation)]
 dt[, mid := as.numeric(as.character(mid))]
-dt[, low := as.numeric(as.character(mid))]
-dt[, high := as.numeric(as.character(mid))]
+dt[, low := as.numeric(as.character(low))]
+dt[, high := as.numeric(as.character(high))]
 dt[, distribution := as.character(distribution)]
 
-dt <- subset(dt, abbreviation == "snqftgit" |
-                abbreviation == "spqftgit" |
-                abbreviation == "snqftgit" |
-                abbreviation == "sntst15" |
-                abbreviation == "sntst10")
+# subset a small sample that have definitely been 
+# defined for testing
+# dt <- subset(dt, abbreviation == "snqftgit" |
+#                 abbreviation == "spqftgit" |
+#                 abbreviation == "snqftgit" |
+#                 abbreviation == "sntst15" |
+#                 abbreviation == "sntst10")
 
-# The loop below adds one column to the simdata table based on the
-# data in each row of the dt data frame
-# i.e. it creates 10,000 samples for each variable to represent their uncertainty
+# The loop below adds one column to the simdata table for each parameter value
+# defined in the rows of the PSA.csv file (these are parameters that aren't dependent
+# on other variables, i.e. they are fixed for each run). 
+# The loop below uses the upper and lower limits in the PSA.csv
+# file, together with the distribution defined in the "distribution" column, 
+# to calculate a distribution and then take 10,000 samples from it
+# that represents the parameter uncertainty
+
 for(i in 1:nrow(dt)) {
   abbreviation <- dt[i, abbreviation]
   mid <- dt[i, mid]
   low <- dt[i, low]
   high <- dt[i, high]
+  shape <- dt[i, shape]
   distribution <- dt[i, distribution]
-  if (distribution == "beta") {
+  if (distribution == "pert") {
+    simdata[, newcol := rpert(Num_SIm, min = low, mode = mid, 
+                              max = high, shape = shape)]
+    setnames(simdata, "newcol", abbreviation)
+  }
+  # else if (distribution == "gamma") {
+  #   betaparam <- findgamma2(mid, low, high)
+  #   simdata[, newcol := rgamma(Num_SIm, betaparam[1], betaparam[2])]
+  #   setnames(simdata, "newcol", abbreviation)
+  # }
+  else if (distribution == "beta") {
     betaparam <- findbeta2(mid, low, high)
     simdata[, newcol := rbeta(Num_SIm, betaparam[1], betaparam[2])]
     setnames(simdata, "newcol", abbreviation)
   }
   else {
-    betaparam <- findgamma2(mid, low, high)
-    simdata[, newcol := rgamma(Num_SIm, betaparam[1], betaparam[2])]
+    simdata[, newcol := 0]
     setnames(simdata, "newcol", abbreviation)
   }
 }
-  
+
+
+# Plotting the distributions used for all of the different
+# parameters
+# set up the plotting space
+nrow(dt)
+par(mfrow = c(6, 7)) 
+
+layout(matrix(1:42, ncol = 7))
+
+for(i in 1:nrow(dt)) {
+  # store data in column.i as x
+  abbreviation <- dt[i, abbreviation]
+  mid <- dt[i, mid]
+  low <- dt[i, low]
+  high <- dt[i, high]
+  shape <- dt[i, shape]
+  distribution <- dt[i, distribution]
+  plotnum <- paste("plot", i, sep = "")
+  if (high < 1){
+    upperlim <- 1
+  }
+  else {
+      upperlim <- high + 20
+      }
+  if (distribution == "beta") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dbeta(p, betaparam[1], betaparam[2]), 
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "gamma") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dgamma(p, betaparam[1], betaparam[2]), 
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dpert(p, min = low, mode = mid, 
+                        max = high, shape = shape), 
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+}
+par(old.par)
 
 # The dependent variables need to be defined separately...
 # Get.RR
@@ -140,6 +212,7 @@ Get.RR <- function(xDT, year) {
   
 } 
 # Get.EMIGRATE
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
 # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
 emigrate.rate <- as.data.table(emigrate.rate)
@@ -444,8 +517,6 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
 pop.master <- CreatePopulationMaster()
 pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
-
-
 # This is only for test purposes...
 Num_SIm <- 5
 simdata <- simdata[1:Num_SIm, ]
@@ -463,6 +534,9 @@ simdata <- as.data.table(simdata)
 simrun.output <- c(seq(1, Num_SIm))
 simrun.output <- as.data.frame(simrun.output)
 simrun.output <- as.data.table(simrun.output)
+
+
+
 
 # this loops over the number of simulations
 # and runs the model
@@ -485,7 +559,7 @@ for(i in 1:Num_SIm) {
   cparttreat4R <- simdata[simnumber, cparttreat4R]
   cparttreat6H <- simdata[simnumber, cparttreat6H]
   cparttreat9H <- simdata[simnumber, cparttreat9H]
-  # snqftgit <- simdata[simnumber, snqftgit]
+  snqftgit <- simdata[simnumber, snqftgit]
   sntst10 <- simdata[simnumber, sntst10]
   sntst15 <- simdata[simnumber, sntst15]
   spqftgit <- simdata[simnumber, spqftgit]
@@ -512,11 +586,149 @@ for(i in 1:Num_SIm) {
   ultbipart9H <- simdata[simnumber, ultbipart9H]
   ultbitreatsae <- simdata[simnumber, ultbitreatsae]
   # Create a sample data table of test sensitivity & specificity
-  tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"), 
+  tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
                          SN = c(snqftgit, sntst10, sntst15),
                          SP = c(spqftgit, sptst10, sptst15),
-                         # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value 
-                         # of interferon-gamma release assays and tuberculin skin test in predicting the development of active 
+                         # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value
+                         # of interferon-gamma release assays and tuberculin skin test in predicting the development of active
+                         # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
+                         # cost.primary = c(74.34, 70.40, 70.40))
+                         cost.primary = c(cscreenqft, cscreentst, cscreentst))
+  # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
+  # Australia's health system
+
+  # Create a sample treatment data table
+  treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
+                             rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
+                             cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H),
+                             cost.partial = c(cparttreat3HP, cparttreat4R,
+                                              cparttreat6H, cparttreat9H))
+
+  # This data table indicates when those who receive LTBI treatment in the first
+  # year after migration are likely to have received that treatment (as an annual proportion).
+  timetotreat.dt <- data.table(treatment = c("3HP", "4R", "6H", "9H"),
+                               yearfraction = c(ttt3HP, ttt4R, ttt6H, ttt9H))
+  # could talk to Michael Flynn to establish how long it takes to complete treatment
+
+  # Create a sample utility data table
+  # TODO: fix hard coded data table. It should take state.names and create the columns.
+  utility.dt <- data.table(treatment = c("", "3HP", "4R", "6H", "9H"))
+  utility.dt[, c(state.names) := as.numeric(NA)]
+
+  utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
+                                                     ultbitreatsae, 0,
+                                                     uhealthy,
+                                                     uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
+                                                     ultbitreatsae, 0,
+                                                     uhealthy, uhealthy,
+                                                     uactivetb, uactivetbr, 0, 0, 0)]
+
+  utility.dt[treatment == "4R", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart4R, ultbi4R,
+                                                    ultbitreatsae, 0,
+                                                    uhealthy,
+                                                    uhealthy, uhealthy, uhealthy, uhealthy, ultbipart4R, ultbi4R,
+                                                    ultbitreatsae, 0,
+                                                    uhealthy, uhealthy,
+                                                    uactivetb, uactivetbr, 0, 0, 0)]
+
+  utility.dt[treatment == "6H", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
+                                                    ultbitreatsae, 0,
+                                                    uhealthy,
+                                                    uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
+                                                    ultbitreatsae, 0,
+                                                    uhealthy, uhealthy,
+                                                    uactivetb, uactivetbr, 0, 0, 0)]
+
+  utility.dt[treatment == "9H", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart9H, ultbi9H,
+                                                    ultbitreatsae, 0,
+                                                    uhealthy,
+                                                    uhealthy, uhealthy, uhealthy, uhealthy, ultbipart9H, ultbi9H,
+                                                    ultbitreatsae, 0,
+                                                    uhealthy, uhealthy,
+                                                    uactivetb, uactivetbr, 0, 0, 0)]
+
+  utility.dt[treatment == "", c(state.names) := .(uhealthy, uhealthy, NA, NA, NA, NA,
+                                                  NA, NA,
+                                                  uhealthy,
+                                                  uhealthy, uhealthy, NA, NA, NA, NA,
+                                                  NA, NA,
+                                                  uhealthy, NA,
+                                                  uactivetb, uactivetbr, 0, 0, 0)]
+
+  base <- DoRunModel(S0_12, start.year, cycles)
+  base <- unlist(base)
+  simrun.output[simnumber, basecost := base[1]]
+  simrun.output[simnumber, baseqaly := base[2]]
+
+  strat <- DoRunModel(S2, start.year, cycles)
+  strat <- unlist(strat)
+  simrun.output[simnumber, stratcost := strat[1]]
+  simrun.output[simnumber, stratqaly := strat[2]]
+
+}
+
+
+
+
+
+
+# Do parallel trick. This requires the doParallel and foreach package
+# and makes the loop below run simulaneoulsy in the 4 cores of the 
+# computer, and so run four times as quickly!
+my.cl <- makeCluster(4)
+registerDoParallel(my.cl)
+foreach (i = 1:nrow(simdata)) %dopar% {
+  library(data.table)
+  simnumber <- i
+  PSA <- 1
+  begintrt <- simdata[simnumber, begintrt]
+  att <- simdata[simnumber, att]
+  rradj <- simdata[simnumber, rradj]
+  cattend <- simdata[simnumber, cattend]
+  csae <- simdata[simnumber, csae]
+  cscreenqft <- simdata[simnumber, cscreenqft]
+  cscreentst <- simdata[simnumber, cscreentst]
+  ctb <- simdata[simnumber, ctb]
+  ctreat3HP <- simdata[simnumber, ctreat3HP]
+  ctreat4R <- simdata[simnumber, ctreat4R]
+  ctreat6H <- simdata[simnumber, ctreat6H]
+  ctreat9H <- simdata[simnumber, ctreat9H]
+  cparttreat3HP <- simdata[simnumber, cparttreat3HP]
+  cparttreat4R <- simdata[simnumber, cparttreat4R]
+  cparttreat6H <- simdata[simnumber, cparttreat6H]
+  cparttreat9H <- simdata[simnumber, cparttreat9H]
+  snqftgit <- simdata[simnumber, snqftgit]
+  sntst10 <- simdata[simnumber, sntst10]
+  sntst15 <- simdata[simnumber, sntst15]
+  spqftgit <- simdata[simnumber, spqftgit]
+  sptst10 <- simdata[simnumber, sptst10]
+  sptst15 <- simdata[simnumber, sptst15]
+  treatr3HP <- simdata[simnumber, treatr3HP]
+  treatr4R <- simdata[simnumber, treatr4R]
+  treatr6H <- simdata[simnumber, treatr6H]
+  treatr9H <- simdata[simnumber, treatr9H]
+  ttt3HP <- simdata[simnumber, ttt3HP]
+  ttt4R <- simdata[simnumber, ttt4R]
+  ttt6H <- simdata[simnumber, ttt6H]
+  ttt9H <- simdata[simnumber, ttt9H]
+  uactivetb <- simdata[simnumber, uactivetb]
+  uactivetbr <- simdata[simnumber, uactivetbr]
+  uhealthy <- simdata[simnumber, uhealthy]
+  ultbi3HP <- simdata[simnumber, ultbi3HP]
+  ultbi4R <- simdata[simnumber, ultbi4R]
+  ultbi6H <- simdata[simnumber, ultbi6H]
+  ultbi9H <- simdata[simnumber, ultbi9H]
+  ultbipart3HP <- simdata[simnumber, ultbipart3HP]
+  ultbipart4R <- simdata[simnumber, ultbipart4R]
+  ultbipart6H <- simdata[simnumber, ultbipart6H]
+  ultbipart9H <- simdata[simnumber, ultbipart9H]
+  ultbitreatsae <- simdata[simnumber, ultbitreatsae]
+  # Create a sample data table of test sensitivity & specificity
+  tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
+                         SN = c(snqftgit, sntst10, sntst15),
+                         SP = c(spqftgit, sptst10, sptst15),
+                         # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value
+                         # of interferon-gamma release assays and tuberculin skin test in predicting the development of active
                          # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
                          # cost.primary = c(74.34, 70.40, 70.40))
                          cost.primary = c(cscreenqft, cscreentst, cscreentst))
@@ -530,7 +742,7 @@ for(i in 1:Num_SIm) {
                              cost.partial = c(cparttreat3HP, cparttreat4R,
                                               cparttreat6H, cparttreat9H))
   
-  # This data table indicates when those who receive LTBI treatment in the first 
+  # This data table indicates when those who receive LTBI treatment in the first
   # year after migration are likely to have received that treatment (as an annual proportion).
   timetotreat.dt <- data.table(treatment = c("3HP", "4R", "6H", "9H"),
                                yearfraction = c(ttt3HP, ttt4R, ttt6H, ttt9H))
@@ -574,7 +786,7 @@ for(i in 1:Num_SIm) {
                                                     uactivetb, uactivetbr, 0, 0, 0)]
   
   utility.dt[treatment == "", c(state.names) := .(uhealthy, uhealthy, NA, NA, NA, NA,
-                                                  NA, NA, 
+                                                  NA, NA,
                                                   uhealthy,
                                                   uhealthy, uhealthy, NA, NA, NA, NA,
                                                   NA, NA,
@@ -584,14 +796,14 @@ for(i in 1:Num_SIm) {
   base <- DoRunModel(S0_12, start.year, cycles)
   base <- unlist(base)
   simrun.output[simnumber, basecost := base[1]]
-  simrun.output[simnumber, baseqaly := base[1]]
+  simrun.output[simnumber, baseqaly := base[2]]
   
   strat <- DoRunModel(S2, start.year, cycles)
   strat <- unlist(strat)
   simrun.output[simnumber, stratcost := strat[1]]
-  simrun.output[simnumber, stratqaly := strat[1]] 
-  
+  simrun.output[simnumber, stratqaly := strat[2]]
 }
+stopCluster(my.cl)
 
 
 
@@ -609,105 +821,122 @@ for(i in 1:Num_SIm) {
 
 
 
+# Plot of PSA results on cost effectiveness plane.
+# The code below will plot the 10,000 model run outputs on a
+# cost effectiveness plane.
+# A blue willingness to pay line is drawn on the plane too
+# and the colour of the simulations will be either green or red
+# depending on whether the ICER value is under or over the WTP.
 
 
+simdata <- cbind(simdata, simrun.output)
+simdata[, icer := (stratcost - basecost)/(stratqaly - baseqaly)]
+simdata[, Effect_prop_diff := stratqaly - baseqaly]
+simdata[, cost_diff := stratcost - basecost]
 
-# # Plot of PSA results on cost effectiveness plane.
-# # The code below will plot the 10,000 model run outputs on a
-# # cost effectiveness plane.
-# # A blue willingness to pay line is drawn on the plane too
-# # and the colour of the simulations will be either green or red
-# # depending on whether the ICER value is under or over the WTP.
-# 
-# WTP = 1000 # willingness to pay threshold
-# WTP_compare1 = 500
-# 
-# simdata$model = WTP * simdata$Effect_prop_diff 
-# 
-# simdata$model_true = simdata$model - simdata$cost_diff 
-# 
-# simdata$CE = ifelse(test = simdata$model_true > 0,yes = 1, no = 0 )
-# 
-# simdata$CE_col = ifelse(test = simdata$CE == 0, yes = 2, no = 3 )
+WTP = 1000 # willingness to pay threshold
+WTP_compare1 = 500
+
+simdata$model = WTP * simdata$Effect_prop_diff
+
+simdata$model_true = simdata$model - simdata$cost_diff
+
+simdata$CE = ifelse(test = simdata$model_true > 0,yes = 1, no = 0 )
+
+simdata$CE_col = ifelse(test = simdata$CE == 0, yes = 2, no = 3 )
+table(simdata$CE)
+
+dev.off()
+plot(simdata$cost_diff ~ simdata$Effect_prop_diff,
+     col = simdata$CE_col, cex = .8, pch = 3,
+     xlim = c(-100, 100), ylim = c(-8000, 150000))
+abline(h = 0, lwd = 2 )
+abline(v = 0, lwd = 2 )
+abline(c(0, WTP), col = 4, lwd = 3)
+
+# #abline(c(0,WTP_compare1), lwd=3)
 # table(simdata$CE)
+
+
+# Plot of acceptability curve
+# work out the proportion cost-effective
+
+icerlist <- simdata$icer
+maxwtp <- 100000
+wtp <- c(0:maxwtp)
+propcosteffectivefunc <- function(wtp){
+  (sum(icerlist < wtp)/10000) * 100
+}
+propcosteffect <- unlist(lapply(wtp, propcosteffectivefunc))
+
+# create a new table, the accepty table
+accepty <- data.frame(wtp, propcosteffect)
+
+# plot
+myplot1 <-
+  ggplot(accepty, aes(x = wtp, y = propcosteffect))+
+  geom_line(size = 1, colour = "blue") +
+  labs(x = "Willingness-to-pay threshold (AUD$)",
+       y = "Proportion cost-effective (%)") +
+  scale_y_continuous(breaks = seq(0, 100, 10)) +
+  scale_x_continuous(label = comma, breaks = seq(0, 150000, 20000)) +
+  theme_bw() +
+  theme(text = element_text(size = 25))
+        # panel.border = element_blank(),
+        # legend.position = "right",
+        # axis.text.x = element_text(angle = 45, hjust = 1))
+        # axis.text.y = element_text(size = 12))
+        # panel.grid.major = element_blank(),
+        # panel.grid.minor = element_blank(),
+
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
+tiff('acceptability.tiff',
+     units = "in", width = 15, height = 12,
+     res = 600)
+myplot1
+dev.off()
+
+
+
+
+# Exploring density plots
+# Beta distribution
+# https://stephens999.github.io/fiveMinuteStats/beta.html
+# where a = b
 # 
-# plot(simdata$cost_diff ~ simdata$Effect_prop_diff, 
-#      col = simdata$CE_col, cex = .8, pch = 3,
-#      xlim = c(-30, 30), ylim = c(-8000, 8000))
-# abline(h = 0, lwd = 2 )
-# abline(v = 0, lwd = 2 )
-# abline(c(0, WTP), col = 4, lwd = 3)
+# source("Distribution parameter calculations.R") # for determining distribution parameter values
 # 
-# # #abline(c(0,WTP_compare1), lwd=3)
-# # table(simdata$CE)
+# betaparam <- findbeta2(0.0011, 0.0009, 0.0013)
 # 
-# 
-# # Plot of acceptability curve
-# # work out the proportion cost-effective
-# icerlist <- simdata$icer
-# maxwtp <- 100000
-# wtp <- c(0:maxwtp)
-# propcosteffectivefunc <- function(wtp){
-#   (sum(icerlist < wtp)/10000) * 100
-# }
-# propcosteffect <- unlist(lapply(wtp, propcosteffectivefunc))
-# 
-# # create a new table, the accepty table 
-# accepty <- data.frame(wtp, propcosteffect)
-# 
-# # plot
-# myplot1 <- 
-#   ggplot(accepty, aes(x = wtp, y = propcosteffect))+
-#   geom_line(size = 1, colour = "blue") +
-#   labs(x = "Willingness-to-pay threshold (AUD$)", 
-#        y = "Proportion cost-effective (%)") +
-#   scale_y_continuous(breaks = seq(0, 100, 20)) +
-#   scale_x_continuous(label = comma, breaks = seq(0, 150000, 20000)) +
-#   theme_bw() +
-#   theme(text = element_text(size = 25))
-#         # panel.border = element_blank(),
-#         # legend.position = "right",
-#         # axis.text.x = element_text(angle = 45, hjust = 1))
-#         # axis.text.y = element_text(size = 12))
-#         # panel.grid.major = element_blank(),
-#         # panel.grid.minor = element_blank(),
-# 
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-# tiff('acceptability.tiff', 
-#      units = "in", width = 15, height = 12,
-#      res = 600)
-# myplot1
 # dev.off()
-
-
-
-
-# # Exploring density plots
-# # Beta distribution
-# # https://stephens999.github.io/fiveMinuteStats/beta.html
-# # where a = b
+# p = seq(0,0.02, length=100)
+# plot(p, dbeta(p, betaparam[1], betaparam[2]), ylab = "density", type = "l", col = 4, xlim = c(0, 0.02))
 # 
+# 
+# 
+# 
+# 
+
+
+
 # p = seq(0,1, length=100)
 # plot(p, dbeta(p, 100, 100), ylab = "density", type = "l", col = 4)
 # lines(p, dbeta(p, 10, 10), type = "l", col = 3)
-# lines(p, dbeta(p, 2, 2), col = 2) 
-# lines(p, dbeta(p, 1, 1), col = 1) 
+# lines(p, dbeta(p, 2, 2), col = 2)
+# lines(p, dbeta(p, 1, 1), col = 1)
 # legend(0.7,8, c("Be(100,100)","Be(10,10)","Be(2,2)", "Be(1,1)"),
 #        lty = c(1,1,1,1),
 #        col = c(4,3,2,1))
 # 
 # # where a != b
-# p = seq(0,1, length=100)
+# p = seq(0,1, length = 100)
 # 
-# dev.off()
-# 
-# plot(p, dbeta(p, 87.49806, 87410.56493), ylab = "density", type = "l", col = 4, xlim = c(0, 0.02))
 # 
 # plot(p, dbeta(p, 90.92, 82545.55), ylab="density", type = "l", col = 4, xlim = c(0, 0.02))
 # 
 # lines(p, dbeta(p, 90, 10), type ="l", col = 3)
-# lines(p, dbeta(p, 30, 70), col = 2) 
-# lines(p, dbeta(p, 3, 7), col = 1) 
+# lines(p, dbeta(p, 30, 70), col = 2)
+# lines(p, dbeta(p, 3, 7), col = 1)
 # legend(0.2, 30, c("90.92,82545.55", "Be(90,10)", "Be(30, 70)", "Be(3, 7)"),
 #        lty = c(1,1,1,1),col=c(4,3,2,1))
 # 
