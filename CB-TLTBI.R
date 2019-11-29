@@ -85,12 +85,23 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
                        # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
                        # Australia's health system
 
+
+
 # Create a sample treatment data table
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
-                           rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
-                           cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H),
-                           cost.partial = c(cparttreat3HP, cparttreat4R,
-                                            cparttreat6H, cparttreat9H))
+                           rate = c(treatr3HP, treatr4R, treatr6H, treatr9H))
+
+# Create a sample treatment cost data table
+treatmentcost.dt <- data.table(treatment = c("3HP","4R", "6H", "9H", "3HP","4R", "6H", "9H"),
+                               practitioner = c("gp","gp", "gp", "gp", 
+                                                "spec","spec", "spec", "spec"),
+                               cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H,
+                                                ctreatspec3HP, ctreatspec4R, ctreatspec6H, 
+                                                ctreatspec9H),
+                               cost.partial = c(cparttreat3HP, cparttreat4R,
+                                                 cparttreat6H, cparttreat9H,
+                                                cparttreatspec3HP, cparttreatspec4R,
+                                                cparttreatspec6H, cparttreatspec9H))
 
 # This data table indicates when those who receive LTBI treatment in the first 
 # year after migration are likely to have received that treatment (as an annual proportion).
@@ -285,24 +296,25 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                # follow-up and treatment process is complete. The time that they remain 
                                # at risk will be dependent on the treatment regimen (see timetotreat.dt).
                                SAE = Get.SAE(DT, treatment),
-                               SAEMR = Get.SAEMR(DT, treatment),
+                               SAEMR = saemr,
                                EMIGRATE = Get.EMIGRATE(DT, year),
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
                                TESTC = Get.TEST(S = "cost.primary", testing),
                                TREATR = Get.TREAT(S = "rate", treatment),
-                               TREATC = Get.TREAT(S = "cost.primary", treatment),
+                               TREATC = Get.TREATC(DT, treatment, S = "cost.primary"),
                                POP = Get.POP(DT, strategy),
                                UTILITY = Get.UTILITY(treatment),
+                               #ATTENDCOST = Get.ATTENDC(DT, S = "cost.attend"),
                                ATTENDCOST = cattend,
-                               PARTIALTREATCOST = Get.TREAT(S = "cost.partial", treatment),
+                               PARTIALTREATCOST = Get.TREATC(DT, treatment, S = "cost.partial"),
                                TBCOST = ctb,
                                SAECOST = csae
                                )
-
+ 
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 # 
 # factor <- 7.09 * 0.76# 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 

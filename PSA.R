@@ -82,13 +82,12 @@ Get.POP <- function(DT, strategy) {
 # (i.e. they aren't dependent on age or year etc).
 # the upper and lower limirs for this data 
 # is defined in the PSA.csv and needs to be read in:
-setwd("H:/Katie/PhD/CEA")
-dt <- read.csv("PSA.csv", header = TRUE)
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+dt <- load("params.csv", header = TRUE)
 dt <- as.data.table(dt)
 
 # reformat data table
-dt[, X := NULL]
-dt[, parameters := as.character(parameters)]
+setnames(dt, "p", "abbreviation")
 dt[, abbreviation := as.character(abbreviation)]
 dt[, mid := as.numeric(as.character(mid))]
 dt[, low := as.numeric(as.character(low))]
@@ -140,54 +139,184 @@ for(i in 1:nrow(dt)) {
 }
 
 
-# Plotting the distributions used for all of the different
-# parameters
-# set up the plotting space
-nrow(dt)
-par(mfrow = c(6, 7)) 
-
-layout(matrix(1:42, ncol = 7))
-
-for(i in 1:nrow(dt)) {
-  # store data in column.i as x
-  abbreviation <- dt[i, abbreviation]
-  mid <- dt[i, mid]
-  low <- dt[i, low]
-  high <- dt[i, high]
-  shape <- dt[i, shape]
-  distribution <- dt[i, distribution]
-  plotnum <- paste("plot", i, sep = "")
-  if (high < 1){
-    upperlim <- 1
-  }
-  else {
-      upperlim <- high + 20
-      }
-  if (distribution == "beta") {
-    p = seq(0, upperlim, length = 1000)
-    betaparam <- findbeta2(mid, low, high)
-    plot(p, dbeta(p, betaparam[1], betaparam[2]), 
-         ylab = "density", type = "l", col = 4, xlim = c(0, high),
-         main = abbreviation)
-  }
-  else if (distribution == "gamma") {
-    p = seq(0, upperlim, length = 1000)
-    betaparam <- findbeta2(mid, low, high)
-    plot(p, dgamma(p, betaparam[1], betaparam[2]), 
-         ylab = "density", type = "l", col = 4, xlim = c(0, high),
-         main = abbreviation)
-  }
-  else {
-    p = seq(0, upperlim, length = 1000)
-    plot(p, dpert(p, min = low, mode = mid, 
-                        max = high, shape = shape), 
-         ylab = "density", type = "l", col = 4, xlim = c(0, high),
-         main = abbreviation)
-  }
-}
-par(old.par)
+# # Plotting the distributions used for all of the different
+# # parameters
+# #plotting transitions
+# a <- which( dt$abbreviation == "begintrt" )
+# b <- which( dt$abbreviation == "ttt9H" )
+# plot.dt <- dt[a:b,]
+# nrow(plot.dt)
+# dev.off()
+# # set up the plotting space
+# #layout(matrix(1:nrow(plot.dt), ncol = 6)) 
+# par(mfrow = c(4, 5))
+# for(i in 1:nrow(plot.dt)) {
+#   # store data in column.i as x
+#   abbreviation <- plot.dt[i, abbreviation]
+#   mid <- plot.dt[i, mid]
+#   low <- plot.dt[i, low]
+#   high <- plot.dt[i, high]
+#   shape <- plot.dt[i, shape]
+#   distribution <- plot.dt[i, distribution]
+#   plotnum <- paste("plot", i, sep = "")
+#   if (high < 1){
+#     upperlim <- 1
+#   }
+#   else {
+#     upperlim <- high + 20
+#   }
+#   if (distribution == "beta") {
+#     p = seq(0, upperlim, length = 1000)
+#     betaparam <- findbeta2(mid, low, high)
+#     plot(p, dbeta(p, betaparam[1], betaparam[2]), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else if (distribution == "gamma") {
+#     p = seq(0, upperlim, length = 1000)
+#     betaparam <- findbeta2(mid, low, high)
+#     plot(p, dgamma(p, betaparam[1], betaparam[2]), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else {
+#     p = seq(0, upperlim, length = 1000)
+#     plot(p, dpert(p, min = low, mode = mid, 
+#                   max = high, shape = shape), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+# }
+# 
+# #plotting costs
+# a <- which( dt$abbreviation == "cattend" )
+# b <- which( dt$abbreviation == "cparttreatspec9H" )
+# plot.dt <- dt[a:b,]
+# nrow(plot.dt)
+# dev.off()
+# # set up the plotting space
+# par(mfrow = c(3, 4))
+# #layout(matrix(1:nrow(plot.dt), ncol = 11)) 
+# for(i in 1:nrow(plot.dt)) {
+#   # store data in column.i as x
+#   abbreviation <- plot.dt[i, abbreviation]
+#   mid <- plot.dt[i, mid]
+#   low <- plot.dt[i, low]
+#   high <- plot.dt[i, high]
+#   shape <- plot.dt[i, shape]
+#   distribution <- plot.dt[i, distribution]
+#   plotnum <- paste("plot", i, sep = "")
+#   if (high < 1){
+#     upperlim <- 1
+#   }
+#   else {
+#     upperlim <- high + 20
+#   }
+#   if (distribution == "beta") {
+#     p = seq(0, upperlim, length = 1000)
+#     betaparam <- findbeta2(mid, low, high)
+#     plot(p, dbeta(p, betaparam[1], betaparam[2]), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else if (distribution == "gamma") {
+#     p = seq(0, upperlim, length = 1000)
+#     betaparam <- findbeta2(mid, low, high)
+#     plot(p, dgamma(p, betaparam[1], betaparam[2]), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else {
+#     p = seq(0, upperlim, length = 1000)
+#     plot(p, dpert(p, min = low, mode = mid, 
+#                   max = high, shape = shape), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+# }
+# 
+# #plotting utilities
+# a <- which( dt$abbreviation == "uactivetb" )
+# b <- which( dt$abbreviation == "ultbitreatsae" )
+# plot.dt <- dt[a:b,]
+# nrow(plot.dt)
+# dev.off()
+# # set up the plotting space
+# layout(matrix(1:nrow(plot.dt), ncol = 6)) 
+# for(i in 1:nrow(plot.dt)) {
+#   # store data in column.i as x
+#   abbreviation <- plot.dt[i, abbreviation]
+#   mid <- plot.dt[i, mid]
+#   low <- plot.dt[i, low]
+#   high <- plot.dt[i, high]
+#   shape <- plot.dt[i, shape]
+#   distribution <- plot.dt[i, distribution]
+#   plotnum <- paste("plot", i, sep = "")
+#   if (high < 1){
+#     upperlim <- 1
+#   }
+#   else {
+#       upperlim <- high + 20
+#       }
+#   if (distribution == "beta") {
+#     p = seq(0, upperlim, length = 1000)
+#     betaparam <- findbeta2(mid, low, high)
+#     plot(p, dbeta(p, betaparam[1], betaparam[2]), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else if (distribution == "gamma") {
+#     p = seq(0, upperlim, length = 1000)
+#     betaparam <- findbeta2(mid, low, high)
+#     plot(p, dgamma(p, betaparam[1], betaparam[2]), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else {
+#     p = seq(0, upperlim, length = 1000)
+#     plot(p, dpert(p, min = low, mode = mid, 
+#                         max = high, shape = shape), 
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+# }
+# # Restore margins...could also do it with dev.off()  ?
+# par(mfrow = c(1,1))
 
 # The dependent variables need to be defined separately...
+
+# Look up cost of attending (it's age dependent)
+Get.ATTENDC <- function(xDT, S) {
+  
+  DT <- copy(xDT[, .(AGEP)])
+  
+  DT[AGEP > 110, AGEP := 110]
+  
+  if(DT$AGEP[1] < 36) {
+    cattend
+  } else {
+    prop.over35.needing.spec * cattendspec + ((1 - prop.over35.needing.spec) * cattend)
+  }
+  
+}
+
+# Look up treatment costs (it's age dependent)
+Get.TREATC <- function(xDT, treat, S) {
+  
+  DT <- copy(xDT[, .(AGEP)])
+  
+  DT[AGEP > 110, AGEP := 110]
+  
+  practi <- "gp"
+  
+  if(DT$AGEP[1] > 36 | DT$AGEP[1] < 18) {
+    practi <- "spec"
+  }
+  
+  as.numeric(treatmentcost.dt[treatment == treat & practitioner == practi, ..S])
+  
+}
+
 # Get.RR
 # Reactivation rates
 Get.RR <- function(xDT, year) {
@@ -289,27 +418,27 @@ Get.SAE <- function(xDT, treat) {
   return(out)
   
 }
-# Get.SAEMR
-# Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
-Get.SAEMR <- function(xDT, treat) {
-  
-  DT <- copy(xDT[, .(AGERP)])
-  
-  DT[AGERP > 110, AGERP := 110]
-  
-  DT$treatment <- as.character(treat)
-  
-  mid <- sae.mortality[DT[, .(AGERP, treatment)], 
-                       Rate, on = .(Age = AGERP, treatment = treatment)]
-  low <- sae.mortality[DT[, .(AGERP, treatment)], 
-                       low, on = .(Age = AGERP, treatment = treatment)]
-  high <- sae.mortality[DT[, .(AGERP, treatment)], 
-                        high, on = .(Age = AGERP, treatment = treatment)]
-  betaparam <- findbeta2(mid, low, high)
-  out <- rbeta(1, betaparam[1], betaparam[2])
-  return(out)
-  
-}
+# # Get.SAEMR
+# # Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
+# Get.SAEMR <- function(xDT, treat) {
+#   
+#   DT <- copy(xDT[, .(AGERP)])
+#   
+#   DT[AGERP > 110, AGERP := 110]
+#   
+#   DT$treatment <- as.character(treat)
+#   
+#   mid <- sae.mortality[DT[, .(AGERP, treatment)], 
+#                        Rate, on = .(Age = AGERP, treatment = treatment)]
+#   low <- sae.mortality[DT[, .(AGERP, treatment)], 
+#                        low, on = .(Age = AGERP, treatment = treatment)]
+#   high <- sae.mortality[DT[, .(AGERP, treatment)], 
+#                         high, on = .(Age = AGERP, treatment = treatment)]
+#   betaparam <- findbeta2(mid, low, high)
+#   out <- rbeta(1, betaparam[1], betaparam[2])
+#   return(out)
+#   
+# }
 
 
 # MODEL SET UP
@@ -675,135 +804,135 @@ for(i in 1:Num_SIm) {
 # Do parallel trick. This requires the doParallel and foreach package
 # and makes the loop below run simulaneoulsy in the 4 cores of the 
 # computer, and so run four times as quickly!
-my.cl <- makeCluster(4)
-registerDoParallel(my.cl)
-foreach (i = 1:nrow(simdata)) %dopar% {
-  library(data.table)
-  simnumber <- i
-  PSA <- 1
-  begintrt <- simdata[simnumber, begintrt]
-  att <- simdata[simnumber, att]
-  rradj <- simdata[simnumber, rradj]
-  cattend <- simdata[simnumber, cattend]
-  csae <- simdata[simnumber, csae]
-  cscreenqft <- simdata[simnumber, cscreenqft]
-  cscreentst <- simdata[simnumber, cscreentst]
-  ctb <- simdata[simnumber, ctb]
-  ctreat3HP <- simdata[simnumber, ctreat3HP]
-  ctreat4R <- simdata[simnumber, ctreat4R]
-  ctreat6H <- simdata[simnumber, ctreat6H]
-  ctreat9H <- simdata[simnumber, ctreat9H]
-  cparttreat3HP <- simdata[simnumber, cparttreat3HP]
-  cparttreat4R <- simdata[simnumber, cparttreat4R]
-  cparttreat6H <- simdata[simnumber, cparttreat6H]
-  cparttreat9H <- simdata[simnumber, cparttreat9H]
-  snqftgit <- simdata[simnumber, snqftgit]
-  sntst10 <- simdata[simnumber, sntst10]
-  sntst15 <- simdata[simnumber, sntst15]
-  spqftgit <- simdata[simnumber, spqftgit]
-  sptst10 <- simdata[simnumber, sptst10]
-  sptst15 <- simdata[simnumber, sptst15]
-  treatr3HP <- simdata[simnumber, treatr3HP]
-  treatr4R <- simdata[simnumber, treatr4R]
-  treatr6H <- simdata[simnumber, treatr6H]
-  treatr9H <- simdata[simnumber, treatr9H]
-  ttt3HP <- simdata[simnumber, ttt3HP]
-  ttt4R <- simdata[simnumber, ttt4R]
-  ttt6H <- simdata[simnumber, ttt6H]
-  ttt9H <- simdata[simnumber, ttt9H]
-  uactivetb <- simdata[simnumber, uactivetb]
-  uactivetbr <- simdata[simnumber, uactivetbr]
-  uhealthy <- simdata[simnumber, uhealthy]
-  ultbi3HP <- simdata[simnumber, ultbi3HP]
-  ultbi4R <- simdata[simnumber, ultbi4R]
-  ultbi6H <- simdata[simnumber, ultbi6H]
-  ultbi9H <- simdata[simnumber, ultbi9H]
-  ultbipart3HP <- simdata[simnumber, ultbipart3HP]
-  ultbipart4R <- simdata[simnumber, ultbipart4R]
-  ultbipart6H <- simdata[simnumber, ultbipart6H]
-  ultbipart9H <- simdata[simnumber, ultbipart9H]
-  ultbitreatsae <- simdata[simnumber, ultbitreatsae]
-  # Create a sample data table of test sensitivity & specificity
-  tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
-                         SN = c(snqftgit, sntst10, sntst15),
-                         SP = c(spqftgit, sptst10, sptst15),
-                         # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value
-                         # of interferon-gamma release assays and tuberculin skin test in predicting the development of active
-                         # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
-                         # cost.primary = c(74.34, 70.40, 70.40))
-                         cost.primary = c(cscreenqft, cscreentst, cscreentst))
-  # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
-  # Australia's health system
-  
-  # Create a sample treatment data table
-  treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
-                             rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
-                             cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H),
-                             cost.partial = c(cparttreat3HP, cparttreat4R,
-                                              cparttreat6H, cparttreat9H))
-  
-  # This data table indicates when those who receive LTBI treatment in the first
-  # year after migration are likely to have received that treatment (as an annual proportion).
-  timetotreat.dt <- data.table(treatment = c("3HP", "4R", "6H", "9H"),
-                               yearfraction = c(ttt3HP, ttt4R, ttt6H, ttt9H))
-  # could talk to Michael Flynn to establish how long it takes to complete treatment
-  
-  # Create a sample utility data table
-  # TODO: fix hard coded data table. It should take state.names and create the columns.
-  utility.dt <- data.table(treatment = c("", "3HP", "4R", "6H", "9H"))
-  utility.dt[, c(state.names) := as.numeric(NA)]
-  
-  utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
-                                                     ultbitreatsae, 0,
-                                                     uhealthy,
-                                                     uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
-                                                     ultbitreatsae, 0,
-                                                     uhealthy, uhealthy,
-                                                     uactivetb, uactivetbr, 0, 0, 0)]
-  
-  utility.dt[treatment == "4R", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart4R, ultbi4R,
-                                                    ultbitreatsae, 0,
-                                                    uhealthy,
-                                                    uhealthy, uhealthy, uhealthy, uhealthy, ultbipart4R, ultbi4R,
-                                                    ultbitreatsae, 0,
-                                                    uhealthy, uhealthy,
-                                                    uactivetb, uactivetbr, 0, 0, 0)]
-  
-  utility.dt[treatment == "6H", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
-                                                    ultbitreatsae, 0,
-                                                    uhealthy,
-                                                    uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
-                                                    ultbitreatsae, 0,
-                                                    uhealthy, uhealthy,
-                                                    uactivetb, uactivetbr, 0, 0, 0)]
-  
-  utility.dt[treatment == "9H", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart9H, ultbi9H,
-                                                    ultbitreatsae, 0,
-                                                    uhealthy,
-                                                    uhealthy, uhealthy, uhealthy, uhealthy, ultbipart9H, ultbi9H,
-                                                    ultbitreatsae, 0,
-                                                    uhealthy, uhealthy,
-                                                    uactivetb, uactivetbr, 0, 0, 0)]
-  
-  utility.dt[treatment == "", c(state.names) := .(uhealthy, uhealthy, NA, NA, NA, NA,
-                                                  NA, NA,
-                                                  uhealthy,
-                                                  uhealthy, uhealthy, NA, NA, NA, NA,
-                                                  NA, NA,
-                                                  uhealthy, NA,
-                                                  uactivetb, uactivetbr, 0, 0, 0)]
-  
-  base <- DoRunModel(S0_12, start.year, cycles)
-  base <- unlist(base)
-  simrun.output[simnumber, basecost := base[1]]
-  simrun.output[simnumber, baseqaly := base[2]]
-  
-  strat <- DoRunModel(S2, start.year, cycles)
-  strat <- unlist(strat)
-  simrun.output[simnumber, stratcost := strat[1]]
-  simrun.output[simnumber, stratqaly := strat[2]]
-}
-stopCluster(my.cl)
+# my.cl <- makeCluster(4)
+# registerDoParallel(my.cl)
+# foreach (i = 1:nrow(simdata)) %dopar% {
+#   library(data.table)
+#   simnumber <- i
+#   PSA <- 1
+#   begintrt <- simdata[simnumber, begintrt]
+#   att <- simdata[simnumber, att]
+#   rradj <- simdata[simnumber, rradj]
+#   cattend <- simdata[simnumber, cattend]
+#   csae <- simdata[simnumber, csae]
+#   cscreenqft <- simdata[simnumber, cscreenqft]
+#   cscreentst <- simdata[simnumber, cscreentst]
+#   ctb <- simdata[simnumber, ctb]
+#   ctreat3HP <- simdata[simnumber, ctreat3HP]
+#   ctreat4R <- simdata[simnumber, ctreat4R]
+#   ctreat6H <- simdata[simnumber, ctreat6H]
+#   ctreat9H <- simdata[simnumber, ctreat9H]
+#   cparttreat3HP <- simdata[simnumber, cparttreat3HP]
+#   cparttreat4R <- simdata[simnumber, cparttreat4R]
+#   cparttreat6H <- simdata[simnumber, cparttreat6H]
+#   cparttreat9H <- simdata[simnumber, cparttreat9H]
+#   snqftgit <- simdata[simnumber, snqftgit]
+#   sntst10 <- simdata[simnumber, sntst10]
+#   sntst15 <- simdata[simnumber, sntst15]
+#   spqftgit <- simdata[simnumber, spqftgit]
+#   sptst10 <- simdata[simnumber, sptst10]
+#   sptst15 <- simdata[simnumber, sptst15]
+#   treatr3HP <- simdata[simnumber, treatr3HP]
+#   treatr4R <- simdata[simnumber, treatr4R]
+#   treatr6H <- simdata[simnumber, treatr6H]
+#   treatr9H <- simdata[simnumber, treatr9H]
+#   ttt3HP <- simdata[simnumber, ttt3HP]
+#   ttt4R <- simdata[simnumber, ttt4R]
+#   ttt6H <- simdata[simnumber, ttt6H]
+#   ttt9H <- simdata[simnumber, ttt9H]
+#   uactivetb <- simdata[simnumber, uactivetb]
+#   uactivetbr <- simdata[simnumber, uactivetbr]
+#   uhealthy <- simdata[simnumber, uhealthy]
+#   ultbi3HP <- simdata[simnumber, ultbi3HP]
+#   ultbi4R <- simdata[simnumber, ultbi4R]
+#   ultbi6H <- simdata[simnumber, ultbi6H]
+#   ultbi9H <- simdata[simnumber, ultbi9H]
+#   ultbipart3HP <- simdata[simnumber, ultbipart3HP]
+#   ultbipart4R <- simdata[simnumber, ultbipart4R]
+#   ultbipart6H <- simdata[simnumber, ultbipart6H]
+#   ultbipart9H <- simdata[simnumber, ultbipart9H]
+#   ultbitreatsae <- simdata[simnumber, ultbitreatsae]
+#   # Create a sample data table of test sensitivity & specificity
+#   tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
+#                          SN = c(snqftgit, sntst10, sntst15),
+#                          SP = c(spqftgit, sptst10, sptst15),
+#                          # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value
+#                          # of interferon-gamma release assays and tuberculin skin test in predicting the development of active
+#                          # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
+#                          # cost.primary = c(74.34, 70.40, 70.40))
+#                          cost.primary = c(cscreenqft, cscreentst, cscreentst))
+#   # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
+#   # Australia's health system
+#   
+#   # Create a sample treatment data table
+#   treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
+#                              rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
+#                              cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H),
+#                              cost.partial = c(cparttreat3HP, cparttreat4R,
+#                                               cparttreat6H, cparttreat9H))
+#   
+#   # This data table indicates when those who receive LTBI treatment in the first
+#   # year after migration are likely to have received that treatment (as an annual proportion).
+#   timetotreat.dt <- data.table(treatment = c("3HP", "4R", "6H", "9H"),
+#                                yearfraction = c(ttt3HP, ttt4R, ttt6H, ttt9H))
+#   # could talk to Michael Flynn to establish how long it takes to complete treatment
+#   
+#   # Create a sample utility data table
+#   # TODO: fix hard coded data table. It should take state.names and create the columns.
+#   utility.dt <- data.table(treatment = c("", "3HP", "4R", "6H", "9H"))
+#   utility.dt[, c(state.names) := as.numeric(NA)]
+#   
+#   utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
+#                                                      ultbitreatsae, 0,
+#                                                      uhealthy,
+#                                                      uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
+#                                                      ultbitreatsae, 0,
+#                                                      uhealthy, uhealthy,
+#                                                      uactivetb, uactivetbr, 0, 0, 0)]
+#   
+#   utility.dt[treatment == "4R", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart4R, ultbi4R,
+#                                                     ultbitreatsae, 0,
+#                                                     uhealthy,
+#                                                     uhealthy, uhealthy, uhealthy, uhealthy, ultbipart4R, ultbi4R,
+#                                                     ultbitreatsae, 0,
+#                                                     uhealthy, uhealthy,
+#                                                     uactivetb, uactivetbr, 0, 0, 0)]
+#   
+#   utility.dt[treatment == "6H", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
+#                                                     ultbitreatsae, 0,
+#                                                     uhealthy,
+#                                                     uhealthy, uhealthy, uhealthy, uhealthy, ultbipart6H, ultbi6H,
+#                                                     ultbitreatsae, 0,
+#                                                     uhealthy, uhealthy,
+#                                                     uactivetb, uactivetbr, 0, 0, 0)]
+#   
+#   utility.dt[treatment == "9H", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart9H, ultbi9H,
+#                                                     ultbitreatsae, 0,
+#                                                     uhealthy,
+#                                                     uhealthy, uhealthy, uhealthy, uhealthy, ultbipart9H, ultbi9H,
+#                                                     ultbitreatsae, 0,
+#                                                     uhealthy, uhealthy,
+#                                                     uactivetb, uactivetbr, 0, 0, 0)]
+#   
+#   utility.dt[treatment == "", c(state.names) := .(uhealthy, uhealthy, NA, NA, NA, NA,
+#                                                   NA, NA,
+#                                                   uhealthy,
+#                                                   uhealthy, uhealthy, NA, NA, NA, NA,
+#                                                   NA, NA,
+#                                                   uhealthy, NA,
+#                                                   uactivetb, uactivetbr, 0, 0, 0)]
+#   
+#   base <- DoRunModel(S0_12, start.year, cycles)
+#   base <- unlist(base)
+#   simrun.output[simnumber, basecost := base[1]]
+#   simrun.output[simnumber, baseqaly := base[2]]
+#   
+#   strat <- DoRunModel(S2, start.year, cycles)
+#   strat <- unlist(strat)
+#   simrun.output[simnumber, stratcost := strat[1]]
+#   simrun.output[simnumber, stratqaly := strat[2]]
+# }
+# stopCluster(my.cl)
 
 
 
