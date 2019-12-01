@@ -23,7 +23,7 @@ library(data.table) # required
 # The strategies and all parameters are defined in the "Parameter values" document.
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("CB-TLTBI Functions.R")
-source("CB-TLTBI Parameter values.R")
+source("Parameter values.R")
 source("CB-TLTBI_DataPreparation.R")
 # This function uses the above three Fix* functions. 
 # Run once to create the *.rds objects (vic.fertility, vic.mortality, vic.migration)
@@ -84,8 +84,6 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
                        cost.primary = c(cscreenqft, cscreentst, cscreentst))
                        # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
                        # Australia's health system
-
-
 
 # Create a sample treatment data table
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
@@ -302,19 +300,19 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                TESTSP = Get.TEST(S = "SP", testing),
                                TESTC = Get.TEST(S = "cost.primary", testing),
                                TREATR = Get.TREAT(S = "rate", treatment),
-                               TREATC = Get.TREATC(DT, treatment, S = "cost.primary"),
+                               TREATC = Get.TREATC(S = "cost.primary", treatment),
                                POP = Get.POP(DT, strategy),
                                UTILITY = Get.UTILITY(treatment),
                                #ATTENDCOST = Get.ATTENDC(DT, S = "cost.attend"),
                                ATTENDCOST = cattend,
-                               PARTIALTREATCOST = Get.TREATC(DT, treatment, S = "cost.partial"),
+                               PARTIALTREATCOST = Get.TREATC(S = "cost.partial", treatment),
                                TBCOST = ctb,
                                SAECOST = csae
                                )
  
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 # 
 # factor <- 7.09 * 0.76# 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 

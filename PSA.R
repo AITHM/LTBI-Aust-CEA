@@ -290,36 +290,36 @@ par(mfrow = c(1,1))
 # The dependent variables need to be defined separately...
 
 # Look up cost of attending (it's age dependent)
-Get.ATTENDC <- function(xDT, S) {
-  
-  DT <- copy(xDT[, .(AGEP)])
-  
-  DT[AGEP > 110, AGEP := 110]
-  
-  if(DT$AGEP[1] < 36) {
-    cattend
-  } else {
-    prop.over35.needing.spec * cattendspec + ((1 - prop.over35.needing.spec) * cattend)
-  }
-  
-}
+# Get.ATTENDC <- function(xDT, S) {
+#   
+#   DT <- copy(xDT[, .(AGEP)])
+#   
+#   DT[AGEP > 110, AGEP := 110]
+#   
+#   if(DT$AGEP[1] < 36) {
+#     cattend
+#   } else {
+#     prop.over35.needing.spec * cattendspec + ((1 - prop.over35.needing.spec) * cattend)
+#   }
+#   
+# }
 
 # Look up treatment costs (it's age dependent)
-Get.TREATC <- function(xDT, treat, S) {
-  
-  DT <- copy(xDT[, .(AGEP)])
-  
-  DT[AGEP > 110, AGEP := 110]
-  
-  practi <- "gp"
-  
-  if(DT$AGEP[1] > 36 | DT$AGEP[1] < 18) {
-    practi <- "spec"
-  }
-  
-  as.numeric(treatmentcost.dt[treatment == treat & practitioner == practi, ..S])
-  
-}
+# Get.TREATC <- function(xDT, treat, S) {
+#   
+#   DT <- copy(xDT[, .(AGEP)])
+#   
+#   DT[AGEP > 110, AGEP := 110]
+#   
+#   practi <- "gp"
+#   
+#   if(DT$AGEP[1] > 36 | DT$AGEP[1] < 18) {
+#     practi <- "spec"
+#   }
+#   
+#   as.numeric(treatmentcost.dt[treatment == treat & practitioner == practi, ..S])
+#   
+# }
 
 # Get.RR
 # Reactivation rates
@@ -335,13 +335,13 @@ Get.RR <- function(xDT, year) {
   
   mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
                                                                            ysa = ST, cobi = COBI)]
-  low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                          ysa = ST, cobi = COBI)]
-  high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                           ysa = ST, cobi = COBI)]
-  betaparam <- findbeta2(mid, low, high)
-  out <- rbeta(1, betaparam[1], betaparam[2])
-  return(out)
+  # low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                         ysa = ST, cobi = COBI)]
+  # high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                          ysa = ST, cobi = COBI)]
+  # betaparam <- findbeta2(mid, low, high)
+  # out <- rbeta(1, betaparam[1], betaparam[2])
+  # return(out)
   
 } 
 # Get.EMIGRATE
@@ -358,12 +358,12 @@ Get.EMIGRATE <- function(xDT, year) {
   
   mid <- emigrate.rate[DT[, .(AGERP)], 
                        Rate, on = .(Age = AGERP)]
-  low <- emigrate.rate[DT[, .(AGERP)], 
-                       lower, on = .(Age = AGERP)]
-  high <- emigrate.rate[DT[, .(AGERP)], 
-                        upper, on = .(Age = AGERP)]
-  betaparam <- findbeta2(mid, low, high)
-  rbeta(1, betaparam[1], betaparam[2])
+  # low <- emigrate.rate[DT[, .(AGERP)], 
+  #                      lower, on = .(Age = AGERP)]
+  # high <- emigrate.rate[DT[, .(AGERP)], 
+  #                       upper, on = .(Age = AGERP)]
+  # betaparam <- findbeta2(mid, low, high)
+  # rbeta(1, betaparam[1], betaparam[2])
 }
 # Get.MR ##### Do I need to incorporate uncertainty for this parameter?
 # Look up the mortality rate from vic.mortality
@@ -392,13 +392,13 @@ Get.TBMR <- function(xDT, year) {
   
   mid <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
                           Prob, on = .(age = AGEP, sex = SEXP)]
-  low <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
-                          lowerProb, on = .(age = AGEP, sex = SEXP)]
-  high <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
-                           upperProb, on = .(age = AGEP, sex = SEXP)]
-  betaparam <- findbeta2(mid, low, high)
-  out <- rbeta(1, betaparam[1], betaparam[2])
-  return(out)
+  # low <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
+  #                         lowerProb, on = .(age = AGEP, sex = SEXP)]
+  # high <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
+  #                          upperProb, on = .(age = AGEP, sex = SEXP)]
+  # betaparam <- findbeta2(mid, low, high)
+  # out <- rbeta(1, betaparam[1], betaparam[2])
+  # return(out)
   
 }
 # Get.SAE
@@ -413,13 +413,13 @@ Get.SAE <- function(xDT, treat) {
   
   mid <- sae.rate[DT[, .(AGERP, treatment)], 
                   Rate, on = .(Age = AGERP, treatment = treatment)]
-  low <- sae.rate[DT[, .(AGERP, treatment)], 
-                  low, on = .(Age = AGERP, treatment = treatment)]
-  high <- sae.rate[DT[, .(AGERP, treatment)], 
-                   high, on = .(Age = AGERP, treatment = treatment)]
-  betaparam <- findbeta2(mid, low, high)
-  out <- rbeta(1, betaparam[1], betaparam[2])
-  return(out)
+  # low <- sae.rate[DT[, .(AGERP, treatment)], 
+  #                 low, on = .(Age = AGERP, treatment = treatment)]
+  # high <- sae.rate[DT[, .(AGERP, treatment)], 
+  #                  high, on = .(Age = AGERP, treatment = treatment)]
+  # betaparam <- findbeta2(mid, low, high)
+  # out <- rbeta(1, betaparam[1], betaparam[2])
+  # return(out)
   
 }
 # # Get.SAEMR
@@ -631,7 +631,8 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                # follow-up and treatment process is complete. The time that they remain 
                                # at risk will be dependent on the treatment regimen (see timetotreat.dt).
                                SAE = Get.SAE(DT, treatment),
-                               SAEMR = Get.SAEMR(DT, treatment),
+                               SAEMR = saemr,
+                               # SAEMR = Get.SAEMR(DT, treatment),
                                EMIGRATE = Get.EMIGRATE(DT, year),
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
@@ -651,7 +652,7 @@ pop.master <- CreatePopulationMaster()
 pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
 # This is only for test purposes...
-Num_SIm <- 5
+Num_SIm <- 100
 simdata <- simdata[1:Num_SIm, ]
 simdata <- as.data.table(simdata)
 
@@ -706,6 +707,7 @@ for(i in 1:Num_SIm) {
   ttt4R <- simdata[simnumber, ttt4R]
   ttt6H <- simdata[simnumber, ttt6H]
   ttt9H <- simdata[simnumber, ttt9H]
+  saemr <- simdata[simnumber, saemr]
   uactivetb <- simdata[simnumber, uactivetb]
   uactivetbr <- simdata[simnumber, uactivetbr]
   uhealthy <- simdata[simnumber, uhealthy]
@@ -982,7 +984,7 @@ table(simdata$CE)
 dev.off()
 plot(simdata$cost_diff ~ simdata$Effect_prop_diff,
      col = simdata$CE_col, cex = .8, pch = 3,
-     xlim = c(-100, 100), ylim = c(-8000, 150000))
+     xlim = c(-1, 2), ylim = c(-200000, 100000))
 abline(h = 0, lwd = 2 )
 abline(v = 0, lwd = 2 )
 abline(c(0, WTP), col = 4, lwd = 3)
