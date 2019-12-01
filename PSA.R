@@ -83,8 +83,10 @@ Get.POP <- function(DT, strategy) {
 # the upper and lower limirs for this data 
 # is defined in the PSA.csv and needs to be read in:
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-dt <- load("params.csv", header = TRUE)
+dt <- readRDS("params.rds")
 dt <- as.data.table(dt)
+
+aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
 
 # reformat data table
 setnames(dt, "p", "abbreviation")
@@ -93,7 +95,7 @@ dt[, mid := as.numeric(as.character(mid))]
 dt[, low := as.numeric(as.character(low))]
 dt[, high := as.numeric(as.character(high))]
 dt[, distribution := as.character(distribution)]
-
+dt[, shape := 4]
 # subset a small sample that have definitely been 
 # defined for testing
 # dt <- subset(dt, abbreviation == "snqftgit" |
@@ -109,6 +111,7 @@ dt[, distribution := as.character(distribution)]
 # file, together with the distribution defined in the "distribution" column, 
 # to calculate a distribution and then take 10,000 samples from it
 # that represents the parameter uncertainty
+
 
 for(i in 1:nrow(dt)) {
   abbreviation <- dt[i, abbreviation]
@@ -139,149 +142,150 @@ for(i in 1:nrow(dt)) {
 }
 
 
-# # Plotting the distributions used for all of the different
-# # parameters
-# #plotting transitions
-# a <- which( dt$abbreviation == "begintrt" )
-# b <- which( dt$abbreviation == "ttt9H" )
-# plot.dt <- dt[a:b,]
-# nrow(plot.dt)
-# dev.off()
-# # set up the plotting space
-# #layout(matrix(1:nrow(plot.dt), ncol = 6)) 
-# par(mfrow = c(4, 5))
-# for(i in 1:nrow(plot.dt)) {
-#   # store data in column.i as x
-#   abbreviation <- plot.dt[i, abbreviation]
-#   mid <- plot.dt[i, mid]
-#   low <- plot.dt[i, low]
-#   high <- plot.dt[i, high]
-#   shape <- plot.dt[i, shape]
-#   distribution <- plot.dt[i, distribution]
-#   plotnum <- paste("plot", i, sep = "")
-#   if (high < 1){
-#     upperlim <- 1
-#   }
-#   else {
-#     upperlim <- high + 20
-#   }
-#   if (distribution == "beta") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dbeta(p, betaparam[1], betaparam[2]), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "gamma") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dgamma(p, betaparam[1], betaparam[2]), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dpert(p, min = low, mode = mid, 
-#                   max = high, shape = shape), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-# }
-# 
-# #plotting costs
-# a <- which( dt$abbreviation == "cattend" )
-# b <- which( dt$abbreviation == "cparttreatspec9H" )
-# plot.dt <- dt[a:b,]
-# nrow(plot.dt)
-# dev.off()
-# # set up the plotting space
-# par(mfrow = c(3, 4))
-# #layout(matrix(1:nrow(plot.dt), ncol = 11)) 
-# for(i in 1:nrow(plot.dt)) {
-#   # store data in column.i as x
-#   abbreviation <- plot.dt[i, abbreviation]
-#   mid <- plot.dt[i, mid]
-#   low <- plot.dt[i, low]
-#   high <- plot.dt[i, high]
-#   shape <- plot.dt[i, shape]
-#   distribution <- plot.dt[i, distribution]
-#   plotnum <- paste("plot", i, sep = "")
-#   if (high < 1){
-#     upperlim <- 1
-#   }
-#   else {
-#     upperlim <- high + 20
-#   }
-#   if (distribution == "beta") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dbeta(p, betaparam[1], betaparam[2]), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "gamma") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dgamma(p, betaparam[1], betaparam[2]), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dpert(p, min = low, mode = mid, 
-#                   max = high, shape = shape), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-# }
-# 
-# #plotting utilities
-# a <- which( dt$abbreviation == "uactivetb" )
-# b <- which( dt$abbreviation == "ultbitreatsae" )
-# plot.dt <- dt[a:b,]
-# nrow(plot.dt)
-# dev.off()
-# # set up the plotting space
-# layout(matrix(1:nrow(plot.dt), ncol = 6)) 
-# for(i in 1:nrow(plot.dt)) {
-#   # store data in column.i as x
-#   abbreviation <- plot.dt[i, abbreviation]
-#   mid <- plot.dt[i, mid]
-#   low <- plot.dt[i, low]
-#   high <- plot.dt[i, high]
-#   shape <- plot.dt[i, shape]
-#   distribution <- plot.dt[i, distribution]
-#   plotnum <- paste("plot", i, sep = "")
-#   if (high < 1){
-#     upperlim <- 1
-#   }
-#   else {
-#       upperlim <- high + 20
-#       }
-#   if (distribution == "beta") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dbeta(p, betaparam[1], betaparam[2]), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "gamma") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dgamma(p, betaparam[1], betaparam[2]), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dpert(p, min = low, mode = mid, 
-#                         max = high, shape = shape), 
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-# }
-# # Restore margins...could also do it with dev.off()  ?
-# par(mfrow = c(1,1))
+# Plotting the distributions used for all of the different
+# parameters
+#plotting transitions
+a <- which( dt$abbreviation == "rradj" )
+b <- which( dt$abbreviation == "saemr" )
+plot.dt <- dt[a:b,]
+nrow(plot.dt)
+dev.off()
+# set up the plotting space
+#layout(matrix(1:nrow(plot.dt), ncol = 6))
+par(mfrow = c(3, 6))
+for(i in 1:nrow(plot.dt)) {
+  # store data in column.i as x
+  abbreviation <- plot.dt[i, abbreviation]
+  mid <- plot.dt[i, mid]
+  low <- plot.dt[i, low]
+  high <- plot.dt[i, high]
+  shape <- plot.dt[i, shape]
+  distribution <- plot.dt[i, distribution]
+  plotnum <- paste("plot", i, sep = "")
+  if (high < 1){
+    upperlim <- 1
+  }
+  else {
+    upperlim <- high + 20
+  }
+  if (distribution == "beta") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dbeta(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "gamma") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dgamma(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dpert(p, min = low, mode = mid,
+                  max = high, shape = shape),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         #ylim = c(0, 1),
+         main = abbreviation)
+  }
+}
+
+#plotting costs
+a <- which( dt$abbreviation == "cattend" )
+b <- which( dt$abbreviation == "cparttreatspec9H" )
+plot.dt <- dt[a:b,]
+nrow(plot.dt)
+dev.off()
+# set up the plotting space
+par(mfrow = c(4, 6))
+#layout(matrix(1:nrow(plot.dt), ncol = 11))
+for(i in 1:nrow(plot.dt)) {
+  # store data in column.i as x
+  abbreviation <- plot.dt[i, abbreviation]
+  mid <- plot.dt[i, mid]
+  low <- plot.dt[i, low]
+  high <- plot.dt[i, high]
+  shape <- plot.dt[i, shape]
+  distribution <- plot.dt[i, distribution]
+  plotnum <- paste("plot", i, sep = "")
+  if (high < 1){
+    upperlim <- 1
+  }
+  else {
+    upperlim <- high + 20
+  }
+  if (distribution == "beta") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dbeta(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "gamma") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dgamma(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dpert(p, min = low, mode = mid,
+                  max = high, shape = shape),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+}
+
+#plotting utilities
+a <- which( dt$abbreviation == "uactivetb" )
+b <- which( dt$abbreviation == "ultbipart9H" )
+plot.dt <- dt[a:b,]
+nrow(plot.dt)
+dev.off()
+# set up the plotting space
+par(mfrow = c(3, 4))
+for(i in 1:nrow(plot.dt)) {
+  # store data in column.i as x
+  abbreviation <- plot.dt[i, abbreviation]
+  mid <- plot.dt[i, mid]
+  low <- plot.dt[i, low]
+  high <- plot.dt[i, high]
+  shape <- plot.dt[i, shape]
+  distribution <- plot.dt[i, distribution]
+  plotnum <- paste("plot", i, sep = "")
+  if (high < 1){
+    upperlim <- 1
+  }
+  else {
+      upperlim <- high + 20
+      }
+  if (distribution == "beta") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dbeta(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "gamma") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dgamma(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dpert(p, min = low, mode = mid,
+                        max = high, shape = shape),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+}
+# Restore margins...could also do it with dev.off()  ?
+par(mfrow = c(1,1))
 
 # The dependent variables need to be defined separately...
 
