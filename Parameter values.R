@@ -5,8 +5,10 @@ library(data.table)
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-dt <- readRDS("params.rds")
-dt <- as.data.table(dt)
+params <- readRDS("params.rds")
+params <- as.data.table(params)
+
+
 
 
 # This function can be used to choose which parameters to change
@@ -17,16 +19,18 @@ dt <- as.data.table(dt)
 sensfunc <- function(paramname, loworhigh) { 
   paramname <- deparse(substitute(paramname))
   colname <- deparse(substitute(loworhigh))
-  newvalue <- dt[p == paramname, ..colname]
-  dt[p == paramname, mid:= newvalue]
+  newvalue <- params[p == paramname, ..colname]
+  params[p == paramname, mid:= newvalue]
 }
 
-# sensfunc(rradj, high)
+
+# sensfunc(ultbi4R, low)
+# sensfunc(ultbipart4R, low)
 
 # Taking the values from the params table and
 # putting them into the environment
-for(i in 1:nrow(dt)) {
-  assign(dt[i, p], dt[i, mid])
+for(i in 1:nrow(params)) {
+  assign(params[i, p], params[i, mid])
 }
 
 # Assigning other parameter values
@@ -57,9 +61,9 @@ Get.POP <- function(DT, strategy) {
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
     # 40+
-    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+    (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
        ifelse(DT[, AGERP] < 36, 1, 0))
@@ -72,9 +76,9 @@ targetfunc <- function(DT) {
   # 150+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
   # 100+
-  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
-  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
+  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
   # Adjust age
   DT <- subset(DT, AGERP > 10 &
                  AGERP < 36)
@@ -190,6 +194,8 @@ Get.EMIGRATE <- function(xDT, year) {
   DT[AGERP > 110, AGERP := 110]
   
   emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+  # emigrate.rate[DT[, .(AGERP)], lower, on = .(Age = AGERP)]
+  # emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)]
   
 }
 

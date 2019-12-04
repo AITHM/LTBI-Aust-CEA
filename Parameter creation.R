@@ -70,7 +70,7 @@ chance.of.needing.mcs <- 0.1
 # Cost of active TB
 params[p == "ctb", mid := 12550.52] 
 params[p == "ctb", low := 6330.73] 
-params[p == "ctb", high := 185047.81] 
+params[p == "ctb", high := 185047.81] #18491.84
 
 # Cost of sae
 params[p == "csae", mid := 1222.64] 
@@ -331,11 +331,11 @@ params[p == "uhealthy", low := 0.873333333]
 params[p == "uhealthy", high := 0.873333333]
 
 params[p == "uactivetb", mid := 0.780649583]
-params[p == "uactivetb", low := 0.666629833]
-params[p == "uactivetb", high := 0.904131563]
+params[p == "uactivetb", low := 0.686612833]
+params[p == "uactivetb", high := 0.872468854]
 
 params[p == "uactivetbr", mid := 0.873333333]
-params[p == "uactivetbr", low := 0.833333333]
+params[p == "uactivetbr", low := 0.849333333]
 params[p == "uactivetbr", high := 0.873333333]
 
 params[p == "ultbi3HP", mid := 0.873333333]

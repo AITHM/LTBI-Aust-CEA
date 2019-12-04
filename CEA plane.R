@@ -76,10 +76,10 @@ myplot1 <-
   geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
             hjust = 1, vjust = -0.2, size = textsize, 
             colour = "black") +
-  scale_y_continuous(breaks = seq(-10, 25, 5)) +
-  scale_x_continuous(breaks = seq(-10, 100, 10)) +
+  scale_y_continuous(breaks = seq(-2, 25, 1)) +
+  scale_x_continuous(breaks = seq(-5, 100, 5)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-17, 70), ylim = c(-5000000/1000000, 22000000/1000000)) +
+  coord_cartesian(xlim = c(-10, 40), ylim = c(-2, 10)) +
   theme(text = element_text(size = 20),
         panel.border = element_blank())
         #legend.position = c(0.80, 0.8),

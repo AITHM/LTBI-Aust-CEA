@@ -53,7 +53,7 @@ final.year <- start.year + totalcycles
 
 # The tests and treatments I want to consider in this analysis
 testlist <- c("QTFGIT") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("3HP") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # The number of migrant inflows I want to include
 # the migrant inflow will stop after the following Markov cycle
@@ -73,7 +73,7 @@ Get.POP <- function(DT, strategy) {
   (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
-       ifelse(DT[, AGERP] < 66, 1, 0))
+       ifelse(DT[, AGERP] < 36, 1, 0))
   
 }
 
@@ -86,6 +86,8 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 dt <- readRDS("params.rds")
 dt <- as.data.table(dt)
 
+
+
 aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
 
 # reformat data table
@@ -96,6 +98,7 @@ dt[, low := as.numeric(as.character(low))]
 dt[, high := as.numeric(as.character(high))]
 dt[, distribution := as.character(distribution)]
 dt[, shape := 4]
+dt[abbreviation == "ctb", shape := 10]
 # subset a small sample that have definitely been 
 # defined for testing
 # dt <- subset(dt, abbreviation == "snqftgit" |
@@ -238,6 +241,20 @@ for(i in 1:nrow(plot.dt)) {
          main = abbreviation)
   }
 }
+
+
+mid <- 12550.5200000
+low <- 6330.7300000
+high <- 185047.8100000
+shape <- 10
+upperlim <- high + 20
+dev.off()
+p = seq(0, upperlim, length = 1000)
+plot(p, dpert(p, min = low, mode = mid,
+              max = high, shape = shape),
+     ylab = "density", type = "l", col = 4, xlim = c(0, high))
+
+
 
 #plotting utilities
 a <- which( dt$abbreviation == "uactivetb" )
@@ -649,7 +666,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
 
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
 # This is only for test purposes...
 Num_SIm <- 100
@@ -969,7 +986,7 @@ simdata[, icer := (stratcost - basecost)/(stratqaly - baseqaly)]
 simdata[, Effect_prop_diff := stratqaly - baseqaly]
 simdata[, cost_diff := stratcost - basecost]
 
-WTP = 1000 # willingness to pay threshold
+WTP = 50000 # willingness to pay threshold
 WTP_compare1 = 500
 
 simdata$model = WTP * simdata$Effect_prop_diff
@@ -984,7 +1001,7 @@ table(simdata$CE)
 dev.off()
 plot(simdata$cost_diff ~ simdata$Effect_prop_diff,
      col = simdata$CE_col, cex = .8, pch = 3,
-     xlim = c(-1, 2), ylim = c(-200000, 100000))
+     xlim = c(-150, 100), ylim = c(-10000000, 7000000))
 abline(h = 0, lwd = 2 )
 abline(v = 0, lwd = 2 )
 abline(c(0, WTP), col = 4, lwd = 3)

@@ -49,38 +49,46 @@ setnames(df,"icer.upper.limit","upper")
 df[, lower := as.numeric(gsub('\\D+','', lower))]
 df[, upper := as.numeric(gsub('\\D+','', upper))]
 df[, UL_Difference := abs(upper - lower)]
+# 
+# order.parameters <- df %>% arrange(UL_Difference) 
+# 
+# order.parametersb <- order.parameters %>% mutate(parameter = factor(x = parameter, levels = parameter)) 
+# 
+# %>%
+#   mutate(parameter = factor(x = parameter, levels = parameter)) %>%
+#   select(parameter) %>% unlist() %>% levels()
 
 # get order of parameters according to size of intervals
-# (I use this to define the ordering of the factors which I then use to define the positions in the plot)
+# (I use this to define the ordering of the factors which 
+# I then use to define the positions in the plot)
 order.parameters <- df %>% arrange(UL_Difference) %>%
-  mutate(parameter=factor(x=parameter, levels=parameter)) %>%
+  mutate(parameter = factor(x = parameter, levels = parameter)) %>%
   select(parameter) %>% unlist() %>% levels()
 
 # width of columns in plot (value between 0 and 1)
 width <- 0.7
 
-
 setnames(df, "lower", "Change in ICER from base-case using lower value")
 setnames(df, "upper", "Change in ICER from base-case using upper value")
 
-
 # get data frame in shape for ggplot and geom_rect
 df.2 <- df %>% 
-  # gather columns Lower_Bound and Upper_Bound into a single column using gather
-  gather(key='type', value='output.value', 4:5) %>%
+  # gather columns Lower_Bound and Upper_Bound into a single 
+  # column using gather
+  gather(key ='type', value = 'output.value', 2:3) %>%
   # just reordering columns
   select(parameter, type, output.value, UL_Difference) %>%
   # create the columns for geom_rect
-  mutate(parameter=factor(parameter, levels=order.parameters),
-         ymin=pmin(output.value, base.value),
-         ymax=pmax(output.value, base.value),
-         xmin=as.numeric(parameter)-width/2,
-         xmax=as.numeric(parameter)+width/2)
+  mutate(parameter = factor(parameter, levels = order.parameters),
+         ymin = pmin(output.value, base.value),
+         ymax = pmax(output.value, base.value),
+         xmin = as.numeric(parameter) - width / 2,
+         xmax = as.numeric(parameter) + width / 2)
 
-order.parameters[14] <- "LTBI prevalence (25th-75th percentile) and\nreactivation rate estimates (upper - lower uncertainty limit)"
-order.parameters[5] <- "Proportion of annual TB cases captured\nduring off-shore CXR screening follow-up (4.8 - 12.5%)"
-order.parameters[13] <- "Proportion that began treatment\nwho were effectively treated (50-90%)"
-order.parameters[3] <- "Time to LTBI treatment commencement\nfollowing migration (0 - 3 months)"
+# order.parameters[14] <- "LTBI prevalence (25th-75th percentile) and\nreactivation rate estimates (upper - lower uncertainty limit)"
+# order.parameters[5] <- "Proportion of annual TB cases captured\nduring off-shore CXR screening follow-up (4.8 - 12.5%)"
+# order.parameters[13] <- "Proportion that began treatment\nwho were effectively treated (50-90%)"
+# order.parameters[3] <- "Time to LTBI treatment commencement\nfollowing migration (0 - 3 months)"
 
 
 # create plot
@@ -108,7 +116,7 @@ myplot1 <-
   scale_y_continuous(position = "bottom", 
                      breaks = seq(0, 500000, 50000),
                      labels = comma) +
-  coord_flip(ylim = c(0, 200000))+
+  coord_flip(ylim = c(0, 290000))+
   theme(text = element_text(size = 12),
         legend.position = c(0.75, 0.1))
 

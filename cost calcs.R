@@ -2,8 +2,7 @@
 library(data.table)
 
 
-part.appt <- 2
-part.med <- 3
+# Cost calculations
 
 # Medical consultation costs (MBS website)
 c.gp.b.vr <- 38.20
@@ -37,8 +36,6 @@ c.inh.high <- 22.11 # PBS
 c.rifamp.high <- 115.77 # PBS
 c.rifapent.high <- 35.04 # US$1 per tablet = US$24 = AUD$105.12
 
-
-
 # Create table of parameters
 p <- c("rradj", "att", "begintrt", "snqftgit", "spqftgit",
      "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
@@ -61,7 +58,6 @@ params[, low := 0]
 params[, mid := 0]
 params[, high := 0]
 
-
 c.gp.first.mid <- (c.gp.c.vr + c.gp.c.nonvr + c.gp.c.afterhours)/3
 c.gp.first.low <- c.gp.c.nonvr
 c.gp.first.high <- c.gp.c.afterhours
@@ -70,9 +66,7 @@ c.gp.review.mid <- (c.gp.b.vr + c.gp.b.nonvr + c.gp.b.afterhours)/3
 c.gp.review.low <- c.gp.b.nonvr
 c.gp.review.high <- c.gp.b.afterhours
 
-chance.of.needing.spec <- 0.135 # Loutet et al 2018 UK study
 chance.of.needing.mcs <- 0.1
-prop.over35.needing.spec <- 0.25
 
 # Cost of active TB
 params[p == "ctb", mid := 12550.52] 
