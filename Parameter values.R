@@ -2,14 +2,13 @@
 
 library(data.table)
 
-
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-params <- readRDS("params.rds")
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
+params <- readRDS("params onshore.rds")
+# params <- readRDS("params offshore.rds")
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 params <- as.data.table(params)
-
-
-
 
 # This function can be used to choose which parameters to change
 # for sensitivity analysis.
@@ -22,10 +21,26 @@ sensfunc <- function(paramname, loworhigh) {
   newvalue <- params[p == paramname, ..colname]
   params[p == paramname, mid:= newvalue]
 }
+#################################################################################################
+# sensfunc(ultbi4R, low)
 
 
+# # alter treatr values, i.e. treatment completion and treatment efficacy separately
+# sensfunc(treatr4R, low.treat.complete)
+# sensfunc(treatr4R, high.treat.complete)
+# sensfunc(treatr4R, low.treat.eff)
+# sensfunc(treatr4R, high.treat.eff)
+
+# # apply realistic LTBI utilities
 # sensfunc(ultbi4R, low)
 # sensfunc(ultbipart4R, low)
+# sensfunc(ultbi3HP, low)
+# sensfunc(ultbipart3HP, low)
+# sensfunc(ultbi6H, low)
+# sensfunc(ultbipart6H, low)
+# sensfunc(ultbi9H, low)
+# sensfunc(ultbipart9H, low)
+#################################################################################################
 
 # Taking the values from the params table and
 # putting them into the environment
@@ -37,19 +52,25 @@ for(i in 1:nrow(params)) {
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
 start.year <- startyear
-totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 60  # cycles ... The mortality data continues until 2100 and migrant 
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
 testlist <- c("QTFGIT", "TST10", "TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
-
+ 
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle
 finalinflow <- 0
 
+
+######NOTE BELOW##########
 proportion.needing.spec <- 0.135 # Loutet et al 2018 UK study
+######NOTE BELOW##########
+# If this value changes then it needs to be changed in the 
+# "Parameter creation onshore" script too.
+
 # prop.under35.needing.spec <- 0.05
 # prop.over35.needing.spec <- 0.25
 
@@ -57,32 +78,17 @@ proportion.needing.spec <- 0.135 # Loutet et al 2018 UK study
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
-    # 40+
-    (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
-    # Adjust age
-    (ifelse(DT[, AGERP] > 10, 1, 0) &
-       ifelse(DT[, AGERP] < 36, 1, 0))
-  
-}
-
-targetfunc <- function(DT) {
-  # 200+
-  # DT <- subset(DT, ISO3 == "200+")
-  # 150+
-  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
-  # 100+
-  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
-  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
   # Adjust age
-  DT <- subset(DT, AGERP > 10 &
-                 AGERP < 36)
-  DT
+    (ifelse(DT[, AGERP] > 10, 1, 0) &
+       ifelse(DT[, AGERP] < 66, 1, 0))
+  
 }
 
 # Initial migrant cohort and LTBI prevalence and reactivation rates
@@ -188,21 +194,21 @@ emigrate.rate <- as.data.table(emigrate.rate)
 
 # Emigrate rate from emigrate.rate (age dependent)
 Get.EMIGRATE <- function(xDT, year) {
-  
+
   DT <- copy(xDT[, .(year, AGERP, YARP)])
-  
+
   DT[AGERP > 110, AGERP := 110]
-  
+
   emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
   # emigrate.rate[DT[, .(AGERP)], lower, on = .(Age = AGERP)]
   # emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)]
-  
+
 }
 
 # Get.EMIGRATE <- function(xDT, year) {
-#   
+# 
 #   0
-#   
+# 
 # }
 
 

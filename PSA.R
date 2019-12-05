@@ -83,7 +83,10 @@ Get.POP <- function(DT, strategy) {
 # the upper and lower limirs for this data 
 # is defined in the PSA.csv and needs to be read in:
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-dt <- readRDS("params.rds")
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################################################
+dt <- readRDS("params onshore.rds")
+dt <- readRDS("params offshore.rds")
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################################################
 dt <- as.data.table(dt)
 
 

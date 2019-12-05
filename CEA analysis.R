@@ -82,21 +82,15 @@ tabfunc <- function(dt) {
                   sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
   
   # number referred annually
-  # ld name of screening test
-  testing <- dt$Test[1]
-  # lookup test sensitivities and specificities	
-  tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15", ""), 
-                         SN = c(snqftgit, sntst10, sntst15, 0), # baseline
-                         SP = c(spqftgit, sptst10, sptst15, 0)) # baseline
-  TESTSN <- tests.dt[tests == testing, SN]	
-  TESTSP <- tests.dt[tests == testing, SP]
-  cdt <- copy(dt)
-  targetgroup <- targetfunc(cdt)
-  numref <- targetgroup[YEAR == start.year & YARP == start.year, sum(LTBP),] * 
-    TESTSN + targetgroup[YEAR == start.year & YARP == start.year, sum(NUMP) - sum(LTBP),] * (1 - TESTSP)
+  # could calculate it by working backwards. i.e. work out the number that attended and 
+  # we know that is 0.684 of all that were referred.
+  numatt <- dt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nbt) + sum(p.sus.nct) +
+                 sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
+                 sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
+  numref <- numatt/att
   
   
-  # number attending annually (should be 0.836 * the number referred)
+  # number attending annually (should be 0.684 * the number referred)
   numatt <- dt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nbt) + sum(p.sus.nct) +
        sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
        sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
@@ -164,8 +158,6 @@ tabfunc <- function(dt) {
   costpertb <- totaddcost/tbprev
   
   # number needed to screen (to prevent a tb case)
-  #targetgroup <- targetfunc(dt)
-  #numberscreened <- targetgroup[YEAR == start.year, sum(NUMP)] * (finalinflow + 1)
   nns <- totscreen/tbprev
   
   # number needed to effectively treat (to prevent a tb case)
