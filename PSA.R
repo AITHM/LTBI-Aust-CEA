@@ -35,7 +35,7 @@ source("Distribution parameter calculations.R") # for determining distribution p
 ################## PSA #####################################
 
 # Defining the number of simulations we want
-Num_SIm <- 10000
+Num_SIm <- 100
 
 # Create a datatable that will eventually contain the
 # parameter values to be used for each simulation/model run.
@@ -68,9 +68,9 @@ Get.POP <- function(DT, strategy) {
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
   # 40+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
        ifelse(DT[, AGERP] < 36, 1, 0))
@@ -84,14 +84,22 @@ Get.POP <- function(DT, strategy) {
 # is defined in the PSA.csv and needs to be read in:
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################################################
-dt <- readRDS("params onshore.rds")
+# dt <- readRDS("params onshore.rds")
 dt <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################################################
 dt <- as.data.table(dt)
 
-
-
 aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
+# # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
+# aust[, LTBP := NULL]
+# setnames(aust, "tfnum", "LTBP")
+
+# # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
+# aust[, LTBP := NULL]
+# setnames(aust, "sfnum", "LTBP")
+
+
+
 
 # reformat data table
 setnames(dt, "p", "abbreviation")
@@ -100,8 +108,19 @@ dt[, mid := as.numeric(as.character(mid))]
 dt[, low := as.numeric(as.character(low))]
 dt[, high := as.numeric(as.character(high))]
 dt[, distribution := as.character(distribution)]
-dt[, shape := 4]
-dt[abbreviation == "ctb", shape := 10]
+
+# dt[abbreviation == "ctb", low := mid]
+# dt[abbreviation == "ctb", high := mid]
+# dt[abbreviation == "uactivetbr", low := mid]
+# dt[abbreviation == "uactivetbr", high := mid]
+# dt[abbreviation == "uactivetb", low := mid]
+# dt[abbreviation == "uactivetb", high := mid]
+# dt[abbreviation == "treatr4R", low := mid]
+# dt[abbreviation == "treatr4R", high := mid]
+
+dt[abbreviation == "ctb", shape := 40]
+dt[abbreviation == "ultbi4R", distribution := "uniform"]
+dt[abbreviation == "ultbipart4R", distribution := "uniform"]
 # subset a small sample that have definitely been 
 # defined for testing
 # dt <- subset(dt, abbreviation == "snqftgit" |
@@ -110,6 +129,9 @@ dt[abbreviation == "ctb", shape := 10]
 #                 abbreviation == "sntst15" |
 #                 abbreviation == "sntst10")
 
+
+
+
 # The loop below adds one column to the simdata table for each parameter value
 # defined in the rows of the PSA.csv file (these are parameters that aren't dependent
 # on other variables, i.e. they are fixed for each run). 
@@ -117,7 +139,6 @@ dt[abbreviation == "ctb", shape := 10]
 # file, together with the distribution defined in the "distribution" column, 
 # to calculate a distribution and then take 10,000 samples from it
 # that represents the parameter uncertainty
-
 
 for(i in 1:nrow(dt)) {
   abbreviation <- dt[i, abbreviation]
@@ -141,11 +162,30 @@ for(i in 1:nrow(dt)) {
     simdata[, newcol := rbeta(Num_SIm, betaparam[1], betaparam[2])]
     setnames(simdata, "newcol", abbreviation)
   }
+  else if (distribution == "uniform") {
+    simdata[, newcol := runif(Num_SIm, min = low, max = high)]
+    setnames(simdata, "newcol", abbreviation)
+  }
   else {
     simdata[, newcol := 0]
     setnames(simdata, "newcol", abbreviation)
   }
 }
+
+# Adjusting the partial LTBI treatment utilities so 
+# they are dependent on the value of
+# the sampled utility for full treatment
+part.utility.dec <- 0.5
+simdata[, ultbipart3HP := uhealthy - ((uhealthy - ultbi3HP) * part.utility.dec)]
+simdata[, ultbipart4R := uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)]
+simdata[, ultbipart6H := uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)]
+simdata[, ultbipart9H := uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)]
+
+
+# Adjusting the partial LTBI treatment utilities so 
+# they are dependent on the value of
+# the sampled utility for full treatment
+
 
 
 # Plotting the distributions used for all of the different
@@ -155,7 +195,7 @@ a <- which( dt$abbreviation == "rradj" )
 b <- which( dt$abbreviation == "saemr" )
 plot.dt <- dt[a:b,]
 nrow(plot.dt)
-dev.off()
+# dev.off()
 # set up the plotting space
 #layout(matrix(1:nrow(plot.dt), ncol = 6))
 par(mfrow = c(3, 6))
@@ -178,6 +218,12 @@ for(i in 1:nrow(plot.dt)) {
     p = seq(0, upperlim, length = 1000)
     betaparam <- findbeta2(mid, low, high)
     plot(p, dbeta(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "uniform") {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dunif(p, min = low, max = high),
          ylab = "density", type = "l", col = 4, xlim = c(0, high),
          main = abbreviation)
   }
@@ -229,6 +275,12 @@ for(i in 1:nrow(plot.dt)) {
          ylab = "density", type = "l", col = 4, xlim = c(0, high),
          main = abbreviation)
   }
+  else if (distribution == "uniform") {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dunif(p, min = low, max = high),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
   else if (distribution == "gamma") {
     p = seq(0, upperlim, length = 1000)
     betaparam <- findbeta2(mid, low, high)
@@ -245,19 +297,16 @@ for(i in 1:nrow(plot.dt)) {
   }
 }
 
-
-mid <- 12550.5200000
-low <- 6330.7300000
-high <- 185047.8100000
-shape <- 10
-upperlim <- high + 20
-dev.off()
-p = seq(0, upperlim, length = 1000)
-plot(p, dpert(p, min = low, mode = mid,
-              max = high, shape = shape),
-     ylab = "density", type = "l", col = 4, xlim = c(0, high))
-
-
+# mid <- 12550.5200000
+# low <- 6330.7300000
+# high <- 185047.8100000
+# shape <- 30
+# upperlim <- high + 20
+# dev.off()
+# p = seq(0, upperlim, length = 1000)
+# plot(p, dpert(p, min = low, mode = mid,
+#               max = high, shape = shape),
+#      ylab = "density", type = "l", col = 4, xlim = c(0, high))
 
 #plotting utilities
 a <- which( dt$abbreviation == "uactivetb" )
@@ -296,6 +345,12 @@ for(i in 1:nrow(plot.dt)) {
          ylab = "density", type = "l", col = 4, xlim = c(0, high),
          main = abbreviation)
   }
+  else if (distribution == "uniform") {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dunif(p, min = low, max = high),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
   else {
     p = seq(0, upperlim, length = 1000)
     plot(p, dpert(p, min = low, mode = mid,
@@ -306,6 +361,22 @@ for(i in 1:nrow(plot.dt)) {
 }
 # Restore margins...could also do it with dev.off()  ?
 par(mfrow = c(1,1))
+
+# mid <- 0.8733333
+# low <- 0.8558
+# high <- 0.8733333
+# shape <- 4
+# upperlim <- 1
+# dev.off()
+# p = seq(0, upperlim, length = 1000)
+# plot(p, dpert(p, min = low, mode = mid,
+#               max = high, shape = shape),
+#      ylab = "density", type = "l", col = 4, xlim = c(0.8, high))
+# 
+# p = seq(0, upperlim, length = 1000)
+# plot(p, dunif(p, min = low,
+#               max = high),
+#      ylab = "density", type = "l", col = 4, xlim = c(0.8, high))
 
 # The dependent variables need to be defined separately...
 
@@ -355,10 +426,14 @@ Get.RR <- function(xDT, year) {
   
   mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
                                                                            ysa = ST, cobi = COBI)]
+  
+  # # assuming a lower LTBI prevalence and a higher rate of reactivation
   # low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
   #                                                                         ysa = ST, cobi = COBI)]
+  # # assuming a higher prevalence of LTBI and a lower rate of reactivation
   # high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
   #                                                                          ysa = ST, cobi = COBI)]
+  # rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # out <- rbeta(1, betaparam[1], betaparam[2])
   # return(out)
@@ -378,10 +453,11 @@ Get.EMIGRATE <- function(xDT, year) {
   
   mid <- emigrate.rate[DT[, .(AGERP)], 
                        Rate, on = .(Age = AGERP)]
-  # low <- emigrate.rate[DT[, .(AGERP)], 
-  #                      lower, on = .(Age = AGERP)]
-  # high <- emigrate.rate[DT[, .(AGERP)], 
-  #                       upper, on = .(Age = AGERP)]
+  low <- emigrate.rate[DT[, .(AGERP)],
+                       lower, on = .(Age = AGERP)]
+  high <- emigrate.rate[DT[, .(AGERP)],
+                        upper, on = .(Age = AGERP)]
+  rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # rbeta(1, betaparam[1], betaparam[2])
 }
@@ -412,10 +488,12 @@ Get.TBMR <- function(xDT, year) {
   
   mid <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
                           Prob, on = .(age = AGEP, sex = SEXP)]
-  # low <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
-  #                         lowerProb, on = .(age = AGEP, sex = SEXP)]
-  # high <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
-  #                          upperProb, on = .(age = AGEP, sex = SEXP)]
+  low <- vic.tb.mortality[DT[, .(AGEP, SEXP)],
+                          lowerProb, on = .(age = AGEP, sex = SEXP)]
+  high <- vic.tb.mortality[DT[, .(AGEP, SEXP)],
+                           upperProb, on = .(age = AGEP, sex = SEXP)]
+
+  rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # out <- rbeta(1, betaparam[1], betaparam[2])
   # return(out)
@@ -433,14 +511,14 @@ Get.SAE <- function(xDT, treat) {
   
   mid <- sae.rate[DT[, .(AGERP, treatment)], 
                   Rate, on = .(Age = AGERP, treatment = treatment)]
-  # low <- sae.rate[DT[, .(AGERP, treatment)], 
-  #                 low, on = .(Age = AGERP, treatment = treatment)]
-  # high <- sae.rate[DT[, .(AGERP, treatment)], 
-  #                  high, on = .(Age = AGERP, treatment = treatment)]
+  low <- sae.rate[DT[, .(AGERP, treatment)],
+                  low, on = .(Age = AGERP, treatment = treatment)]
+  high <- sae.rate[DT[, .(AGERP, treatment)],
+                   high, on = .(Age = AGERP, treatment = treatment)]
+  rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # out <- rbeta(1, betaparam[1], betaparam[2])
   # return(out)
-  
 }
 # # Get.SAEMR
 # # Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
@@ -671,10 +749,10 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
 pop.master <- CreatePopulationMaster()
 # pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
-# This is only for test purposes...
-Num_SIm <- 100
-simdata <- simdata[1:Num_SIm, ]
-simdata <- as.data.table(simdata)
+# # This is only for test purposes...
+# Num_SIm <- 10
+# simdata <- simdata[1:Num_SIm, ]
+# simdata <- as.data.table(simdata)
 
 # To run the model each of the parameters needs
 # to be in the environment, i.e. not defined within
@@ -996,7 +1074,7 @@ simdata$model = WTP * simdata$Effect_prop_diff
 
 simdata$model_true = simdata$model - simdata$cost_diff
 
-simdata$CE = ifelse(test = simdata$model_true > 0,yes = 1, no = 0 )
+simdata$CE = ifelse(test = simdata$model_true > 0, yes = 1, no = 0 )
 
 simdata$CE_col = ifelse(test = simdata$CE == 0, yes = 2, no = 3 )
 table(simdata$CE)
@@ -1004,7 +1082,7 @@ table(simdata$CE)
 dev.off()
 plot(simdata$cost_diff ~ simdata$Effect_prop_diff,
      col = simdata$CE_col, cex = .8, pch = 3,
-     xlim = c(-150, 100), ylim = c(-10000000, 7000000))
+     xlim = c(-6000, 6000), ylim = c(-5000000, 5000000))
 abline(h = 0, lwd = 2 )
 abline(v = 0, lwd = 2 )
 abline(c(0, WTP), col = 4, lwd = 3)
@@ -1016,11 +1094,21 @@ abline(c(0, WTP), col = 4, lwd = 3)
 # Plot of acceptability curve
 # work out the proportion cost-effective
 
-icerlist <- simdata$icer
+simdata <- as.data.table(simdata)
+simdata[,  incremental.qaly := stratqaly - baseqaly] 
+simdata[,  incremental.cost := stratcost - basecost] 
+simdata[incremental.qaly < 0 & incremental.cost > 0,  outcome := "dominated"] 
+simdata[incremental.qaly > 0 & incremental.cost < 0,  outcome := "dominant"] 
+simdata[incremental.qaly > 0 & incremental.cost < 0,  outcome := "dominant"] 
+simdata[,  icerlist := icer]
+simdata[outcome == "dominated",  icerlist := 200000]
+simdata[outcome == "dominated",  icerlist := 20]
+
+icerlist <- simdata$icerlist
 maxwtp <- 100000
 wtp <- c(0:maxwtp)
 propcosteffectivefunc <- function(wtp){
-  (sum(icerlist < wtp)/10000) * 100
+  (sum(icerlist < wtp) / 10000) * 100
 }
 propcosteffect <- unlist(lapply(wtp, propcosteffectivefunc))
 
@@ -1033,7 +1121,7 @@ myplot1 <-
   geom_line(size = 1, colour = "blue") +
   labs(x = "Willingness-to-pay threshold (AUD$)",
        y = "Proportion cost-effective (%)") +
-  scale_y_continuous(breaks = seq(0, 100, 10)) +
+  scale_y_continuous(breaks = seq(0, 100, 0.1)) +
   scale_x_continuous(label = comma, breaks = seq(0, 150000, 20000)) +
   theme_bw() +
   theme(text = element_text(size = 25))

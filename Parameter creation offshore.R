@@ -35,6 +35,22 @@ c.inh.high <- 22.11 # PBS
 c.rifamp.high <- 115.77 # PBS
 c.rifapent.high <- 35.04 # US$1 per tablet = US$24 = AUD$105.12
 
+
+# Parameters that need to vary in sensitivity analysis 
+# - medicine costs - uniform parameter???????? or fixed??????
+# - percentage requiring specialist care
+# - number of follow-up appointments required
+# - number of extra assessments required
+# - utility of LTBI treatment
+# - 
+
+########DON'T SKEW THE COSTS IN FAVOUR OF LOW COSTS FOR MEDICINES!!!!
+########DON'T SKEW THE UTILITIES IN FAVOUR OF HIGH UTILITIES FOR LTBI TREATMNET
+########
+
+
+
+
 # Create table of parameters
 p <- c("rradj", "att", "begintrt", "snqftgit", "spqftgit",
        "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
@@ -54,8 +70,9 @@ params <- data.frame(p)
 params <- as.data.table(p)
 params[, mid := 0]
 params[, low := 0]
-params[, mid := 0]
 params[, high := 0]
+params[, distribution := "pert"]
+params[, shape := 4]
 
 c.gp.first.mid <- (c.gp.c.vr + c.gp.c.nonvr + c.gp.c.afterhours)/3
 c.gp.first.low <- c.gp.c.nonvr
@@ -337,46 +354,139 @@ params[p == "ttt9H", mid := 0.875]
 params[p == "ttt9H", low := 0.792]
 params[p == "ttt9H", high := 1.00]
 
-# CONSTANT????????????
-params[p == "uhealthy", mid := 0.873333333]
-params[p == "uhealthy", low := 0.873333333]
-params[p == "uhealthy", high := 0.873333333]
 
-params[p == "uactivetb", mid := 0.780649583]
-params[p == "uactivetb", low := 0.686612833]
-params[p == "uactivetb", high := 0.872468854]
+# Utility calculations
+# the healthy state utility remains constant
+
+uhealthy.fix <- 0.8733333
+
+params[p == "uhealthy", mid := uhealthy.fix]
+params[p == "uhealthy", low := uhealthy.fix]
+params[p == "uhealthy", high := uhealthy.fix]
+
+healthy.base <- 0.07166667
+healthy.1mth <- 0.07333333
+healthy.2mths <- 0.07166667
+healthy.4mths <- 0.07333333
+healthy.6mths <- 0.07250000
+healthy.9mths <- 0.07250000
+healthy.12mths <- 0.07416667
+
+ultbi.base <- 0.07000000
+ultbi.1mth<- 0.06833333
+ultbi.2mths <- 0.06833333
+ultbi.4mths <- 0.06916667
+ultbi.6mths <- 0.06833333
+ultbi.9mths <- 0.06833333
+ultbi.12mths <- 0.07000000
+
+utb.base <- 0.06000000
+utb.1mth <- 0.06666667
+utb.2mths <- 0.07083333
+utb.4mths <- 0.07083333
+utb.6mths <- 0.07083333
+utb.9mths <- 0.07583333
+utb.12mths <- 0.07583333
+
+# Active TB utility calculations
+sae.decrement <- 0.25
+
+uactivetbfunct <- function(symptom.mths, sae.mths, chance.of.sae) {
+  if (symptom.mths == 6) {
+    utbactive <- (utb.base * symptom.mths) + utb.1mth + 2 * utb.2mths +
+      2 * utb.4mths + 1 * utb.6mths
+  } else if (symptom.mths == 4) {
+    utbactive <- (utb.base * symptom.mths) + utb.1mth + 2 * utb.2mths +
+      2 * utb.4mths + 3 * utb.6mths
+  } else if (symptom.mths == 2) {
+    utbactive <- (utb.base * symptom.mths) + utb.1mth + 2 * utb.2mths +
+      2 * utb.4mths + 3 * utb.6mths + 2 * utb.9mths
+  } else if (symptom.mths == 1) {
+    utbactive <- (utb.base * symptom.mths) + utb.1mth + 2 * utb.2mths +
+      2 * utb.4mths + 3 * utb.6mths + 3 * utb.9mths
+  } else if (symptom.mths == 8) {
+    utbactive <- (utb.base * symptom.mths) + utb.1mth + 2 * utb.2mths +
+      1 * utb.4mths
+  } else if (symptom.mths == 10) {
+    utbactive <- (utb.base * symptom.mths) + utb.1mth + 1 * utb.2mths
+  }
+  utbactive.sae <- ((utbactive/12) * (12 - sae.mths)) + 
+    (sae.mths * ((uhealthy.fix - sae.decrement)/12))
+  utbactive <- (utbactive.sae * chance.of.sae) + 
+    ((1 - chance.of.sae) * utbactive)
+  utbactive
+}
+
+# uhealthy.fix - uactivetbfunct(8, 2, 0.0051)
+# # 0.1142495
+# uhealthy.fix - uactivetbfunct(4, 0.5, 0.003)
+# # 0.0708244
+
+params[p == "uactivetb", mid := uactivetbfunct(6, 1, 0.007)]
+params[p == "uactivetb", low := uactivetbfunct(8, 2, 0.0051)]
+params[p == "uactivetb", high := uactivetbfunct(4, 0.5, 0.003)]
+
+# LTBI treatment utility calculations
+
+part.utility.dec <- 0.5
+
+
+ultbi3HPcalc <- 0.07000000 + 0.06833333 + 2 * 0.06833333 +
+  2 * 0.07333333 + 2 * 0.07250000 + 2 * 0.07250000 + 2 * 0.07416667
+
+ultbi4Rcalc <- 0.07000000 + 0.06833333 + 2 * 0.06833333 + 0.06916667 +
+  0.07333333 + 2 * 0.07250000 + 2 * 0.07250000 + 2 * 0.07416667
+
+ultbi6Hcalc <- 0.07000000 + 0.06833333 + 2 * 0.06833333 + 
+  2 * 0.06916667 + 0.06833333 +
+  0.07250000 + 2 * 0.07250000 + 2 * 0.07416667
+
+ultbi9Hcalc <- 0.07000000 + 0.06833333 + 2 * 0.06833333 + 
+  2 * 0.06916667 + 2 * 0.06833333 + 2 * 0.06833333 + 2 * 0.07000000
+
+params[p == "ultbi3HP", mid := uhealthy.fix]
+params[p == "ultbi3HP", low := ultbi3HPcalc]
+params[p == "ultbi3HP", high := uhealthy.fix]
+params[p == "ultbi3HP", distribution := "uniform"]
+params[p == "ultbipart3HP", mid := uhealthy.fix]
+params[p == "ultbipart3HP", low := uhealthy.fix -
+         ((uhealthy.fix - ultbi3HPcalc) * part.utility.dec)]
+params[p == "ultbipart3HP", high := uhealthy.fix]
+params[p == "ultbipart3HP", distribution := "uniform"]
+
+params[p == "ultbi4R", mid := uhealthy.fix]
+params[p == "ultbi4R", low := ultbi4Rcalc]
+params[p == "ultbi4R", high := uhealthy.fix]
+params[p == "ultbi4R", distribution := "uniform"]
+params[p == "ultbipart4R", mid := uhealthy.fix]
+params[p == "ultbipart4R", low := uhealthy.fix -
+         ((uhealthy.fix - ultbi4Rcalc) * part.utility.dec)]
+params[p == "ultbipart4R", high := uhealthy.fix]
+params[p == "ultbipart4R", distribution := "uniform"]
+
+params[p == "ultbi6H", mid := uhealthy.fix]
+params[p == "ultbi6H", low := ultbi6Hcalc]
+params[p == "ultbi6H", high := uhealthy.fix]
+params[p == "ultbi6H", distribution := "uniform"]
+params[p == "ultbipart6H", mid := uhealthy.fix]
+params[p == "ultbipart6H", low := uhealthy.fix -
+         ((uhealthy.fix - ultbi6Hcalc) * part.utility.dec)]
+params[p == "ultbipart6H", high := uhealthy.fix]
+params[p == "ultbipart6H", distribution := "uniform"]
+
+params[p == "ultbi9H", mid := uhealthy.fix]
+params[p == "ultbi9H", low := ultbi9Hcalc]
+params[p == "ultbi9H", high := uhealthy.fix]
+params[p == "ultbi9H", distribution := "uniform"]
+params[p == "ultbipart9H", mid := uhealthy.fix]
+params[p == "ultbipart9H", low := uhealthy.fix -
+         ((uhealthy.fix - ultbi9Hcalc) * part.utility.dec)]
+params[p == "ultbipart9H", high := uhealthy.fix]
+params[p == "ultbipart9H", distribution := "uniform"]
 
 params[p == "uactivetbr", mid := 0.873333333]
 params[p == "uactivetbr", low := 0.849333333]
 params[p == "uactivetbr", high := 0.873333333]
-
-params[p == "ultbi3HP", mid := 0.873333333]
-params[p == "ultbi3HP", low := 0.8600]
-params[p == "ultbi3HP", high := 0.873333333]
-params[p == "ultbipart3HP", mid := 0.873333333]
-params[p == "ultbipart3HP", low := 0.8667]
-params[p == "ultbipart3HP", high := 0.873333333]
-
-params[p == "ultbi4R", mid := 0.873333333]
-params[p == "ultbi4R", low := 0.8558]
-params[p == "ultbi4R", high := 0.873333333]
-params[p == "ultbipart4R", mid := 0.873333333]
-params[p == "ultbipart4R", low := 0.8650]
-params[p == "ultbipart4R", high := 0.873333333]
-
-params[p == "ultbi6H", mid := 0.873333333]
-params[p == "ultbi6H", low := 0.8475]
-params[p == "ultbi6H", high := 0.873333333]
-params[p == "ultbipart6H", mid := 0.873333333]
-params[p == "ultbipart6H", low := 0.8650]
-params[p == "ultbipart6H", high := 0.873333333]
-
-params[p == "ultbi9H", mid := 0.873333333]
-params[p == "ultbi9H", low := 0.8267]
-params[p == "ultbi9H", high := 0.873333333]
-params[p == "ultbipart9H", mid := 0.873333333]
-params[p == "ultbipart9H", low := 0.8650]
-params[p == "ultbipart9H", high := 0.873333333]
 
 params[p == "ultbitreatsae", mid := 0.8525000]
 params[p == "ultbitreatsae", low := 0.8420833]
@@ -386,10 +496,6 @@ params[p == "saemr", mid := 0.000813]
 params[p == "saemr", low := 0]
 params[p == "saemr", high := 0.0316]
 
-# Add a distribution and shap column with
-# defaults of pert and 4
-params[, distribution := "pert"]
-params[, shape := 4]
 
 # Write the table to clipboard so I can 
 # paste it into my Excel spreadsheet

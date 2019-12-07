@@ -5,8 +5,8 @@ library(data.table)
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-# params <- readRDS("params offshore.rds")
+# params <- readRDS("params onshore.rds")
+params <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 params <- as.data.table(params)
 
@@ -78,16 +78,16 @@ proportion.needing.spec <- 0.135 # Loutet et al 2018 UK study
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
   # 40+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
   # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
-       ifelse(DT[, AGERP] < 66, 1, 0))
+       ifelse(DT[, AGERP] < 36, 1, 0))
   
 }
 
@@ -127,11 +127,11 @@ Get.RR <- function(xDT, year) {
   #                                                                   ysa = ST, cobi = COBI)]
   
   
-  # # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
+  # # assuming a lower LTBI prevalence and a higher rate of reactivation
   # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
   #                                                                   ysa = ST, cobi = COBI)]
   
-  # # # Using upper uncertainty interval, i.e. assuming a higher rate of reactivation
+  # # assuming a higher prevalence of LTBI and a lower rate of reactivation
   # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
   #                                                                  ysa = ST, cobi = COBI)]
   
