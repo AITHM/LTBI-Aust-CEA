@@ -136,6 +136,7 @@ Get.TREAT <- function(S, treat) {
 }
 
 
+
 # Look up the reactivation rate from RRates and then reduce the rate by a
 # certain proprtion to reflect that some people will reactivate with TB in their treatment year
 # before they complete follow-up and treatment.

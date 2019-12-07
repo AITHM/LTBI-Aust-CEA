@@ -82,8 +82,8 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
                        # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
                        # cost.primary = c(74.34, 70.40, 70.40))
                        cost.primary = c(cscreenqft, cscreentst, cscreentst))
-                       # the line above reflects the fact that the costs of offshore screening are born by the migrant, not
-                       # Australia's health system
+# the line above reflects the fact that the costs of offshore screening are born by the migrant, not
+# Australia's health system
 
 # Create a sample treatment data table
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
@@ -97,7 +97,7 @@ treatmentcost.dt <- data.table(treatment = c("3HP","4R", "6H", "9H", "3HP","4R",
                                                 ctreatspec3HP, ctreatspec4R, ctreatspec6H, 
                                                 ctreatspec9H),
                                cost.partial = c(cparttreat3HP, cparttreat4R,
-                                                 cparttreat6H, cparttreat9H,
+                                                cparttreat6H, cparttreat9H,
                                                 cparttreatspec3HP, cparttreatspec4R,
                                                 cparttreatspec6H, cparttreatspec9H))
 
