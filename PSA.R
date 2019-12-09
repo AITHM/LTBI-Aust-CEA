@@ -9,7 +9,8 @@
 # so that the cost-effectiveness plane and acceptability curves can be plotted.
 
 # Parameters that aren't dependent on other variables (age, year of arrival, year etc)
-# are defined in the csv spreadsheet called "PSA.csv" in the CEA folder.
+# are defined in the RDS file called "params offshore" and "params onshore" 
+# in the main folder. These files are created using the "Parameter creation..." scripts
 
 
 # Coding style
@@ -35,7 +36,14 @@ source("Distribution parameter calculations.R") # for determining distribution p
 ################## PSA #####################################
 
 # Defining the number of simulations we want
-Num_SIm <- 100
+Num_SIm <- 10
+
+# Generating a random set of numbers, one for each simulation
+# that will be used as a seed number for "set.seed" functions
+# below, so that the sampling from distributions is the same
+# for both the baseline and strategy model runs
+set.seed.number <- sample(1000:1000000, Num_SIm, replace = F)
+
 
 # Create a datatable that will eventually contain the
 # parameter values to be used for each simulation/model run.
@@ -46,7 +54,7 @@ simdata <- as.data.table(simdata)
 # Define all the parameters that are don't have any uncertainty:
 discount <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 start.year <- 2020 # start.year
-totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 10  # cycles ... The mortality data continues until 2100 and migrant 
 cycles <- totalcycles 
 # inflows are possible until 2050
 final.year <- start.year + totalcycles
@@ -58,12 +66,6 @@ treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity 
 # The number of migrant inflows I want to include
 # the migrant inflow will stop after the following Markov cycle
 finalinflow <- 0
-
-######NOTE BELOW##########
-proportion.needing.spec <- 0.135 # Loutet et al 2018 UK study !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-######NOTE BELOW##########
-# If this value changes then it needs to be changed in the 
-# "Parameter creation onshore" script too.
 
 # Get.POP
 # Target population
@@ -113,27 +115,10 @@ dt[, low := as.numeric(as.character(low))]
 dt[, high := as.numeric(as.character(high))]
 dt[, distribution := as.character(distribution)]
 
-# dt[abbreviation == "ctb", low := mid]
-# dt[abbreviation == "ctb", high := mid]
-# dt[abbreviation == "uactivetbr", low := mid]
-# dt[abbreviation == "uactivetbr", high := mid]
-# dt[abbreviation == "uactivetb", low := mid]
-# dt[abbreviation == "uactivetb", high := mid]
-# dt[abbreviation == "treatr4R", low := mid]
-# dt[abbreviation == "treatr4R", high := mid]
 
 dt[abbreviation == "ctb", shape := 40]
 dt[abbreviation == "ultbi4R", distribution := "uniform"]
 dt[abbreviation == "ultbipart4R", distribution := "uniform"]
-# subset a small sample that have definitely been 
-# defined for testing
-# dt <- subset(dt, abbreviation == "snqftgit" |
-#                 abbreviation == "spqftgit" |
-#                 abbreviation == "snqftgit" |
-#                 abbreviation == "sntst15" |
-#                 abbreviation == "sntst10")
-
-
 
 
 # The loop below adds one column to the simdata table for each parameter value
@@ -152,7 +137,7 @@ for(i in 1:nrow(dt)) {
   shape <- dt[i, shape]
   distribution <- dt[i, distribution]
   if (distribution == "pert") {
-    simdata[, newcol := rpert(Num_SIm, min = low, mode = mid, 
+    simdata[, newcol := rpert(Num_SIm, min = low, mode = mid,
                               max = high, shape = shape)]
     setnames(simdata, "newcol", abbreviation)
   }
@@ -195,8 +180,8 @@ simdata[, ultbipart6H := uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)]
 simdata[, ultbipart9H := uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)]
 
 
-# Adjusting the costs of LTBI treatment based on the values of
-# the appointments and medicines
+# Adjusting the costs of LTBI treatment so that they are dependent 
+# on the sampled number of appointments and medicine costs
 # Medical consultation costs (MBS website)
 c.gp.b.vr <- 38.20
 c.gp.b.nonvr <- 21.00
@@ -467,28 +452,11 @@ simdata[, spec.appt := NULL]
 # Look up treatment costs (it's treatment dependent)
 Get.TREATC <- function(S, treat) {
   
-  as.numeric(treatmentcost.dt[treatment == treat & practitioner == "spec", ..S]) * proportion.needing.spec +
-    as.numeric(treatmentcost.dt[treatment == treat & practitioner == "gp", ..S]) * (1 - proportion.needing.spec)
+  as.numeric(treatmentcost.dt[treatment == treat & practitioner == "spec", ..S]) * prop.spec +
+    as.numeric(treatmentcost.dt[treatment == treat & practitioner == "gp", ..S]) * (1 - prop.spec)
   
 }
 
-
-# Look up treatment costs (it's age dependent)
-# Get.TREATC <- function(xDT, treat, S) {
-#   
-#   DT <- copy(xDT[, .(AGEP)])
-#   
-#   DT[AGEP > 110, AGEP := 110]
-#   
-#   practi <- "gp"
-#   
-#   if(DT$AGEP[1] > 36 | DT$AGEP[1] < 18) {
-#     practi <- "spec"
-#   }
-#   
-#   as.numeric(treatmentcost.dt[treatment == treat & practitioner == practi, ..S])
-#   
-# }
 
 # Get.RR
 # Reactivation rates
@@ -505,13 +473,14 @@ Get.RR <- function(xDT, year) {
   mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
                                                                            ysa = ST, cobi = COBI)]
   
-  # # assuming a lower LTBI prevalence and a higher rate of reactivation
-  # low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                         ysa = ST, cobi = COBI)]
-  # # assuming a higher prevalence of LTBI and a lower rate of reactivation
-  # high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                          ysa = ST, cobi = COBI)]
-  # rpert(1, min = low, mode = mid, max = high, shape = shape)
+  # assuming a higher LTBI prevalence and a lower rate of reactivation
+  low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                          ysa = ST, cobi = COBI)]
+  # assuming a lower prevalence of LTBI and a higher rate of reactivation
+  high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                           ysa = ST, cobi = COBI)]
+  set.seed(set.seed.number[simnumber])
+  rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # out <- rbeta(1, betaparam[1], betaparam[2])
   # return(out)
@@ -535,11 +504,13 @@ Get.EMIGRATE <- function(xDT, year) {
                        lower, on = .(Age = AGERP)]
   high <- emigrate.rate[DT[, .(AGERP)],
                         upper, on = .(Age = AGERP)]
+  set.seed(set.seed.number[simnumber])
   rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # rbeta(1, betaparam[1], betaparam[2])
 }
-# Get.MR ##### Do I need to incorporate uncertainty for this parameter?
+
+# Get.MR
 # Look up the mortality rate from vic.mortality
 Get.MR <- function(xDT, year, rate.assumption = "Med") {
   
@@ -548,8 +519,7 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   # To lookup all ages beyond 110
   DT[AGEP > 100, AGEP := 100]
   
-  out <- vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
-  return(out)
+  vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
   
 }
 
@@ -570,13 +540,14 @@ Get.TBMR <- function(xDT, year) {
                           lowerProb, on = .(age = AGEP, sex = SEXP)]
   high <- vic.tb.mortality[DT[, .(AGEP, SEXP)],
                            upperProb, on = .(age = AGEP, sex = SEXP)]
-
+  set.seed(set.seed.number[simnumber])
   rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # out <- rbeta(1, betaparam[1], betaparam[2])
   # return(out)
   
 }
+
 # Get.SAE
 # Look up SAE rate from sae.rate (age and treatment dependent)
 Get.SAE <- function(xDT, treat) {
@@ -593,32 +564,13 @@ Get.SAE <- function(xDT, treat) {
                   low, on = .(Age = AGERP, treatment = treatment)]
   high <- sae.rate[DT[, .(AGERP, treatment)],
                    high, on = .(Age = AGERP, treatment = treatment)]
+  set.seed(set.seed.number[simnumber])
   rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # out <- rbeta(1, betaparam[1], betaparam[2])
   # return(out)
 }
-# # Get.SAEMR
-# # Look up the SAE mortality rate from sae.mortality (age and treatment dependent)
-# Get.SAEMR <- function(xDT, treat) {
-#   
-#   DT <- copy(xDT[, .(AGERP)])
-#   
-#   DT[AGERP > 110, AGERP := 110]
-#   
-#   DT$treatment <- as.character(treat)
-#   
-#   mid <- sae.mortality[DT[, .(AGERP, treatment)], 
-#                        Rate, on = .(Age = AGERP, treatment = treatment)]
-#   low <- sae.mortality[DT[, .(AGERP, treatment)], 
-#                        low, on = .(Age = AGERP, treatment = treatment)]
-#   high <- sae.mortality[DT[, .(AGERP, treatment)], 
-#                         high, on = .(Age = AGERP, treatment = treatment)]
-#   betaparam <- findbeta2(mid, low, high)
-#   out <- rbeta(1, betaparam[1], betaparam[2])
-#   return(out)
-#   
-# }
+
 
 
 # MODEL SET UP
@@ -832,10 +784,8 @@ pop.master <- CreatePopulationMaster()
 
 # To run the model each of the parameters needs
 # to be in the environment, i.e. not defined within
-# another function
-# so the following loop takes each row of 
-# parameter values from the simdata table
-# and runs the model
+# another function so the following loop takes each row of 
+# parameter values from the simdata table and runs the model
 
 # I need to place the results from the 
 # model runs into a table... here it is:
@@ -889,6 +839,7 @@ for(i in 1:Num_SIm) {
   ttt6H <- simdata[simnumber, ttt6H]
   ttt9H <- simdata[simnumber, ttt9H]
   saemr <- simdata[simnumber, saemr]
+  prop.spec <- simdata[simnumber, prop.spec]
   uactivetb <- simdata[simnumber, uactivetb]
   uactivetbr <- simdata[simnumber, uactivetbr]
   uhealthy <- simdata[simnumber, uhealthy]
@@ -991,10 +942,6 @@ for(i in 1:Num_SIm) {
   simrun.output[simnumber, stratqaly := strat[2]]
 
 }
-
-
-
-
 
 
 # Do parallel trick. This requires the doParallel and foreach package
@@ -1153,55 +1100,76 @@ for(i in 1:Num_SIm) {
 # and the colour of the simulations will be either green or red
 # depending on whether the ICER value is under or over the WTP.
 
-
-simdata <- cbind(simdata, simrun.output)
-simdata[, icer := (stratcost - basecost)/(stratqaly - baseqaly)]
-simdata[, Effect_prop_diff := stratqaly - baseqaly]
-simdata[, cost_diff := stratcost - basecost]
-
 WTP = 50000 # willingness to pay threshold
 WTP_compare1 = 500
 
-simdata$model = WTP * simdata$Effect_prop_diff
+simdata <- cbind(simdata, simrun.output)
+simdata[,  incremental.qaly := stratqaly - baseqaly] 
+simdata[,  incremental.cost := stratcost - basecost] 
+simdata[, icer := (stratcost - basecost)/(stratqaly - baseqaly)]
+simdata[incremental.qaly < 0 & incremental.cost > 0,  dominated := 1] 
+simdata[incremental.qaly > 0 & incremental.cost < 0,  dominant := 1]
 
-simdata$model_true = simdata$model - simdata$cost_diff
+simdata[icer > WTP,  wtp.colour := 0] 
+simdata[dominated == 1,  wtp.colour := 0]
+simdata[incremental.qaly < 0 & incremental.cost < 0 & icer < WTP,  wtp.colour := 0]
+simdata[icer <= WTP & dominated != 1,  wtp.colour := 1]
+plotdata <- simdata[, c("incremental.cost", "incremental.qaly", "icer",
+                        "wtp.colour", "dominated", "dominant" )]
+# Save this table to file
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
+saveRDS(simdata, "simdata.rds")
 
-simdata$CE = ifelse(test = simdata$model_true > 0, yes = 1, no = 0 )
+# # Read back in simdata
+# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
+# simdata <- readRDS("simdata.rds")
 
-simdata$CE_col = ifelse(test = simdata$CE == 0, yes = 2, no = 3 )
-table(simdata$CE)
+ylimmin <- -1
+ylimmax <- 4
+xlimmin <- -130
+xlimmax <- 100
 
-dev.off()
-plot(simdata$cost_diff ~ simdata$Effect_prop_diff,
-     col = simdata$CE_col, cex = .8, pch = 3,
-     xlim = c(-6000, 6000), ylim = c(-5000000, 5000000))
-abline(h = 0, lwd = 2 )
-abline(v = 0, lwd = 2 )
-abline(c(0, WTP), col = 4, lwd = 3)
+pointsize <- 2.5
+textsize <- 4
+textsize2 <- 10
 
-# #abline(c(0,WTP_compare1), lwd=3)
-# table(simdata$CE)
+ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
+                    colour = wtp.colour)) +
+  geom_point(size = pointsize, alpha = 1, na.rm = T) +
+  geom_vline(xintercept = 0, color = "black") +
+  geom_hline(yintercept = 0, color = "black") +
+  geom_abline(intercept = 0, slope = (50000/1000000)/1,
+              colour = "grey",
+              size = 1) +
+  labs(x = "Incremental QALYs", 
+       y = "Incremental cost (AUD$millions)") +
+  scale_y_continuous(breaks = seq(-500, 250, 1)) +
+  scale_x_continuous(breaks = seq(-5000000, 10000000, 2000)) +
+  theme_bw() +
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
+  theme(text = element_text(size = textsize2),
+        panel.border = element_blank(),
+        legend.position = "none",
+        axis.title.x = element_blank())
 
 
 # Plot of acceptability curve
 # work out the proportion cost-effective
+plotdata[, cheaper.and.worse := ifelse(incremental.qaly < 0 & incremental.cost < 0, 1, NA)]
+cheaper.and.worse.list <- plotdata$icer[plotdata$cheaper.and.worse == 1]
+plotdata[, better.and.costly := ifelse(incremental.qaly > 0 & incremental.cost > 0, 1, NA)]
+better.and.costly.list <- plotdata$icer[plotdata$better.and.costly == 1]
+dominant <- plotdata$dominant
+dominated <- plotdata$dominated
 
-simdata <- as.data.table(simdata)
-simdata[,  incremental.qaly := stratqaly - baseqaly] 
-simdata[,  incremental.cost := stratcost - basecost] 
-simdata[incremental.qaly < 0 & incremental.cost > 0,  outcome := "dominated"] 
-simdata[incremental.qaly > 0 & incremental.cost < 0,  outcome := "dominant"] 
-simdata[incremental.qaly > 0 & incremental.cost < 0,  outcome := "dominant"] 
-simdata[,  icerlist := icer]
-simdata[outcome == "dominated",  icerlist := 200000]
-simdata[outcome == "dominated",  icerlist := 20]
-
-icerlist <- simdata$icerlist
 maxwtp <- 100000
 wtp <- c(0:maxwtp)
-propcosteffectivefunc <- function(wtp){
-  (sum(icerlist < wtp) / 10000) * 100
+
+propcosteffectivefunc <- function(wtp) {
+  (sum(dominant == 1, na.rm = TRUE) + sum(better.and.costly.list <= wtp, na.rm = TRUE) + 
+      sum(cheaper.and.worse.list > wtp, na.rm = TRUE))/length(cheaper.and.worse.list) * 100
 }
+
 propcosteffect <- unlist(lapply(wtp, propcosteffectivefunc))
 
 # create a new table, the accepty table
@@ -1213,16 +1181,12 @@ myplot1 <-
   geom_line(size = 1, colour = "blue") +
   labs(x = "Willingness-to-pay threshold (AUD$)",
        y = "Proportion cost-effective (%)") +
-  scale_y_continuous(breaks = seq(0, 100, 0.1)) +
+    coord_cartesian(xlim = c(0, maxwtp), ylim = c(0, 100)) +
+  scale_y_continuous(breaks = seq(0, 100, 10)) +
   scale_x_continuous(label = comma, breaks = seq(0, 150000, 20000)) +
   theme_bw() +
   theme(text = element_text(size = 25))
-        # panel.border = element_blank(),
-        # legend.position = "right",
-        # axis.text.x = element_text(angle = 45, hjust = 1))
-        # axis.text.y = element_text(size = 12))
-        # panel.grid.major = element_blank(),
-        # panel.grid.minor = element_blank(),
+
 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
 tiff('acceptability.tiff',
@@ -1230,50 +1194,3 @@ tiff('acceptability.tiff',
      res = 600)
 myplot1
 dev.off()
-
-
-
-
-# Exploring density plots
-# Beta distribution
-# https://stephens999.github.io/fiveMinuteStats/beta.html
-# where a = b
-# 
-# source("Distribution parameter calculations.R") # for determining distribution parameter values
-# 
-# betaparam <- findbeta2(0.0011, 0.0009, 0.0013)
-# 
-# dev.off()
-# p = seq(0,0.02, length=100)
-# plot(p, dbeta(p, betaparam[1], betaparam[2]), ylab = "density", type = "l", col = 4, xlim = c(0, 0.02))
-# 
-# 
-# 
-# 
-# 
-
-
-
-# p = seq(0,1, length=100)
-# plot(p, dbeta(p, 100, 100), ylab = "density", type = "l", col = 4)
-# lines(p, dbeta(p, 10, 10), type = "l", col = 3)
-# lines(p, dbeta(p, 2, 2), col = 2)
-# lines(p, dbeta(p, 1, 1), col = 1)
-# legend(0.7,8, c("Be(100,100)","Be(10,10)","Be(2,2)", "Be(1,1)"),
-#        lty = c(1,1,1,1),
-#        col = c(4,3,2,1))
-# 
-# # where a != b
-# p = seq(0,1, length = 100)
-# 
-# 
-# plot(p, dbeta(p, 90.92, 82545.55), ylab="density", type = "l", col = 4, xlim = c(0, 0.02))
-# 
-# lines(p, dbeta(p, 90, 10), type ="l", col = 3)
-# lines(p, dbeta(p, 30, 70), col = 2)
-# lines(p, dbeta(p, 3, 7), col = 1)
-# legend(0.2, 30, c("90.92,82545.55", "Be(90,10)", "Be(30, 70)", "Be(3, 7)"),
-#        lty = c(1,1,1,1),col=c(4,3,2,1))
-# 
-# dist <- dbeta(p, 90.92,82545.55)
-# dist

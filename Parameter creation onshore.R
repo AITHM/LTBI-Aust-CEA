@@ -37,45 +37,80 @@ c.rifapent.high <- 35.04 # US$1 per tablet = US$24 = AUD$105.12
 
 # Create table of parameters
 p <- c("rradj", "att", "begintrt", "snqftgit", "spqftgit",
-     "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
-     "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
-     "ttt6H", "ttt9H", "saemr", "cattend", "cattendspec", 
-     "csae", "cscreenqft", "cscreentst", "ctb", "ctreat3HP", 
-     "cparttreat3HP", "ctreat4R", "cparttreat4R",  
-     "ctreat6H", "cparttreat6H", "ctreat9H", 
-     "cparttreat9H", "ctreatspec3HP", "cparttreatspec3HP", 
-     "ctreatspec4R", "cparttreatspec4R", "ctreatspec6H", 
-     "cparttreatspec6H", "ctreatspec9H", 
-     "cparttreatspec9H", "uactivetb", "uactivetbr", 
-     "uhealthy", "ultbi3HP", "ultbipart3HP", "ultbi4R", 
-     "ultbipart4R", "ultbi6H", "ultbipart6H", 
-     "ultbi9H", "ultbipart9H", "ultbitreatsae")
+       "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
+       "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
+       "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", "cattendspec", 
+       "csae", "cscreenqft", "cscreentst", "ctb", 
+       "cmed3HP", "cmed4R", "cmed6H", "cmed9H",
+       "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
+       "ctreat3HP", "cparttreat3HP", "ctreat4R", "cparttreat4R",  
+       "ctreat6H", "cparttreat6H", "ctreat9H", 
+       "cparttreat9H", "ctreatspec3HP", "cparttreatspec3HP", 
+       "ctreatspec4R", "cparttreatspec4R", "ctreatspec6H", 
+       "cparttreatspec6H", "ctreatspec9H", 
+       "cparttreatspec9H", "uactivetb", "uactivetbr", 
+       "uhealthy", "ultbi3HP", "ultbipart3HP", "ultbi4R", 
+       "ultbipart4R", "ultbi6H", "ultbipart6H", 
+       "ultbi9H", "ultbipart9H", "ultbitreatsae")
 params <- data.frame(p)
 params <- as.data.table(p)
 params[, mid := 0]
 params[, low := 0]
-params[, mid := 0]
 params[, high := 0]
+params[, distribution := "pert"]
+params[, shape := 4]
 
-c.gp.first.mid <- (c.gp.c.vr + c.gp.c.nonvr + c.gp.c.afterhours)/3
-c.gp.first.low <- c.gp.c.nonvr
-c.gp.first.high <- c.gp.c.afterhours
+c.gp.first <- (c.gp.c.vr + c.gp.c.nonvr + c.gp.c.afterhours)/3
 
-c.gp.review.mid <- (c.gp.b.vr + c.gp.b.nonvr + c.gp.b.afterhours)/3
-c.gp.review.low <- c.gp.b.nonvr
-c.gp.review.high <- c.gp.b.afterhours
+c.gp.review <- (c.gp.b.vr + c.gp.b.nonvr + c.gp.b.afterhours)/3
 
 chance.of.needing.mcs <- 0.1
 
-# Cost of active TB
-params[p == "ctb", mid := 12550.52] 
-params[p == "ctb", low := 6330.73] 
-params[p == "ctb", high := 185047.81] #18491.84
+# Parameters that need to vary in sensitivity analysis 
+# - medicine costs - uniform parameter???????? or fixed??????
+# - percentage requiring specialist care
+# - number of follow-up appointments required
+# - number of extra assessments required
+# - 
+params[p == "prop.spec", mid := 0.135] 
+params[p == "prop.spec", low := 0.085] 
+params[p == "prop.spec", high := 0.185] 
 
-# Cost of sae
-params[p == "csae", mid := 1222.64] 
-params[p == "csae", low := 500] 
-params[p == "csae", high := 10000] 
+########DON'T SKEW THE COSTS IN FAVOUR OF LOW COSTS FOR MEDICINES??????
+
+
+chance.of.needing.mcs <- 0.1
+
+
+# Cost of initial appointment after positive screen
+
+prop.spec <- params[p == "prop.spec", mid] 
+
+params[p == "cattend",
+       mid := (c.gp.review + (c.mcs * chance.of.needing.mcs) +
+                       c.liver + c.cxr) * (1 - prop.spec) + 
+         (c.spec.first + (c.mcs * chance.of.needing.mcs) +
+            c.liver + c.cxr) * prop.spec]
+params[p == "cattend",
+       low := mid]
+params[p == "cattend",
+       high := mid]
+
+
+params[p == "cattendspec",
+       mid := c.spec.first + (c.mcs * chance.of.needing.mcs) +
+         c.liver + c.cxr]
+params[p == "cattendspec",
+       low := mid]
+params[p == "cattendspec",
+       high := mid]
+
+# These specify how much of the appointment and medicine
+# costs are applied for the partial costs and treatment
+part.appt <- 2
+part.med <- 3
+
+
 
 # Cost of screening
 params[p == "cscreenqft", mid := 110.33] 
@@ -86,177 +121,156 @@ params[p == "cscreentst", mid := 113.28]
 params[p == "cscreentst", low := 70.20] 
 params[p == "cscreentst", high := 146.30] 
 
-# Cost of initial appointment after positive screen
-
-cattendspec <- c.spec.first + (c.mcs * chance.of.needing.mcs) +
-  c.liver + c.cxr
-
-proportion.needing.spec <- 0.135 # Loutet et al 2018 UK study
-
-params[p == "cattend",
-       mid := (cattendspec * proportion.needing.spec) +
-         (c.gp.review.mid + (c.mcs * chance.of.needing.mcs) + 
-            c.liver + c.cxr) * (1 - proportion.needing.spec)]
-params[p == "cattend",
-       low := (cattendspec * proportion.needing.spec) +
-         (c.gp.review.low + (c.mcs * chance.of.needing.mcs) + 
-            c.liver + c.cxr) * (1 - proportion.needing.spec)]
-params[p == "cattend",
-       high := (cattendspec * proportion.needing.spec) +
-         (c.gp.review.high + (c.mcs * chance.of.needing.mcs) + 
-            c.liver + c.cxr) * (1 - proportion.needing.spec)]
 
 # These specify how much of the appointment and medicine
 # costs are applied for the partial costs and treatment
 part.appt <- 2
 part.med <- 3
 
+
 # Cost of 3HP latent TB treatment
-med.reviews <- 2
 inh.packets <- 1
 rpt.packets <- 3
 
-appt.mid <- med.reviews * c.gp.review.mid
-appt.low <- med.reviews * c.gp.review.low
-appt.high <- med.reviews * c.gp.review.high
+params[p == "num.appt3HP", mid := 2] 
+params[p == "num.appt3HP", low := 2] 
+params[p == "num.appt3HP", high := 5] 
 
-spec.all <- c.spec.review * med.reviews
+appt.num.3HP <- params[p == "num.appt3HP", mid]
 
 med.mid <- inh.packets * c.inh.mid + rpt.packets * c.rifapent.mid
 med.low <- inh.packets * c.inh.low + rpt.packets * c.rifapent.low
 med.high <- inh.packets * c.inh.high + rpt.packets * c.rifapent.high
 
-params[p == "ctreat3HP", mid := appt.mid + med.mid] 
-params[p == "ctreat3HP", low := appt.low + med.low]
-params[p == "ctreat3HP", high := appt.high + med.high] 
+params[p == "cmed3HP", mid := med.mid] 
+params[p == "cmed3HP", low := med.low] 
+params[p == "cmed3HP", high := med.high] 
+
+med.cost.3HP <- params[p == "cmed3HP", mid]
+
+appt <- appt.num.3HP * c.gp.review
+
+spec.appt <- appt.num.3HP * c.spec.review
+
+params[p == "ctreat3HP", mid := appt + med.cost.3HP] 
 
 params[p == "cparttreat3HP",
-       mid := appt.mid / part.appt + med.mid / part.med] 
-params[p == "cparttreat3HP",
-       low := appt.low / part.appt + med.low / part.med]
-params[p == "cparttreat3HP",
-       high := appt.high / part.appt + med.high / part.med] 
+       mid := appt / part.appt + med.cost.3HP / part.med] 
 
-params[p == "ctreatspec3HP", mid := spec.all + med.mid] 
-params[p == "ctreatspec3HP", low := spec.all + med.low]
-params[p == "ctreatspec3HP", high := spec.all + med.high] 
+params[p == "ctreatspec3HP", mid := spec.appt + med.cost.3HP] 
 
 params[p == "cparttreatspec3HP",
-       mid := spec.all / part.appt + med.mid / part.med] 
-params[p == "cparttreatspec3HP",
-       low := spec.all / part.appt + med.low / part.med]
-params[p == "cparttreatspec3HP",
-       high := spec.all / part.appt + med.high / part.med] 
+       mid := spec.appt / part.appt + med.cost.3HP / part.med] 
 
 # Cost of 4R latent TB treatment
-med.reviews <- 3
-med.packets <- 3
+rif.packets <- 3
 
-appt.mid <- med.reviews * c.gp.review.mid
-appt.low <- med.reviews * c.gp.review.low
-appt.high <- med.reviews * c.gp.review.high
+params[p == "num.appt4R", mid := 2] 
+params[p == "num.appt4R", low := 2] 
+params[p == "num.appt4R", high := 5] 
 
-spec.all <- c.spec.review * med.reviews
+appt.num.4R <- params[p == "num.appt4R", mid]
 
-med.mid <- c.rifamp.mid * med.packets
-med.low <- c.rifamp.low * med.packets
-med.high <- c.rifamp.high * med.packets
+med.mid <- c.rifamp.mid * rif.packets
+med.low <- c.rifamp.low * rif.packets
+med.high <- c.rifamp.high * rif.packets
 
-params[p == "ctreat4R", mid := appt.mid + med.mid] 
-params[p == "ctreat4R", low := appt.low + med.low]
-params[p == "ctreat4R", high := appt.high + med.high] 
+params[p == "cmed4R", mid := med.mid] 
+params[p == "cmed4R", low := med.low] 
+params[p == "cmed4R", high := med.high] 
+
+med.cost.4R <- params[p == "cmed4R", mid]
+
+appt <- appt.num.4R * c.gp.review
+
+spec.appt <- appt.num.4R * c.spec.review
+
+params[p == "ctreat4R", mid := appt + med.cost.4R] 
 
 params[p == "cparttreat4R",
-       mid := appt.mid / part.appt + med.mid / part.med] 
-params[p == "cparttreat4R",
-       low := appt.low / part.appt + med.low / part.med]
-params[p == "cparttreat4R",
-       high := appt.high / part.appt + med.high / part.med] 
+       mid := appt / part.appt + med.cost.4R / part.med] 
 
-params[p == "ctreatspec4R", mid := spec.all + med.mid] 
-params[p == "ctreatspec4R", low := spec.all + med.low]
-params[p == "ctreatspec4R", high := spec.all + med.high] 
+params[p == "ctreatspec4R", mid := spec.appt + med.cost.4R] 
 
 params[p == "cparttreatspec4R",
-       mid := spec.all / part.appt + med.mid / part.med] 
-params[p == "cparttreatspec4R",
-       low := spec.all / part.appt + med.low / part.med]
-params[p == "cparttreatspec4R",
-       high := spec.all / part.appt + med.high / part.med] 
-
+       mid := spec.appt / part.appt + med.cost.4R / part.med] 
 
 # Cost of 6H latent TB treatment
-med.reviews <- 3
-med.packets <- 6
+inh.packets <- 6
 
-appt.mid <- med.reviews * c.gp.review.mid
-appt.low <- med.reviews * c.gp.review.low
-appt.high <- med.reviews * c.gp.review.high
+params[p == "num.appt6H", mid := 4] 
+params[p == "num.appt6H", low := 3] 
+params[p == "num.appt6H", high := 7] 
 
-spec.all <- c.spec.review * med.reviews
+appt.num.6H <- params[p == "num.appt6H", mid]
 
-med.mid <- c.inh.mid * med.packets
-med.low <- c.inh.low * med.packets
-med.high <- c.inh.high * med.packets
+med.mid <- inh.packets * c.inh.mid
+med.low <- inh.packets * c.inh.low
+med.high <- inh.packets * c.inh.high
 
-params[p == "ctreat6H", mid := appt.mid + med.mid] 
-params[p == "ctreat6H", low := appt.low + med.low]
-params[p == "ctreat6H", high := appt.high + med.high] 
+params[p == "cmed6H", mid := med.mid] 
+params[p == "cmed6H", low := med.low] 
+params[p == "cmed6H", high := med.high] 
+
+med.cost.6H <- params[p == "cmed6H", mid]
+
+appt <- appt.num.6H * c.gp.review
+
+spec.appt <- appt.num.6H * c.spec.review
+
+params[p == "ctreat6H", mid := appt + med.cost.6H] 
 
 params[p == "cparttreat6H",
-       mid := appt.mid / part.appt + med.mid / part.med] 
-params[p == "cparttreat6H",
-       low := appt.low / part.appt + med.low / part.med]
-params[p == "cparttreat6H",
-       high := appt.high / part.appt + med.high / part.med] 
+       mid := appt / part.appt + med.cost.6H / part.med] 
 
-params[p == "ctreatspec6H", mid := spec.all + med.mid] 
-params[p == "ctreatspec6H", low := spec.all + med.low]
-params[p == "ctreatspec6H", high := spec.all + med.high] 
+params[p == "ctreatspec6H", mid := spec.appt + med.cost.6H] 
 
 params[p == "cparttreatspec6H",
-       mid := spec.all / part.appt + med.mid / part.med] 
-params[p == "cparttreatspec6H",
-       low := spec.all / part.appt + med.low / part.med]
-params[p == "cparttreatspec6H",
-       high := spec.all / part.appt + med.high / part.med] 
-
+       mid := spec.appt / part.appt + med.cost.6H / part.med] 
 
 # Cost of 9H latent TB treatment
-med.reviews <- 4
-med.packets <- 9
+inh.packets <- 9
 
-appt.mid <- med.reviews * c.gp.review.mid
-appt.low <- med.reviews * c.gp.review.low
-appt.high <- med.reviews * c.gp.review.high
+params[p == "num.appt9H", mid := 5] 
+params[p == "num.appt9H", low := 4] 
+params[p == "num.appt9H", high := 11] 
 
-spec.all <- c.spec.review * med.reviews
+appt.num.9H <- params[p == "num.appt9H", mid]
 
-med.mid <- c.inh.mid * med.packets
-med.low <- c.inh.low * med.packets
-med.high <- c.inh.high * med.packets
+med.mid <- inh.packets * c.inh.mid
+med.low <- inh.packets * c.inh.low
+med.high <- inh.packets * c.inh.high
 
-params[p == "ctreat9H", mid := appt.mid + med.mid] 
-params[p == "ctreat9H", low := appt.low + med.low]
-params[p == "ctreat9H", high := appt.high + med.high] 
+params[p == "cmed9H", mid := med.mid] 
+params[p == "cmed9H", low := med.low] 
+params[p == "cmed9H", high := med.high] 
+
+med.cost.9H <- params[p == "cmed9H", mid]
+
+appt <- appt.num.9H * c.gp.review 
+
+spec.appt <- appt.num.9H * c.spec.review
+
+params[p == "ctreat9H", mid := appt + med.cost.9H] 
 
 params[p == "cparttreat9H",
-       mid := appt.mid / part.appt + med.mid / part.med] 
-params[p == "cparttreat9H",
-       low := appt.low / part.appt + med.low / part.med]
-params[p == "cparttreat9H",
-       high := appt.high / part.appt + med.high / part.med] 
+       mid := appt / part.appt + med.cost.9H / part.med] 
 
-params[p == "ctreatspec9H", mid := spec.all + med.mid] 
-params[p == "ctreatspec9H", low := spec.all + med.low]
-params[p == "ctreatspec9H", high := spec.all + med.high] 
+params[p == "ctreatspec9H", mid := spec.appt + med.cost.9H] 
 
 params[p == "cparttreatspec9H",
-       mid := spec.all / part.appt + med.mid / part.med] 
-params[p == "cparttreatspec9H",
-       low := spec.all / part.appt + med.low / part.med]
-params[p == "cparttreatspec9H",
-       high := spec.all / part.appt + med.high / part.med] 
+       mid := spec.appt / part.appt + med.cost.9H / part.med] 
+
+# Cost of active TB
+params[p == "ctb", mid := 12550.52] 
+params[p == "ctb", low := 6330.73] 
+params[p == "ctb", high := 185047.81] #18491.84
+params[p == "ctb", shape := 40]
+
+# Cost of sae
+params[p == "csae", mid := 1222.64] 
+params[p == "csae", low := 500] 
+params[p == "csae", high := 10000] 
 
 params[p == "rradj", mid := 0.9]
 params[p == "rradj", low := 0.875]
@@ -486,11 +500,6 @@ params[p == "ultbitreatsae", high := 0.8629167]
 params[p == "saemr", mid := 0.000813]
 params[p == "saemr", low := 0]
 params[p == "saemr", high := 0.0316]
-
-# Add a distribution and shap column with
-# defaults of pert and 4
-params[, distribution := "pert"]
-params[, shape := 4]
 
 # Write the table to clipboard so I can 
 # paste it into my Excel spreadsheet

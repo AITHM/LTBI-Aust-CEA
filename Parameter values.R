@@ -22,7 +22,7 @@ sensfunc <- function(paramname, loworhigh) {
   params[p == paramname, mid:= newvalue]
 }
 #################################################################################################
-# sensfunc(ultbi4R, low)
+sensfunc(prop.spec, high)
 
 
 # # alter treatr values, i.e. treatment completion and treatment efficacy separately
@@ -42,10 +42,22 @@ sensfunc <- function(paramname, loworhigh) {
 # sensfunc(ultbipart9H, low)
 #################################################################################################
 
-# Taking the values from the params table and
-# putting them into the environment
-for(i in 1:nrow(params)) {
-  assign(params[i, p], params[i, mid])
+
+# Target population
+Get.POP <- function(DT, strategy) {
+  
+  # 200+
+  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  # 150+
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
+  # 100+
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+    # 40+
+    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+    # Adjust age
+    (ifelse(DT[, AGERP] > 10, 1, 0) &
+       ifelse(DT[, AGERP] < 36, 1, 0))
+  
 }
 
 # Assigning other parameter values
@@ -59,37 +71,92 @@ final.year <- finalyear
 # The tests and treatments I want to consider in the run
 testlist <- c("QTFGIT") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
- 
+
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle
 finalinflow <- 0
 
 
-######NOTE BELOW##########
-proportion.needing.spec <- 0.135 # Loutet et al 2018 UK study
-######NOTE BELOW##########
-# If this value changes then it needs to be changed in the 
-# "Parameter creation onshore" script too.
-
-# prop.under35.needing.spec <- 0.05
-# prop.over35.needing.spec <- 0.25
-
-# Target population
-Get.POP <- function(DT, strategy) {
-  
-  # 200+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
-  # 150+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
-  # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
-  # 40+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
-  # Adjust age
-    (ifelse(DT[, AGERP] > 10, 1, 0) &
-       ifelse(DT[, AGERP] < 36, 1, 0))
-  
+# Taking the values from the params table and
+# putting them into the environment
+for(i in 1:nrow(params)) {
+  assign(params[i, p], params[i, mid])
 }
+
+
+# Adjusting the partial LTBI treatment utilities so 
+# they are dependent on the value of
+# the sampled utility for full treatment
+part.utility.dec <- 0.5
+ultbipart3HP <- uhealthy - ((uhealthy - ultbi3HP) * part.utility.dec)
+ultbipart4R <- uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)
+ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
+ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
+
+
+# Adjusting the costs of LTBI treatment so that they are dependent 
+# on the sampled number of appointments and medicine costs
+# Medical consultation costs (MBS website)
+c.gp.b.vr <- 38.20
+c.gp.b.nonvr <- 21.00
+c.gp.b.afterhours <- 49.80
+c.gp.c.vr <- 73.95
+c.gp.c.nonvr <- 38.00
+c.gp.c.afterhours <- 85.30
+c.spec.first <- 155.60
+c.spec.review <- 77.90
+
+# Medical assessment costs (MBS website)
+c.qft.git <- 34.90
+c.tst <- 11.20
+c.cxr <- 47.15
+c.liver <- 17.70
+c.mcs <- 43.00
+
+# These specify how much of the appointment and medicine
+# costs are applied for the partial costs and treatment
+part.appt <- 2
+part.med <- 3
+
+c.gp.first <- (c.gp.c.vr + c.gp.c.nonvr + c.gp.c.afterhours)/3
+c.gp.review <- (c.gp.b.vr + c.gp.b.nonvr + c.gp.b.afterhours)/3
+chance.of.needing.mcs <- 0.1
+
+# Cost of initial appointment after positive screen
+cattend <- (c.gp.review + (c.mcs * chance.of.needing.mcs) +
+         c.liver + c.cxr) * (1 - prop.spec) + 
+  (c.spec.first + (c.mcs * chance.of.needing.mcs) +
+  c.liver + c.cxr) * prop.spec
+
+# 3HP sort
+appt <- num.appt3HP * c.gp.review + c.liver
+spec.appt <- c.spec.first + (num.appt3HP - 1) * c.spec.review + c.liver
+ctreat3HP <- appt + cmed3HP
+cparttreat3HP <-  appt / part.appt + cmed3HP / part.med      
+ctreatspec3HP <-  spec.appt + cmed3HP 
+cparttreatspec3HP <-  spec.appt / part.appt + cmed3HP / part.med
+# 4r sort
+appt <- num.appt4R * c.gp.review
+spec.appt <- c.spec.first + (num.appt4R - 1) * c.spec.review
+ctreat4R <- appt + cmed4R
+cparttreat4R <-  appt / part.appt + cmed4R / part.med      
+ctreatspec4R <-  spec.appt + cmed4R 
+cparttreatspec4R <-  spec.appt / part.appt + cmed4R / part.med
+# 6H sort
+appt <- num.appt6H * c.gp.review + c.liver
+spec.appt <- c.spec.first + (num.appt6H - 1) * c.spec.review + c.liver
+ctreat6H <- appt + cmed6H
+cparttreat6H <-  appt / part.appt + cmed6H / part.med      
+ctreatspec6H <-  spec.appt + cmed6H 
+cparttreatspec6H <-  spec.appt / part.appt + cmed6H / part.med
+# 9H sort
+appt <- num.appt9H * c.gp.review + c.liver
+spec.appt <- c.spec.first + (num.appt9H - 1) * c.spec.review + c.liver
+ctreat9H <- appt + cmed9H
+cparttreat9H <-  appt / part.appt + cmed9H / part.med      
+ctreatspec9H <-  spec.appt + cmed9H 
+cparttreatspec9H <-  spec.appt / part.appt + cmed9H / part.med 
+
 
 # Initial migrant cohort and LTBI prevalence and reactivation rates
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
@@ -215,8 +282,8 @@ Get.EMIGRATE <- function(xDT, year) {
 # Look up treatment costs (it's treatment dependent)
 Get.TREATC <- function(S, treat) {
   
-  as.numeric(treatmentcost.dt[treatment == treat & practitioner == "spec", ..S]) * proportion.needing.spec +
-    as.numeric(treatmentcost.dt[treatment == treat & practitioner == "gp", ..S]) * (1 - proportion.needing.spec)
+  as.numeric(treatmentcost.dt[treatment == treat & practitioner == "spec", ..S]) * prop.spec +
+    as.numeric(treatmentcost.dt[treatment == treat & practitioner == "gp", ..S]) * (1 - prop.spec)
   
 }
 

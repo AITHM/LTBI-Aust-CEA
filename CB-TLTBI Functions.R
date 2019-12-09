@@ -498,6 +498,7 @@ DoRunModel <- function(strategy, start.year, cycles) {
           e <- which( colnames(pop.output) == "SQ.p.sus" )
           f <- which( colnames(pop.output) == "SQ.p.emigrate" )
           out2 <- sum(rowSums(pop.output[, e:f], na.rm = TRUE))
+          # out2 <- sum(pop.output[, Reduce(`+`, .SD), .SDcols = c(e:f)], na.rm = TRUE)
           
           outlist <- c(out1, out2)
           

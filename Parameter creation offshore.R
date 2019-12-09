@@ -40,7 +40,7 @@ c.rifapent.high <- 35.04 # US$1 per tablet = US$24 = AUD$105.12
 p <- c("rradj", "att", "begintrt", "snqftgit", "spqftgit",
        "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
        "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
-       "ttt6H", "ttt9H", "saemr", "cattend", "cattendspec", 
+       "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", "cattendspec", 
        "csae", "cscreenqft", "cscreentst", "ctb", 
        "cmed3HP", "cmed4R", "cmed6H", "cmed9H",
        "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
@@ -74,12 +74,16 @@ chance.of.needing.mcs <- 0.1
 # - number of extra assessments required
 # - 
 
-########DON'T SKEW THE COSTS IN FAVOUR OF LOW COSTS FOR MEDICINES!!!!
-########DON'T SKEW THE UTILITIES IN FAVOUR OF HIGH UTILITIES FOR LTBI TREATMNET
-########
+params[p == "prop.spec", mid := 0.135] 
+params[p == "prop.spec", low := 0.085] 
+params[p == "prop.spec", high := 0.185] 
+
+########DON'T SKEW THE COSTS IN FAVOUR OF LOW COSTS FOR MEDICINES??????
+
+
 # Cost of initial appointment after positive screen - FIXED
 params[p == "cattend",
-       mid := c.gp.first.mid + (c.mcs * chance.of.needing.mcs) + c.cxr]
+       mid := c.gp.first + (c.mcs * chance.of.needing.mcs) + c.cxr]
 params[p == "cattend",
        low := mid]
 params[p == "cattend",
@@ -130,7 +134,7 @@ params[p == "cparttreatspec3HP",
 
 # Cost of 4R latent TB treatment
 rif.packets <- 3
-
+ 
 params[p == "num.appt4R", mid := 3] 
 params[p == "num.appt4R", low := 3] 
 params[p == "num.appt4R", high := 5] 
@@ -233,6 +237,7 @@ params[p == "cparttreatspec9H",
 params[p == "ctb", mid := 12550.52] 
 params[p == "ctb", low := 6330.73] 
 params[p == "ctb", high := 185047.81] #18491.84
+params[p == "ctb", shape := 40]
 
 # Cost of sae
 params[p == "csae", mid := 1222.64] 
@@ -478,7 +483,6 @@ params[p == "ultbitreatsae", high := 0.8629167]
 params[p == "saemr", mid := 0.000813]
 params[p == "saemr", low := 0]
 params[p == "saemr", high := 0.0316]
-
 
 # Write the table to clipboard so I can 
 # paste it into my Excel spreadsheet
