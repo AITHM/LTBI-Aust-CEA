@@ -92,8 +92,8 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   # Multiply the population by 1.7 because the current population represents the net migrant arrivals
   # rather than all migrant arrivals, so the total number of arrivals needs to be higher
   
-  pop.master <- pop.master[, NUMP := NUMP * 1.7]
-  pop.master <- pop.master[, LTBP := LTBP * 1.7]
+  pop.master <- pop.master[, NUMP := NUMP * (migrant.inflow.size/252808) ]
+  pop.master <- pop.master[, LTBP := LTBP * (migrant.inflow.size/252808) ]
   
   # Remove the populations who arrived under the age of 11 years
   

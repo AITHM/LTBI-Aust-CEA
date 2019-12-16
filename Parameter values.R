@@ -22,8 +22,9 @@ sensfunc <- function(paramname, loworhigh) {
   params[p == paramname, mid:= newvalue]
 }
 #################################################################################################
-sensfunc(prop.spec, high)
+# sensfunc(treatr, high)
 
+# params[p == "treatr4R", mid := 1]
 
 # # alter treatr values, i.e. treatment completion and treatment efficacy separately
 # sensfunc(treatr4R, low.treat.complete)
@@ -40,6 +41,16 @@ sensfunc(prop.spec, high)
 # sensfunc(ultbipart6H, low)
 # sensfunc(ultbi9H, low)
 # sensfunc(ultbipart9H, low)
+
+
+# # the perfect world - figure 8
+# params[p == "treatr4R", mid := 1]
+# params[p == "snqftgit", mid := 1]
+# params[p == "spqftgit", mid := 1]
+# params[p == "att", mid := 1]
+# params[p == "begintrt", mid := 1]
+# params[p == "begintrt", mid := 1]
+
 #################################################################################################
 
 
@@ -52,9 +63,9 @@ Get.POP <- function(DT, strategy) {
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
   (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
-    # 40+
-    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
-    # Adjust age
+  # 40+
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+  # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
        ifelse(DT[, AGERP] < 36, 1, 0))
   
@@ -69,11 +80,12 @@ totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migr
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
-testlist <- c("QTFGIT") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("QTFGIT", "TST10", "TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle
+migrant.inflow.size <- 434340 # baseline 434340, permanent 103740
 finalinflow <- 0
 
 
@@ -106,6 +118,8 @@ c.gp.c.afterhours <- 85.30
 c.spec.first <- 155.60
 c.spec.review <- 77.90
 
+proportion.nonvr <- 0.137
+
 # Medical assessment costs (MBS website)
 c.qft.git <- 34.90
 c.tst <- 11.20
@@ -118,8 +132,10 @@ c.mcs <- 43.00
 part.appt <- 2
 part.med <- 3
 
-c.gp.first <- (c.gp.c.vr + c.gp.c.nonvr + c.gp.c.afterhours)/3
-c.gp.review <- (c.gp.b.vr + c.gp.b.nonvr + c.gp.b.afterhours)/3
+c.gp.first <- c.gp.c.vr * (1 - proportion.nonvr) + c.gp.c.nonvr * proportion.nonvr
+
+c.gp.review <- c.gp.b.vr * (1 - proportion.nonvr) + c.gp.b.nonvr * proportion.nonvr
+
 chance.of.needing.mcs <- 0.1
 
 # Cost of initial appointment after positive screen
@@ -257,7 +273,7 @@ Get.SAE <- function(xDT, treat) {
 # Source emigrate data
 emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
 # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
-emigrate.rate <- as.data.table(emigrate.rate)
+# emigrate.rate <- as.data.table(emigrate.rate)
 
 # Emigrate rate from emigrate.rate (age dependent)
 Get.EMIGRATE <- function(xDT, year) {

@@ -13,6 +13,8 @@ c.gp.c.afterhours <- 85.30
 c.spec.first <- 155.60
 c.spec.review <- 77.90
 
+proportion.nonvr <- 0.137
+
 # Medical assessment costs (MBS website)
 c.qft.git <- 34.90
 c.tst <- 11.20
@@ -60,9 +62,9 @@ params[, high := 0]
 params[, distribution := "pert"]
 params[, shape := 4]
 
-c.gp.first <- (c.gp.c.vr + c.gp.c.nonvr + c.gp.c.afterhours)/3
+c.gp.first <- c.gp.c.vr * (1 - proportion.nonvr) + c.gp.c.nonvr * proportion.nonvr
 
-c.gp.review <- (c.gp.b.vr + c.gp.b.nonvr + c.gp.b.afterhours)/3
+c.gp.review <- c.gp.b.vr * (1 - proportion.nonvr) + c.gp.b.nonvr * proportion.nonvr
 
 chance.of.needing.mcs <- 0.1
 
@@ -284,29 +286,29 @@ params[p == "begintrt", mid := 0.596]
 params[p == "begintrt", low := 0.262]
 params[p == "begintrt", high := 0.762]
 
-params[p == "snqftgit", mid := 0.6104]
-params[p == "snqftgit", low := 0.4925]
-params[p == "snqftgit", high := 0.7195]
+params[p == "snqftgit", mid := 0.6538] # 0.6104
+params[p == "snqftgit", low := 0.44] # 0.4925
+params[p == "snqftgit", high := 0.83] # 0.7195
 
-params[p == "spqftgit", mid := 0.95820]
-params[p == "spqftgit", low := 0.95700]
-params[p == "spqftgit", high := 0.95948]
+params[p == "spqftgit", mid := 0.96942] # 0.95820
+params[p == "spqftgit", low := 0.97436] # 0.95700
+params[p == "spqftgit", high := 0.97531] # 0.95948
 
-params[p == "sntst15", mid := 0.6753]
-params[p == "sntst15", low := 0.5590]
-params[p == "sntst15", high := 0.7777]
+params[p == "sntst15", mid := 0.6923] # 0.6753
+params[p == "sntst15", low := 0.48] # 0.5590
+params[p == "sntst15", high := 0.86] # 0.7777
 
-params[p == "sptst15", mid := 0.95117]
-params[p == "sptst15", low := 0.94978]
-params[p == "sptst15", high := 0.95255]
+params[p == "sptst15", mid := 0.99910] # 0.95117
+params[p == "sptst15", low := 0.99910] # 0.94978
+params[p == "sptst15", high := 1.000] # 0.95255
 
-params[p == "sntst10", mid := 0.7532]
-params[p == "sntst10", low := 0.6418]
-params[p == "sntst10", high := 0.8444]
+params[p == "sntst10", mid := 0.7692] # 0.7532
+params[p == "sntst10", low := 0.56] # 0.6418
+params[p == "sntst10", high := 0.91] # 0.8444
 
-params[p == "sptst10", mid := 0.82227]
-params[p == "sptst10", low := 0.81780]
-params[p == "sptst10", high := 0.82686]
+params[p == "sptst10", mid := 0.89119] # 0.82227
+params[p == "sptst10", low := 0.88462] # 0.81780
+params[p == "sptst10", high := 0.90123] # 0.82686
 
 params[p == "treatr3HP", mid := 0.543]
 params[p == "treatr3HP", low := 0.221]

@@ -70,10 +70,17 @@ tabfunc <- function(dt) {
   # annual migrant inflow
   migflow <- dt[YEAR == start.year & YARP == start.year, sum(NUMP),]
   
-  # annual average emigration inflow
-  emigflow <- dt[, sum(p.emigrate)]/totalcycles
+  # percentage with LTBI
+  percentltbi <- (dt[YEAR == start.year & YARP == start.year, sum(LTBP),]/migflow) * 100
   
-  emigflow <- dt[YEAR == start.year + 2 & YARP == start.year, sum(p.emigrate)]
+  # annual average number emigrating
+  emigflow <- dt[YEAR == final.year, sum(p.emigrate)]/totalcycles
+  
+  # probability of emigration over time horizon
+  emigpercent <- (dt[YEAR == final.year, sum(p.emigrate)] / migflow) * 100
+  
+  # one year probability of emigration 
+  emigproboneyear <- (-1/totalcycles * log(1 - (emigpercent/100))) * 100
   
   # annual number screened/tested
   cdt <- copy(dt)
@@ -201,7 +208,10 @@ tabfunc <- function(dt) {
   
   tablist<-list(nameofdt,
                 migflow,
+                percentltbi,
                 emigflow,
+                emigpercent,
+                emigproboneyear,
                 numscreened,
                 numref,
                 numatt,
@@ -236,7 +246,10 @@ tabfunc <- function(dt) {
   
   namelist<-c("strategy",
               "annual migrant flow",
-              "annual average emigration flow",
+              "percent of cohort with ltbi",
+              "annual average number emigrating",
+              "Probability of emigration over time horizon",
+              "Probability of emigration in one year",
               "annual number screened",
               "annual number referred",
               "annual number that attended",

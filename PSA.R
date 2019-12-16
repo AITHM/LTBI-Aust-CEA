@@ -36,7 +36,7 @@ source("Distribution parameter calculations.R") # for determining distribution p
 ################## PSA #####################################
 
 # Defining the number of simulations we want
-Num_SIm <- 10
+Num_SIm <- 100
 
 # Generating a random set of numbers, one for each simulation
 # that will be used as a seed number for "set.seed" functions
@@ -54,7 +54,7 @@ simdata <- as.data.table(simdata)
 # Define all the parameters that are don't have any uncertainty:
 discount <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 start.year <- 2020 # start.year
-totalcycles <- 10  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
 cycles <- totalcycles 
 # inflows are possible until 2050
 final.year <- start.year + totalcycles
@@ -65,6 +65,7 @@ treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity 
 
 # The number of migrant inflows I want to include
 # the migrant inflow will stop after the following Markov cycle
+migrant.inflow.size <- 434340 # 440980
 finalinflow <- 0
 
 # Get.POP
@@ -92,8 +93,8 @@ Get.POP <- function(DT, strategy) {
 # is defined in the PSA.csv and needs to be read in:
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################################################
-# dt <- readRDS("params onshore.rds")
-dt <- readRDS("params offshore.rds")
+dt <- readRDS("params onshore.rds")
+# dt <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################################################
 dt <- as.data.table(dt)
 
@@ -116,9 +117,6 @@ dt[, high := as.numeric(as.character(high))]
 dt[, distribution := as.character(distribution)]
 
 
-dt[abbreviation == "ctb", shape := 40]
-dt[abbreviation == "ultbi4R", distribution := "uniform"]
-dt[abbreviation == "ultbipart4R", distribution := "uniform"]
 
 
 # The loop below adds one column to the simdata table for each parameter value
@@ -160,6 +158,14 @@ for(i in 1:nrow(dt)) {
     setnames(simdata, "newcol", abbreviation)
   }
 }
+
+
+# Reset some parameters to see what happens
+simdata <- as.data.table(simdata)
+simdata[, treatr4R := 1]
+simdata[, snqftgit := 1]
+simdata[, spqftgit := 1]
+
 
 # #TEST
 # for(i in 1:nrow(dt)) {
@@ -215,7 +221,7 @@ simdata[, ctreat3HP := appt + cmed3HP]
 simdata[, cparttreat3HP :=  appt / part.appt + cmed3HP / part.med]      
 simdata[, ctreatspec3HP :=  spec.appt + cmed3HP] 
 simdata[, cparttreatspec3HP :=  spec.appt / part.appt + cmed3HP / part.med]
-# 4r sort
+# 4R sort
 simdata[, appt := num.appt4R * c.gp.review]
 simdata[, spec.appt := c.spec.first + (num.appt4R - 1) * c.spec.review]
 simdata[, ctreat4R := appt + cmed4R]
@@ -472,15 +478,15 @@ Get.RR <- function(xDT, year) {
   
   mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
                                                                            ysa = ST, cobi = COBI)]
-  
-  # assuming a higher LTBI prevalence and a lower rate of reactivation
-  low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                          ysa = ST, cobi = COBI)]
-  # assuming a lower prevalence of LTBI and a higher rate of reactivation
-  high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                           ysa = ST, cobi = COBI)]
-  set.seed(set.seed.number[simnumber])
-  rpert(1, min = low, mode = mid, max = high, shape = shape)
+
+  # # assuming a higher LTBI prevalence and a lower rate of reactivation
+  # low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                         ysa = ST, cobi = COBI)]
+  # # assuming a lower prevalence of LTBI and a higher rate of reactivation
+  # high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                          ysa = ST, cobi = COBI)]
+  # set.seed(set.seed.number[simnumber])
+  # rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
   # out <- rbeta(1, betaparam[1], betaparam[2])
   # return(out)
@@ -1101,38 +1107,43 @@ for(i in 1:Num_SIm) {
 # depending on whether the ICER value is under or over the WTP.
 
 WTP = 50000 # willingness to pay threshold
-WTP_compare1 = 500
 
-simdata <- cbind(simdata, simrun.output)
-simdata[,  incremental.qaly := stratqaly - baseqaly] 
-simdata[,  incremental.cost := stratcost - basecost] 
-simdata[, icer := (stratcost - basecost)/(stratqaly - baseqaly)]
-simdata[incremental.qaly < 0 & incremental.cost > 0,  dominated := 1] 
-simdata[incremental.qaly > 0 & incremental.cost < 0,  dominant := 1]
+plotdata <- cbind(simdata, simrun.output)
+plotdata[, incremental.qaly := stratqaly - baseqaly] 
+plotdata[, incremental.cost := stratcost - basecost] 
+plotdata[, icer := (stratcost - basecost)/(stratqaly - baseqaly)]
+plotdata[, dominated := ifelse(incremental.qaly < 0 & incremental.cost > 0, 1, NA)] 
+plotdata[, dominant := ifelse(incremental.qaly > 0 & incremental.cost < 0, 1, NA)]
+plotdata <- plotdata[, c("incremental.cost", "incremental.qaly", "icer",
+                         "dominated", "dominant" )]
 
-simdata[icer > WTP,  wtp.colour := 0] 
-simdata[dominated == 1,  wtp.colour := 0]
-simdata[incremental.qaly < 0 & incremental.cost < 0 & icer < WTP,  wtp.colour := 0]
-simdata[icer <= WTP & dominated != 1,  wtp.colour := 1]
-plotdata <- simdata[, c("incremental.cost", "incremental.qaly", "icer",
-                        "wtp.colour", "dominated", "dominant" )]
+plotdata[icer > WTP, wtp.colour := 0] 
+plotdata[icer < WTP, wtp.colour := 1]
+plotdata[dominated == 1, wtp.colour := 0]
+plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer < WTP, wtp.colour := 0]
+plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer > WTP, wtp.colour := 1]
+
+
 # Save this table to file
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
-saveRDS(simdata, "simdata.rds")
+saveRDS(simdata, "perfect treatr sens and spec.rds")
 
 # # Read back in simdata
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
 # simdata <- readRDS("simdata.rds")
 
-ylimmin <- -1
-ylimmax <- 4
-xlimmin <- -130
-xlimmax <- 100
+ylimmin <- -2.5
+ylimmax <- 18
+xlimmin <- -200
+xlimmax <- 140
 
 pointsize <- 2.5
-textsize <- 4
-textsize2 <- 10
+textsize <- 6
+textsize2 <- 20
 
+plotdata[, wtp.colour := as.factor(wtp.colour)]
+
+dev.off()
 ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
                     colour = wtp.colour)) +
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
@@ -1143,8 +1154,9 @@ ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)") +
+  scale_colour_manual(values = c("brown2", "seagreen4")) +
   scale_y_continuous(breaks = seq(-500, 250, 1)) +
-  scale_x_continuous(breaks = seq(-5000000, 10000000, 2000)) +
+  scale_x_continuous(breaks = seq(-5000000, 10000000, 20)) +
   theme_bw() +
   coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
   theme(text = element_text(size = textsize2),
@@ -1165,9 +1177,17 @@ dominated <- plotdata$dominated
 maxwtp <- 100000
 wtp <- c(0:maxwtp)
 
+
+# wtp <- 473
+# sum(dominant == 1, na.rm = TRUE)
+# sum(better.and.costly.list <= wtp, na.rm = TRUE) 
+# sum(cheaper.and.worse.list >= wtp, na.rm = TRUE)
+# length(cheaper.and.worse.list)
+
 propcosteffectivefunc <- function(wtp) {
-  (sum(dominant == 1, na.rm = TRUE) + sum(better.and.costly.list <= wtp, na.rm = TRUE) + 
-      sum(cheaper.and.worse.list > wtp, na.rm = TRUE))/length(cheaper.and.worse.list) * 100
+  ((sum(dominant == 1, na.rm = TRUE) + 
+         sum(better.and.costly.list <= wtp, na.rm = TRUE) + 
+      sum(cheaper.and.worse.list >= wtp, na.rm = TRUE)) / length(cheaper.and.worse.list)) * 100
 }
 
 propcosteffect <- unlist(lapply(wtp, propcosteffectivefunc))

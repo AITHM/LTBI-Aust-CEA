@@ -204,7 +204,7 @@ myplot3 <-
         legend.position = "none")
 myplot4 <-
   ggplot(plot4, aes(x = incremental.qalys, y = incremental.cost/1000000,
-                 fill = strategy,
+                 fill = strategy,co
                  shape =  strategy)) +
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
