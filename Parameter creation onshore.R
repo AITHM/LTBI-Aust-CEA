@@ -287,28 +287,28 @@ params[p == "begintrt", low := 0.262]
 params[p == "begintrt", high := 0.762]
 
 params[p == "snqftgit", mid := 0.6538] # 0.6104
-params[p == "snqftgit", low := 0.44] # 0.4925
-params[p == "snqftgit", high := 0.83] # 0.7195
+params[p == "snqftgit", low := 0.4438] # 0.4925
+params[p == "snqftgit", high := 0.8279] # 0.7195
 
 params[p == "spqftgit", mid := 0.96942] # 0.95820
-params[p == "spqftgit", low := 0.97436] # 0.95700
-params[p == "spqftgit", high := 0.97531] # 0.95948
+params[p == "spqftgit", low := 0.9680] # 0.95700
+params[p == "spqftgit", high := 0.9708] # 0.95948
 
 params[p == "sntst15", mid := 0.6923] # 0.6753
-params[p == "sntst15", low := 0.48] # 0.5590
-params[p == "sntst15", high := 0.86] # 0.7777
+params[p == "sntst15", low := 0.4821] # 0.5590
+params[p == "sntst15", high := 0.8567] # 0.7777
 
 params[p == "sptst15", mid := 0.99910] # 0.95117
 params[p == "sptst15", low := 0.99910] # 0.94978
-params[p == "sptst15", high := 1.000] # 0.95255
+params[p == "sptst15", high := 0.99910] # 0.95255
 
 params[p == "sntst10", mid := 0.7692] # 0.7532
-params[p == "sntst10", low := 0.56] # 0.6418
-params[p == "sntst10", high := 0.91] # 0.8444
+params[p == "sntst10", low := 0.5635] # 0.6418
+params[p == "sntst10", high := 0.9103] # 0.8444
 
 params[p == "sptst10", mid := 0.89119] # 0.82227
-params[p == "sptst10", low := 0.88462] # 0.81780
-params[p == "sptst10", high := 0.90123] # 0.82686
+params[p == "sptst10", low := 0.8868] # 0.81780
+params[p == "sptst10", high := 0.8957] # 0.82686
 
 params[p == "treatr3HP", mid := 0.543]
 params[p == "treatr3HP", low := 0.221]
@@ -438,18 +438,18 @@ params[p == "uactivetb", high := uactivetbfunct(4, 0.5, 0.003)]
 part.utility.dec <- 0.5
 
 
-ultbi3HPcalc <- 0.07000000 + 0.06833333 + 2 * 0.06833333 +
-  2 * 0.07333333 + 2 * 0.07250000 + 2 * 0.07250000 + 2 * 0.07416667
+ultbi3HPcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths +
+  2 * healthy.4mths + 2 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
 
-ultbi4Rcalc <- 0.07000000 + 0.06833333 + 2 * 0.06833333 + 0.06916667 +
-  0.07333333 + 2 * 0.07250000 + 2 * 0.07250000 + 2 * 0.07416667
+ultbi4Rcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + ultbi.4mths +
+  healthy.4mths + 2 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
 
-ultbi6Hcalc <- 0.07000000 + 0.06833333 + 2 * 0.06833333 + 
-  2 * 0.06916667 + 0.06833333 +
-  0.07250000 + 2 * 0.07250000 + 2 * 0.07416667
+ultbi6Hcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 
+  2 * ultbi.4mths + ultbi.6mths +
+  healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
 
-ultbi9Hcalc <- 0.07000000 + 0.06833333 + 2 * 0.06833333 + 
-  2 * 0.06916667 + 2 * 0.06833333 + 2 * 0.06833333 + 2 * 0.07000000
+ultbi9Hcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 
+  2 * ultbi.4mths + 2 * ultbi.6mths + 2 * ultbi.9mths + 2 * ultbi.12mths
 
 params[p == "ultbi3HP", mid := uhealthy.fix]
 params[p == "ultbi3HP", low := ultbi3HPcalc]

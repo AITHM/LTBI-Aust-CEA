@@ -96,7 +96,7 @@ df.2 <- df %>%
 #png(width = 960, height = 540)
 options(scipen=5)
 
-dev.off()
+#dev.off()
 myplot1 <- 
   ggplot() + 
   geom_rect(data = df.2, 
@@ -117,6 +117,30 @@ myplot1 <-
                      breaks = seq(0, 500000, 50000),
                      labels = comma) +
   coord_flip(ylim = c(0, 290000))+
+  theme(text = element_text(size = 12),
+        legend.position = c(0.75, 0.1))
+
+
+
+ggplot() + 
+  geom_rect(data = df.2, 
+            aes(ymax = ymax, ymin = ymin, 
+                xmax = xmax, xmin = xmin, fill = type)) +
+  theme_bw() + 
+  labs(y = "Cost per QALY (AUS$)") +
+  scale_fill_manual(values = c("steelblue2", "darksalmon")) +
+  theme(legend.position = 'bottom',
+        legend.title = element_blank(),
+        legend.direction = "vertical",
+        legend.margin = margin(0, 0, 0, 0),
+        legend.box.margin = margin(50, 50, 50, 50)) + 
+  geom_hline(yintercept = base.value) +
+  scale_x_continuous(breaks = c(1:length(order.parameters)), 
+                     labels = order.parameters) +
+  scale_y_continuous(position = "bottom", 
+                     breaks = seq(0, 5000000, 200000),
+                     labels = comma) +
+  coord_flip(ylim = c(0, 2000000))+
   theme(text = element_text(size = 12),
         legend.position = c(0.75, 0.1))
 

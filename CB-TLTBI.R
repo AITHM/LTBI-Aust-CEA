@@ -16,14 +16,18 @@
 library(lazyeval) # required
 library(data.table) # required
 
-
-
 # Model setup located within this file.
 # It defines all the states and transition matrices
 # The strategies and all parameters are defined in the "Parameter values" document.
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("CB-TLTBI Functions.R")
-source("Parameter values.R")
+
+if (exists("tornado.analysis") == TRUE) {
+  
+} else {
+  source("Parameter values.R")
+}
+
 source("CB-TLTBI_DataPreparation.R")
 # This function uses the above three Fix* functions. 
 # Run once to create the *.rds objects (vic.fertility, vic.mortality, vic.migration)
