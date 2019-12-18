@@ -42,7 +42,7 @@ c.rifapent.high <- 35.04 # US$1 per tablet = US$24 = AUD$105.12
 p <- c("rradj", "att", "begintrt", "snqftgit", "spqftgit",
        "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
        "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
-       "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", "cattendspec", 
+       "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", 
        "csae", "cscreenqft", "cscreentst", "ctb", 
        "cmed3HP", "cmed4R", "cmed6H", "cmed9H",
        "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
@@ -104,7 +104,7 @@ inh.packets <- 1
 rpt.packets <- 3
 
 params[p == "num.appt3HP", mid := 3] 
-params[p == "num.appt3HP", low := 3] 
+params[p == "num.appt3HP", low := 2] 
 params[p == "num.appt3HP", high := 5] 
 
 appt.num.3HP <- params[p == "num.appt3HP", mid]
@@ -138,7 +138,7 @@ params[p == "cparttreatspec3HP",
 rif.packets <- 3
  
 params[p == "num.appt4R", mid := 3] 
-params[p == "num.appt4R", low := 3] 
+params[p == "num.appt4R", low := 2] 
 params[p == "num.appt4R", high := 5] 
 
 appt.num.4R <- params[p == "num.appt4R", mid]
@@ -173,7 +173,7 @@ inh.packets <- 6
 
 params[p == "num.appt6H", mid := 4] 
 params[p == "num.appt6H", low := 3] 
-params[p == "num.appt6H", high := 7] 
+params[p == "num.appt6H", high := 8] 
 
 appt.num.6H <- params[p == "num.appt6H", mid]
 
@@ -206,7 +206,7 @@ inh.packets <- 9
 
 params[p == "num.appt9H", mid := 5] 
 params[p == "num.appt9H", low := 4] 
-params[p == "num.appt9H", high := 11] 
+params[p == "num.appt9H", high := 9] 
 
 appt.num.9H <- params[p == "num.appt9H", mid]
 

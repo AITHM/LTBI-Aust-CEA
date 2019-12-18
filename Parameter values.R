@@ -6,9 +6,13 @@ library(data.table)
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
 params <- readRDS("params onshore.rds")
+onshore <- 1
+
 # params <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 params <- as.data.table(params)
+options(scipen=999)
 
 # This function can be used to choose which parameters to change
 # for sensitivity analysis.
@@ -89,13 +93,11 @@ treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity 
 migrant.inflow.size <- 434340 # baseline 434340, permanent 103740
 finalinflow <- 0
 
-options(scipen=999)
 # Taking the values from the params table and
 # putting them into the environment
 for(i in 1:nrow(params)) {
   assign(params[i, p], params[i, mid])
 }
-
 
 # Adjusting the partial LTBI treatment utilities so 
 # they are dependent on the value of
@@ -105,7 +107,6 @@ ultbipart3HP <- uhealthy - ((uhealthy - ultbi3HP) * part.utility.dec)
 ultbipart4R <- uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)
 ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
 ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
-
 
 # Adjusting the costs of LTBI treatment so that they are dependent 
 # on the sampled number of appointments and medicine costs
@@ -140,10 +141,26 @@ c.gp.review <- c.gp.b.vr * (1 - proportion.nonvr) + c.gp.b.nonvr * proportion.no
 chance.of.needing.mcs <- 0.1
 
 # Cost of initial appointment after positive screen
-cattend <- (c.gp.review + (c.mcs * chance.of.needing.mcs) +
-         c.liver + c.cxr) * (1 - prop.spec) + 
-  (c.spec.first + (c.mcs * chance.of.needing.mcs) +
-  c.liver + c.cxr) * prop.spec
+# These costs are different for on and off-shore screening
+# so this need to be taken into account, i.e. for onshore
+# screening this appointment will be a review with the GP
+# or it may be the first appointment with a specialist
+# and a liver function test will be ordered
+# Also, all ongoing appointments related to LTBI treatment will be
+# review appointments
+
+if (onshore == 0) {
+  cattend <- c.gp.first + (c.mcs * chance.of.needing.mcs) + c.cxr
+} else if (onshore == 1) {
+  cattend <- ((c.gp.review + (c.mcs * chance.of.needing.mcs) +
+                c.cxr) * (1 - prop.spec)) + 
+    ((c.spec.first + (c.mcs * chance.of.needing.mcs) +
+       c.cxr) * prop.spec)
+}
+
+if (onshore == 1) {
+  c.spec.first <- c.spec.review
+} 
 
 # 3HP sort
 appt <- num.appt3HP * c.gp.review + c.liver
@@ -174,6 +191,10 @@ cparttreat9H <-  appt / part.appt + cmed9H / part.med
 ctreatspec9H <-  spec.appt + cmed9H 
 cparttreatspec9H <-  spec.appt / part.appt + cmed9H / part.med 
 
+
+# Testing the results for TST 5mm
+# sntst10 <- 0.8077
+# sptst10 <- 0.7005
 
 # Initial migrant cohort and LTBI prevalence and reactivation rates
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")

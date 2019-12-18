@@ -41,7 +41,7 @@ c.rifapent.high <- 35.04 # US$1 per tablet = US$24 = AUD$105.12
 p <- c("rradj", "att", "begintrt", "snqftgit", "spqftgit",
        "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
        "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
-       "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", "cattendspec", 
+       "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", 
        "csae", "cscreenqft", "cscreentst", "ctb", 
        "cmed3HP", "cmed4R", "cmed6H", "cmed9H",
        "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
@@ -90,52 +90,40 @@ prop.spec <- params[p == "prop.spec", mid]
 
 params[p == "cattend",
        mid := (c.gp.review + (c.mcs * chance.of.needing.mcs) +
-                       c.liver + c.cxr) * (1 - prop.spec) + 
+                       c.cxr) * (1 - prop.spec) + 
          (c.spec.first + (c.mcs * chance.of.needing.mcs) +
-            c.liver + c.cxr) * prop.spec]
+            + c.cxr) * prop.spec]
 params[p == "cattend",
        low := mid]
 params[p == "cattend",
-       high := mid]
-
-
-params[p == "cattendspec",
-       mid := c.spec.first + (c.mcs * chance.of.needing.mcs) +
-         c.liver + c.cxr]
-params[p == "cattendspec",
-       low := mid]
-params[p == "cattendspec",
        high := mid]
 
 # These specify how much of the appointment and medicine
 # costs are applied for the partial costs and treatment
 part.appt <- 2
 part.med <- 3
-
-
 
 # Cost of screening
-params[p == "cscreenqft", mid := 110.33] 
-params[p == "cscreenqft", low := 78.34] 
-params[p == "cscreenqft", high := 133.24] 
+params[p == "cscreenqft", mid := 113.48] 
+params[p == "cscreenqft", low := 113.48] 
+params[p == "cscreenqft", high := 113.48] 
 
-params[p == "cscreentst", mid := 113.28] 
-params[p == "cscreentst", low := 70.20] 
-params[p == "cscreentst", high := 146.30] 
+params[p == "cscreentst", mid := 116.07] 
+params[p == "cscreentst", low := 116.07] 
+params[p == "cscreentst", high := 116.07] 
 
 
 # These specify how much of the appointment and medicine
 # costs are applied for the partial costs and treatment
 part.appt <- 2
 part.med <- 3
-
 
 # Cost of 3HP latent TB treatment
 inh.packets <- 1
 rpt.packets <- 3
 
 params[p == "num.appt3HP", mid := 2] 
-params[p == "num.appt3HP", low := 2] 
+params[p == "num.appt3HP", low := 1] 
 params[p == "num.appt3HP", high := 5] 
 
 appt.num.3HP <- params[p == "num.appt3HP", mid]
@@ -150,9 +138,9 @@ params[p == "cmed3HP", high := med.high]
 
 med.cost.3HP <- params[p == "cmed3HP", mid]
 
-appt <- appt.num.3HP * c.gp.review
+appt <- appt.num.3HP * c.gp.review + c.liver
 
-spec.appt <- appt.num.3HP * c.spec.review
+spec.appt <- appt.num.3HP * c.spec.review + c.liver
 
 params[p == "ctreat3HP", mid := appt + med.cost.3HP] 
 
@@ -168,7 +156,7 @@ params[p == "cparttreatspec3HP",
 rif.packets <- 3
 
 params[p == "num.appt4R", mid := 2] 
-params[p == "num.appt4R", low := 2] 
+params[p == "num.appt4R", low := 1] 
 params[p == "num.appt4R", high := 5] 
 
 appt.num.4R <- params[p == "num.appt4R", mid]
@@ -197,11 +185,12 @@ params[p == "ctreatspec4R", mid := spec.appt + med.cost.4R]
 params[p == "cparttreatspec4R",
        mid := spec.appt / part.appt + med.cost.4R / part.med] 
 
+
 # Cost of 6H latent TB treatment
 inh.packets <- 6
 
-params[p == "num.appt6H", mid := 4] 
-params[p == "num.appt6H", low := 3] 
+params[p == "num.appt6H", mid := 3] 
+params[p == "num.appt6H", low := 2] 
 params[p == "num.appt6H", high := 7] 
 
 appt.num.6H <- params[p == "num.appt6H", mid]
@@ -216,9 +205,9 @@ params[p == "cmed6H", high := med.high]
 
 med.cost.6H <- params[p == "cmed6H", mid]
 
-appt <- appt.num.6H * c.gp.review
+appt <- appt.num.6H * c.gp.review + c.liver
 
-spec.appt <- appt.num.6H * c.spec.review
+spec.appt <- appt.num.6H * c.spec.review + c.liver
 
 params[p == "ctreat6H", mid := appt + med.cost.6H] 
 
@@ -230,12 +219,13 @@ params[p == "ctreatspec6H", mid := spec.appt + med.cost.6H]
 params[p == "cparttreatspec6H",
        mid := spec.appt / part.appt + med.cost.6H / part.med] 
 
+
 # Cost of 9H latent TB treatment
 inh.packets <- 9
 
-params[p == "num.appt9H", mid := 5] 
-params[p == "num.appt9H", low := 4] 
-params[p == "num.appt9H", high := 11] 
+params[p == "num.appt9H", mid := 4] 
+params[p == "num.appt9H", low := 3] 
+params[p == "num.appt9H", high := 8] 
 
 appt.num.9H <- params[p == "num.appt9H", mid]
 
@@ -249,9 +239,9 @@ params[p == "cmed9H", high := med.high]
 
 med.cost.9H <- params[p == "cmed9H", mid]
 
-appt <- appt.num.9H * c.gp.review 
+appt <- appt.num.9H * c.gp.review + c.liver 
 
-spec.appt <- appt.num.9H * c.spec.review
+spec.appt <- appt.num.9H * c.spec.review + c.liver
 
 params[p == "ctreat9H", mid := appt + med.cost.9H] 
 

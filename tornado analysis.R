@@ -8,6 +8,8 @@
 # The output is then analysed and the icer is entered
 # into the tornado.dt data table.
 
+# MAKE SURE THE DATA OUTPUTS FOLDER IS EMPTY BEFORE RUNNING THIS
+
 library(data.table)
 library(reshape2) 
 
@@ -70,6 +72,9 @@ tornado.dt <- rbindlist(list(tornado.dt,  data.table(p = "totalcycles",
                                                      variable = "high", 
                                                      value = 80)))
 
+#tornado.dt <- tornado.dt[6:8, ]
+
+
 # The following loops down the rows of the table
 # and runs the model with each specified parameter limit.
 # Then the output is analysed and the icer is entered
@@ -82,6 +87,98 @@ for(tornado.x in 1:nrow(tornado.dt)) {
   paraname <- tornado.dt[tornado.x, p]
   limit <- tornado.dt[tornado.x, value]
   assign(paraname, limit)
+  # Adjusting the partial LTBI treatment utilities so 
+  # they are dependent on the value of
+  # the sampled utility for full treatment
+  part.utility.dec <- 0.5
+  ultbipart3HP <- uhealthy - ((uhealthy - ultbi3HP) * part.utility.dec)
+  ultbipart4R <- uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)
+  ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
+  ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
+  
+  # Adjusting the costs of LTBI treatment so that they are dependent 
+  # on the sampled number of appointments and medicine costs
+  # Medical consultation costs (MBS website)
+  c.gp.b.vr <- 38.20
+  c.gp.b.nonvr <- 21.00
+  c.gp.b.afterhours <- 49.80
+  c.gp.c.vr <- 73.95
+  c.gp.c.nonvr <- 38.00
+  c.gp.c.afterhours <- 85.30
+  c.spec.first <- 155.60
+  c.spec.review <- 77.90
+  
+  proportion.nonvr <- 0.137
+  
+  # Medical assessment costs (MBS website)
+  c.qft.git <- 34.90
+  c.tst <- 11.20
+  c.cxr <- 47.15
+  c.liver <- 17.70
+  c.mcs <- 43.00
+  
+  # These specify how much of the appointment and medicine
+  # costs are applied for the partial costs and treatment
+  part.appt <- 2
+  part.med <- 3
+  
+  c.gp.first <- c.gp.c.vr * (1 - proportion.nonvr) + c.gp.c.nonvr * proportion.nonvr
+  
+  c.gp.review <- c.gp.b.vr * (1 - proportion.nonvr) + c.gp.b.nonvr * proportion.nonvr
+  
+  chance.of.needing.mcs <- 0.1
+  
+  # Cost of initial appointment after positive screen
+  # These costs are different for on and off-shore screening
+  # so this need to be taken into account, i.e. for onshore
+  # screening this appointment will be a review with the GP
+  # or it may be the first appointment with a specialist
+  # and a liver function test will be ordered
+  # Also, all ongoing appointments related to LTBI treatment will be
+  # review appointments
+  
+  if (onshore == 0) {
+    cattend <- c.gp.first + (c.mcs * chance.of.needing.mcs) + c.cxr
+  } else if (onshore == 1) {
+    cattend <- ((c.gp.review + (c.mcs * chance.of.needing.mcs) +
+                   + c.cxr) * (1 - prop.spec)) + 
+      ((c.spec.first + (c.mcs * chance.of.needing.mcs) +
+          + c.cxr) * prop.spec)
+  }
+  
+  if (onshore == 1) {
+    c.spec.first <- c.spec.review
+  } 
+  
+  # 3HP sort
+  appt <- num.appt3HP * c.gp.review + c.liver
+  spec.appt <- c.spec.first + (num.appt3HP - 1) * c.spec.review + c.liver
+  ctreat3HP <- appt + cmed3HP
+  cparttreat3HP <-  appt / part.appt + cmed3HP / part.med      
+  ctreatspec3HP <-  spec.appt + cmed3HP 
+  cparttreatspec3HP <-  spec.appt / part.appt + cmed3HP / part.med
+  # 4r sort
+  appt <- num.appt4R * c.gp.review
+  spec.appt <- c.spec.first + (num.appt4R - 1) * c.spec.review
+  ctreat4R <- appt + cmed4R
+  cparttreat4R <-  appt / part.appt + cmed4R / part.med      
+  ctreatspec4R <-  spec.appt + cmed4R 
+  cparttreatspec4R <-  spec.appt / part.appt + cmed4R / part.med
+  # 6H sort
+  appt <- num.appt6H * c.gp.review + c.liver
+  spec.appt <- c.spec.first + (num.appt6H - 1) * c.spec.review + c.liver
+  ctreat6H <- appt + cmed6H
+  cparttreat6H <-  appt / part.appt + cmed6H / part.med      
+  ctreatspec6H <-  spec.appt + cmed6H 
+  cparttreatspec6H <-  spec.appt / part.appt + cmed6H / part.med
+  # 9H sort
+  appt <- num.appt9H * c.gp.review + c.liver
+  spec.appt <- c.spec.first + (num.appt9H - 1) * c.spec.review + c.liver
+  ctreat9H <- appt + cmed9H
+  cparttreat9H <-  appt / part.appt + cmed9H / part.med      
+  ctreatspec9H <-  spec.appt + cmed9H 
+  cparttreatspec9H <-  spec.appt / part.appt + cmed9H / part.med 
+
   # Below runs the data prep
   source("CB-TLTBI_DataPreparation.R")
   # Below runs the model
