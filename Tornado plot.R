@@ -116,12 +116,16 @@ myplot1 <-
   scale_y_continuous(position = "bottom", 
                      breaks = seq(0, 500000, 50000),
                      labels = comma) +
-  coord_flip(ylim = c(0, 290000))+
+  coord_flip(ylim = c(0, 210000))+
   theme(text = element_text(size = 12),
         legend.position = c(0.75, 0.1))
 
+grid.text("Base case ICER: $73,477",
+          x = unit(0.6, "npc"),
+          y = unit(0.022, "npc"))
 
 
+# dev.off()
 ggplot() + 
   geom_rect(data = df.2, 
             aes(ymax = ymax, ymin = ymin, 
@@ -144,9 +148,9 @@ ggplot() +
   theme(text = element_text(size = 12),
         legend.position = c(0.75, 0.1))
 
-# grid.text("Base case ICER: $82,795",
-#           x = unit(0.47, "npc"),
-#           y = unit(0.2, "npc"))
+grid.text("Base case ICER: $820,731",
+          x = unit(0.6, "npc"),
+          y = unit(0.022, "npc"))
 
 setwd("H:/Katie/PhD/CEA/Health eco conference")
 tiff('tornado.tiff', units = "in", width = 14, height = 6,

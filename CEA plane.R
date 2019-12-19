@@ -32,21 +32,25 @@ off11.65.200  <- read.csv("cea plane off11-65_200.csv")
 on11.35 <- read.csv("cea plane on11_35.csv")
 on11.65 <- read.csv("cea plane on11_65.csv")
 on11.65.200  <- read.csv("cea plane on11-65_200.csv")
-off11.65.200.60yrs  <- read.csv("cea plane off11-65_200_60yrs.csv")
-on11.65.200.60yrs  <- read.csv("cea plane on11-65_200_60yrs.csv")
+# off11.65.200.60yrs  <- read.csv("cea plane off11-65_200_60yrs.csv")
+# on11.65.200.60yrs  <- read.csv("cea plane on11-65_200_60yrs.csv")
+
+# dt <- copy(off11.35)
 
 sortformatfunc <- function(dt){
   dt <- as.data.table(dt)
   dt <- dt[, c('strategy', 'total.additional.cost', 'Incremental.QALYS')]
   setnames(dt, 'Incremental.QALYS', "incremental.qalys")
   setnames(dt, 'total.additional.cost', "incremental.cost")
-  dt[strategy == "0_12...rds", strategy := "Baseline"]
-  # dt[, incremental.cost := as.numeric(gsub('\\D+','', incremental.cost))]
-  dt[is.na(incremental.cost), incremental.cost := 0]
-  dt[is.na(incremental.qalys), incremental.qalys := 0]
+  dt[1, strategy := "Baseline"]
   #dt[incremental.cost == 0, incremental.qalys := "0"]
   dt[, incremental.qalys := as.character(incremental.qalys)]
   dt[, incremental.qalys := as.numeric(incremental.qalys)]
+  dt[, incremental.cost := as.character(incremental.cost)]
+  dt[, incremental.cost := as.numeric(gsub('\\D+','', incremental.cost))]
+  dt[, incremental.cost := as.numeric(incremental.cost)]
+  dt[is.na(incremental.cost), incremental.cost := 0]
+  dt[is.na(incremental.qalys), incremental.qalys := 0]
 }
 
 plot1 <- sortformatfunc(off11.35)
@@ -55,8 +59,8 @@ plot3 <- sortformatfunc(off11.65.200)
 plot4 <- sortformatfunc(on11.35)
 plot5 <- sortformatfunc(on11.65)
 plot6 <- sortformatfunc(on11.65.200)
-plot7 <- sortformatfunc(off11.65.200.60yrs)
-plot8 <- sortformatfunc(on11.65.200.60yrs)
+# plot7 <- sortformatfunc(off11.65.200.60yrs)
+# plot8 <- sortformatfunc(on11.65.200.60yrs)
 
 # Get the colour palatte
 # I need 4 fill colours
@@ -66,11 +70,13 @@ getPalette
 ylimmin <- -5
 ylimmax <- 25
 xlimmin <- -4
-xlimmax <- 40
+xlimmax <- 42
 
 pointsize <- 2.5
 textsize <- 4
 textsize2 <- 10
+
+# dev.off()
 
 options(scipen=5)
 myplot1 <-
@@ -95,21 +101,6 @@ myplot1 <-
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette, 19)) +
-  # geom_text(aes(label="100+/100,000; 11-35 year olds", x = Inf, y = Inf),
-  #                     hjust = "middle", vjust = "middle", size = textsize,
-  #                     colour = "black") +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
   scale_y_continuous(breaks = seq(-10, 250, 5)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
@@ -204,7 +195,7 @@ myplot3 <-
         legend.position = "none")
 myplot4 <-
   ggplot(plot4, aes(x = incremental.qalys, y = incremental.cost/1000000,
-                 fill = strategy,co
+                 fill = strategy,
                  shape =  strategy)) +
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
@@ -330,88 +321,88 @@ myplot6 <-
         panel.border = element_blank(),
         legend.position = "none")
 
-myplot7 <-
-  ggplot(plot7, aes(x = incremental.qalys, y = incremental.cost/1000000,
-                    fill = strategy,
-                    shape =  strategy)) +
-  geom_point(size = pointsize, alpha = 1, na.rm = T) +
-  geom_vline(xintercept = 0, color = "black") +
-  geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
-              size = 1) +
-  labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$millions)",
-       fill = "Strategy",
-       shape = "Strategy") +
-  annotate("text", x = 20, y = 22, 
-           label = "Off shore LTBI screening\ntargeting 11-65 year olds from 200+/100,000\n60 year time horizon") +
-  scale_shape_manual(values = c(24, 24, 24, 24,
-                                21, 21, 21, 21,
-                                22, 22, 22, 22, 19)) +
-  scale_fill_manual(values = c(getPalette, 
-                               getPalette,
-                               getPalette, 19)) +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.2, size = textsize, 
-#           colour = "black") +
-scale_y_continuous(breaks = seq(-10, 250, 5)) +
-  scale_x_continuous(breaks = seq(-10, 1000, 5)) +
-  theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
-  theme(text = element_text(size = textsize2),
-        panel.border = element_blank(),
-        legend.position = "none")
-myplot8 <-
-  ggplot(plot8, aes(x = incremental.qalys, y = incremental.cost/1000000,
-                    fill = strategy,
-                    shape =  strategy)) +
-  geom_point(size = pointsize, alpha = 1, na.rm = T) +
-  geom_vline(xintercept = 0, color = "black") +
-  geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
-              size = 1) +
-  labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$millions)",
-       fill = "Strategy",
-       shape = "Strategy") +
-  annotate("text", x = 20, y = 22, 
-           label = "On shore LTBI screening\ntargeting 11-65 year olds from 200+/100,000\n60 year time horizon") +
-  scale_shape_manual(values = c(24, 24, 24, 24,
-                                21, 21, 21, 21,
-                                22, 22, 22, 22, 19)) +
-  scale_fill_manual(values = c(getPalette, 
-                               getPalette,
-                               getPalette, 19)) +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.2, size = textsize, 
-#           colour = "black") +
-scale_y_continuous(breaks = seq(-10, 250, 5)) +
-  scale_x_continuous(breaks = seq(-10, 1000, 5)) +
-  theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
-  theme(text = element_text(size = textsize2),
-        panel.border = element_blank(),
-        legend.position = "none")
+# myplot7 <-
+#   ggplot(plot7, aes(x = incremental.qalys, y = incremental.cost/1000000,
+#                     fill = strategy,
+#                     shape =  strategy)) +
+#   geom_point(size = pointsize, alpha = 1, na.rm = T) +
+#   geom_vline(xintercept = 0, color = "black") +
+#   geom_hline(yintercept = 0, color = "black") +
+#   geom_abline(intercept = 0, slope = (50000/1000000)/1,
+#               colour = "grey",
+#               size = 1) +
+#   labs(x = "Incremental QALYs", 
+#        y = "Incremental cost (AUD$millions)",
+#        fill = "Strategy",
+#        shape = "Strategy") +
+#   annotate("text", x = 20, y = 22, 
+#            label = "Off shore LTBI screening\ntargeting 11-65 year olds from 200+/100,000\n60 year time horizon") +
+#   scale_shape_manual(values = c(24, 24, 24, 24,
+#                                 21, 21, 21, 21,
+#                                 22, 22, 22, 22, 19)) +
+#   scale_fill_manual(values = c(getPalette, 
+#                                getPalette,
+#                                getPalette, 19)) +
+#   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
+#   #           hjust = -0.03, vjust = 1.2, size = textsize, 
+#   #           colour = "black") +
+#   # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
+#   #           hjust = 1, vjust = 1.2, size = textsize, 
+#   #           colour = "black") +
+#   # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
+#   #           hjust = -0.03, vjust = -0.2, size = textsize, 
+#   #           colour = "black") +
+#   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
+#   #           hjust = 1, vjust = -0.2, size = textsize, 
+# #           colour = "black") +
+# scale_y_continuous(breaks = seq(-10, 250, 5)) +
+#   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
+#   theme_bw() +
+#   coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
+#   theme(text = element_text(size = textsize2),
+#         panel.border = element_blank(),
+#         legend.position = "none")
+# myplot8 <-
+#   ggplot(plot8, aes(x = incremental.qalys, y = incremental.cost/1000000,
+#                     fill = strategy,
+#                     shape =  strategy)) +
+#   geom_point(size = pointsize, alpha = 1, na.rm = T) +
+#   geom_vline(xintercept = 0, color = "black") +
+#   geom_hline(yintercept = 0, color = "black") +
+#   geom_abline(intercept = 0, slope = (50000/1000000)/1,
+#               colour = "grey",
+#               size = 1) +
+#   labs(x = "Incremental QALYs", 
+#        y = "Incremental cost (AUD$millions)",
+#        fill = "Strategy",
+#        shape = "Strategy") +
+#   annotate("text", x = 20, y = 22, 
+#            label = "On shore LTBI screening\ntargeting 11-65 year olds from 200+/100,000\n60 year time horizon") +
+#   scale_shape_manual(values = c(24, 24, 24, 24,
+#                                 21, 21, 21, 21,
+#                                 22, 22, 22, 22, 19)) +
+#   scale_fill_manual(values = c(getPalette, 
+#                                getPalette,
+#                                getPalette, 19)) +
+#   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
+#   #           hjust = -0.03, vjust = 1.2, size = textsize, 
+#   #           colour = "black") +
+#   # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
+#   #           hjust = 1, vjust = 1.2, size = textsize, 
+#   #           colour = "black") +
+#   # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
+#   #           hjust = -0.03, vjust = -0.2, size = textsize, 
+#   #           colour = "black") +
+#   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
+#   #           hjust = 1, vjust = -0.2, size = textsize, 
+# #           colour = "black") +
+# scale_y_continuous(breaks = seq(-10, 250, 5)) +
+#   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
+#   theme_bw() +
+#   coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
+#   theme(text = element_text(size = textsize2),
+#         panel.border = element_blank(),
+#         legend.position = "none")
 
 
 
@@ -430,7 +421,7 @@ grid_arrange_shared_legend <- function(...) {
     heights = unit.c(unit(1, "npc") - lheight, lheight))
 }
 
-dev.off()
+# dev.off()
 grid_arrange_shared_legend(myplot1, myplot4,
           myplot2, myplot5,
           myplot3, myplot6, 

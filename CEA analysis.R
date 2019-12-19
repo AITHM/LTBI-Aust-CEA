@@ -398,8 +398,8 @@ bc <- subset(bc, ISO3 == "150-199")
 
 
 # # Write the table to clipboard so I can paste it into Excel
-# write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
-options(scipen=999)
+# write.table(base, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+options(scipen = 999)
 
 
 # 

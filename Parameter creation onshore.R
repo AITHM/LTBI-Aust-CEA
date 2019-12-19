@@ -124,7 +124,7 @@ rpt.packets <- 3
 
 params[p == "num.appt3HP", mid := 2] 
 params[p == "num.appt3HP", low := 1] 
-params[p == "num.appt3HP", high := 5] 
+params[p == "num.appt3HP", high := 4] 
 
 appt.num.3HP <- params[p == "num.appt3HP", mid]
 
@@ -157,7 +157,7 @@ rif.packets <- 3
 
 params[p == "num.appt4R", mid := 2] 
 params[p == "num.appt4R", low := 1] 
-params[p == "num.appt4R", high := 5] 
+params[p == "num.appt4R", high := 4] 
 
 appt.num.4R <- params[p == "num.appt4R", mid]
 

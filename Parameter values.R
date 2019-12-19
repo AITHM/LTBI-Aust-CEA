@@ -5,26 +5,25 @@ library(data.table)
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-onshore <- 1
+# params <- readRDS("params onshore.rds")
+# onshore <- 1
 
-# params <- readRDS("params offshore.rds")
-# onshore <- 0
+params <- readRDS("params offshore.rds")
+onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 params <- as.data.table(params)
-options(scipen=999)
 
 # This function can be used to choose which parameters to change
 # for sensitivity analysis.
 # It replaces the "mid" value in the dataframe with a 
 # low or high value depending on what is specified.
 
-sensfunc <- function(paramname, loworhigh) { 
-  paramname <- deparse(substitute(paramname))
-  colname <- deparse(substitute(loworhigh))
-  newvalue <- params[p == paramname, ..colname]
-  params[p == paramname, mid:= newvalue]
-}
+# sensfunc <- function(paramname, loworhigh) {
+#   paramname <- deparse(substitute(paramname))
+#   colname <- deparse(substitute(loworhigh))
+#   newvalue <- params[p == paramname, ..colname]
+#   params[p == paramname, mid:= newvalue]
+# }
 #################################################################################################
 
 # sensfunc(csae, high)
@@ -85,8 +84,8 @@ totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migr
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
-testlist <- c("TST10") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("QTFGIT", "TST10", "TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle

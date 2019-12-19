@@ -91,12 +91,15 @@ Get.POP <- function(DT, strategy) {
 # (i.e. they aren't dependent on age or year etc).
 # the upper and lower limirs for this data 
 # is defined in the PSA.csv and needs to be read in:
+# read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################################################
-dt <- readRDS("params onshore.rds")
-# dt <- readRDS("params offshore.rds")
-################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################################################
-dt <- as.data.table(dt)
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
+# params <- readRDS("params onshore.rds")
+# onshore <- 1
+
+dt <- readRDS("params offshore.rds")
+onshore <- 0
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 
 aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
 # # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
@@ -109,15 +112,13 @@ aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
 
 
 # reformat data table
+dt <- as.data.table(dt)
 setnames(dt, "p", "abbreviation")
 dt[, abbreviation := as.character(abbreviation)]
 dt[, mid := as.numeric(as.character(mid))]
 dt[, low := as.numeric(as.character(low))]
 dt[, high := as.numeric(as.character(high))]
 dt[, distribution := as.character(distribution)]
-
-
-
 
 # The loop below adds one column to the simdata table for each parameter value
 # defined in the rows of the PSA.csv file (these are parameters that aren't dependent
@@ -160,11 +161,11 @@ for(i in 1:nrow(dt)) {
 }
 
 
-# Reset some parameters to see what happens
-simdata <- as.data.table(simdata)
-simdata[, treatr4R := 1]
-simdata[, snqftgit := 1]
-simdata[, spqftgit := 1]
+# # Reset some parameters to see what happens
+# simdata <- as.data.table(simdata)
+# simdata[, treatr4R := 1]
+# simdata[, snqftgit := 1]
+# simdata[, spqftgit := 1]
 
 
 # #TEST
@@ -184,7 +185,6 @@ simdata[, ultbipart3HP := uhealthy - ((uhealthy - ultbi3HP) * part.utility.dec)]
 simdata[, ultbipart4R := uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)]
 simdata[, ultbipart6H := uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)]
 simdata[, ultbipart9H := uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)]
-
 
 # Adjusting the costs of LTBI treatment so that they are dependent 
 # on the sampled number of appointments and medicine costs
@@ -210,9 +210,39 @@ c.mcs <- 43.00
 part.appt <- 2
 part.med <- 3
 
-c.gp.first <- (c.gp.c.vr + c.gp.c.nonvr + c.gp.c.afterhours)/3
-c.gp.review <- (c.gp.b.vr + c.gp.b.nonvr + c.gp.b.afterhours)/3
+proportion.nonvr <- 0.137
+
+
+c.gp.first <- c.gp.c.vr * (1 - proportion.nonvr) + c.gp.c.nonvr * proportion.nonvr
+
+c.gp.review <- c.gp.b.vr * (1 - proportion.nonvr) + c.gp.b.nonvr * proportion.nonvr
+
 chance.of.needing.mcs <- 0.1
+
+
+# Cost of initial appointment after positive screen
+# These costs are different for on and off-shore screening
+# so this need to be taken into account, i.e. for onshore
+# screening this appointment will be a review with the GP
+# or it may be the first appointment with a specialist
+# and a liver function test will be ordered
+# Also, all ongoing appointments related to LTBI treatment will be
+# review appointments
+
+if (onshore == 0) {
+  cattend <- c.gp.first + (c.mcs * chance.of.needing.mcs) + c.cxr
+} else if (onshore == 1) {
+  cattend <- ((c.gp.review + (c.mcs * chance.of.needing.mcs) +
+                 c.cxr) * (1 - prop.spec)) + 
+    ((c.spec.first + (c.mcs * chance.of.needing.mcs) +
+        c.cxr) * prop.spec)
+}
+
+if (onshore == 1) {
+  c.spec.first <- c.spec.review
+} 
+
+
 
 # 3HP sort
 simdata[, appt := num.appt3HP * c.gp.review + c.liver]
@@ -221,6 +251,7 @@ simdata[, ctreat3HP := appt + cmed3HP]
 simdata[, cparttreat3HP :=  appt / part.appt + cmed3HP / part.med]      
 simdata[, ctreatspec3HP :=  spec.appt + cmed3HP] 
 simdata[, cparttreatspec3HP :=  spec.appt / part.appt + cmed3HP / part.med]
+
 # 4R sort
 simdata[, appt := num.appt4R * c.gp.review]
 simdata[, spec.appt := c.spec.first + (num.appt4R - 1) * c.spec.review]
@@ -228,6 +259,7 @@ simdata[, ctreat4R := appt + cmed4R]
 simdata[, cparttreat4R :=  appt / part.appt + cmed4R / part.med]      
 simdata[, ctreatspec4R :=  spec.appt + cmed4R] 
 simdata[, cparttreatspec4R :=  spec.appt / part.appt + cmed4R / part.med]
+
 # 6H sort
 simdata[, appt := num.appt6H * c.gp.review + c.liver]
 simdata[, spec.appt := c.spec.first + (num.appt6H - 1) * c.spec.review + c.liver]
@@ -235,6 +267,7 @@ simdata[, ctreat6H := appt + cmed6H]
 simdata[, cparttreat6H :=  appt / part.appt + cmed6H / part.med]      
 simdata[, ctreatspec6H :=  spec.appt + cmed6H] 
 simdata[, cparttreatspec6H :=  spec.appt / part.appt + cmed6H / part.med]
+
 # 9H sort
 simdata[, appt := num.appt9H * c.gp.review + c.liver]
 simdata[, spec.appt := c.spec.first + (num.appt9H - 1) * c.spec.review + c.liver]
@@ -244,183 +277,180 @@ simdata[, ctreatspec9H :=  spec.appt + cmed9H]
 simdata[, cparttreatspec9H :=  spec.appt / part.appt + cmed9H / part.med] 
 
 
-simdata[, appt := NULL]
-simdata[, spec.appt := NULL]
+# Plotting the distributions used for all of the different
+# parameters
+#plotting transitions
+a <- which( dt$abbreviation == "rradj" )
+b <- which( dt$abbreviation == "saemr" )
+plot.dt <- dt[a:b,]
+nrow(plot.dt)
+# dev.off()
+# set up the plotting space
+#layout(matrix(1:nrow(plot.dt), ncol = 6))
+par(mfrow = c(4, 5))
+for(i in 1:nrow(plot.dt)) {
+  # store data in column.i as x
+  abbreviation <- plot.dt[i, abbreviation]
+  mid <- plot.dt[i, mid]
+  low <- plot.dt[i, low]
+  high <- plot.dt[i, high]
+  shape <- plot.dt[i, shape]
+  distribution <- plot.dt[i, distribution]
+  plotnum <- paste("plot", i, sep = "")
+  if (high < 1){
+    upperlim <- 1
+  }
+  else {
+    upperlim <- high + 20
+  }
+  if (distribution == "beta") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dbeta(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "uniform") {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dunif(p, min = low, max = high),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "gamma") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dgamma(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dpert(p, min = low, mode = mid,
+                  max = high, shape = shape),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         #ylim = c(0, 1),
+         main = abbreviation)
+  }
+}
+
+#plotting costs
+a <- which( dt$abbreviation == "cattend" )
+b <- which( dt$abbreviation == "num.appt9H" )
+plot.dt <- dt[a:b,]
+nrow(plot.dt)
+dev.off()
+# set up the plotting space
+par(mfrow = c(3, 5))
+#layout(matrix(1:nrow(plot.dt), ncol = 11))
+for(i in 1:nrow(plot.dt)) {
+  # store data in column.i as x
+  abbreviation <- plot.dt[i, abbreviation]
+  mid <- plot.dt[i, mid]
+  low <- plot.dt[i, low]
+  high <- plot.dt[i, high]
+  shape <- plot.dt[i, shape]
+  distribution <- plot.dt[i, distribution]
+  plotnum <- paste("plot", i, sep = "")
+  if (high < 1){
+    upperlim <- 1
+  }
+  else {
+    upperlim <- high + 20
+  }
+  if (distribution == "beta") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dbeta(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "uniform") {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dunif(p, min = low, max = high),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "gamma") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dgamma(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dpert(p, min = low, mode = mid,
+                  max = high, shape = shape),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+}
+
+# mid <- 12550.5200000
+# low <- 6330.7300000
+# high <- 185047.8100000
+# shape <- 30
+# upperlim <- high + 20
+# dev.off()
+# p = seq(0, upperlim, length = 1000)
+# plot(p, dpert(p, min = low, mode = mid,
+#               max = high, shape = shape),
+#      ylab = "density", type = "l", col = 4, xlim = c(0, high))
 
 
-# # Plotting the distributions used for all of the different
-# # parameters
-# #plotting transitions
-# a <- which( dt$abbreviation == "rradj" )
-# b <- which( dt$abbreviation == "saemr" )
-# plot.dt <- dt[a:b,]
-# nrow(plot.dt)
-# # dev.off()
-# # set up the plotting space
-# #layout(matrix(1:nrow(plot.dt), ncol = 6))
-# par(mfrow = c(3, 6))
-# for(i in 1:nrow(plot.dt)) {
-#   # store data in column.i as x
-#   abbreviation <- plot.dt[i, abbreviation]
-#   mid <- plot.dt[i, mid]
-#   low <- plot.dt[i, low]
-#   high <- plot.dt[i, high]
-#   shape <- plot.dt[i, shape]
-#   distribution <- plot.dt[i, distribution]
-#   plotnum <- paste("plot", i, sep = "")
-#   if (high < 1){
-#     upperlim <- 1
-#   }
-#   else {
-#     upperlim <- high + 20
-#   }
-#   if (distribution == "beta") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dbeta(p, betaparam[1], betaparam[2]),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "uniform") {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dunif(p, min = low, max = high),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "gamma") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dgamma(p, betaparam[1], betaparam[2]),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dpert(p, min = low, mode = mid,
-#                   max = high, shape = shape),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          #ylim = c(0, 1),
-#          main = abbreviation)
-#   }
-# }
-# 
-# #plotting costs
-# a <- which( dt$abbreviation == "cattend" )
-# b <- which( dt$abbreviation == "cparttreatspec9H" )
-# plot.dt <- dt[a:b,]
-# nrow(plot.dt)
-# dev.off()
-# # set up the plotting space
-# par(mfrow = c(5, 6))
-# #layout(matrix(1:nrow(plot.dt), ncol = 11))
-# for(i in 1:nrow(plot.dt)) {
-#   # store data in column.i as x
-#   abbreviation <- plot.dt[i, abbreviation]
-#   mid <- plot.dt[i, mid]
-#   low <- plot.dt[i, low]
-#   high <- plot.dt[i, high]
-#   shape <- plot.dt[i, shape]
-#   distribution <- plot.dt[i, distribution]
-#   plotnum <- paste("plot", i, sep = "")
-#   if (high < 1){
-#     upperlim <- 1
-#   }
-#   else {
-#     upperlim <- high + 20
-#   }
-#   if (distribution == "beta") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dbeta(p, betaparam[1], betaparam[2]),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "uniform") {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dunif(p, min = low, max = high),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "gamma") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dgamma(p, betaparam[1], betaparam[2]),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dpert(p, min = low, mode = mid,
-#                   max = high, shape = shape),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-# }
-# 
-# # mid <- 12550.5200000
-# # low <- 6330.7300000
-# # high <- 185047.8100000
-# # shape <- 30
-# # upperlim <- high + 20
-# # dev.off()
-# # p = seq(0, upperlim, length = 1000)
-# # plot(p, dpert(p, min = low, mode = mid,
-# #               max = high, shape = shape),
-# #      ylab = "density", type = "l", col = 4, xlim = c(0, high))
-# 
-# #plotting utilities
-# a <- which( dt$abbreviation == "uactivetb" )
-# b <- which( dt$abbreviation == "ultbipart9H" )
-# plot.dt <- dt[a:b,]
-# nrow(plot.dt)
-# dev.off()
-# # set up the plotting space
-# par(mfrow = c(3, 4))
-# for(i in 1:nrow(plot.dt)) {
-#   # store data in column.i as x
-#   abbreviation <- plot.dt[i, abbreviation]
-#   mid <- plot.dt[i, mid]
-#   low <- plot.dt[i, low]
-#   high <- plot.dt[i, high]
-#   shape <- plot.dt[i, shape]
-#   distribution <- plot.dt[i, distribution]
-#   plotnum <- paste("plot", i, sep = "")
-#   if (high < 1){
-#     upperlim <- 1
-#   }
-#   else {
-#       upperlim <- high + 20
-#       }
-#   if (distribution == "beta") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dbeta(p, betaparam[1], betaparam[2]),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "gamma") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dgamma(p, betaparam[1], betaparam[2]),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "uniform") {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dunif(p, min = low, max = high),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dpert(p, min = low, mode = mid,
-#                         max = high, shape = shape),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-# }
-# # Restore margins...could also do it with dev.off()  ?
-# par(mfrow = c(1,1))
+#plotting utilities
+a <- which( dt$abbreviation == "uactivetb" )
+b <- which( dt$abbreviation == "ultbipart9H" )
+plot.dt <- dt[a:b,]
+nrow(plot.dt)
+dev.off()
+# set up the plotting space
+par(mfrow = c(3, 4))
+for(i in 1:nrow(plot.dt)) {
+  # store data in column.i as x
+  abbreviation <- plot.dt[i, abbreviation]
+  mid <- plot.dt[i, mid]
+  low <- plot.dt[i, low]
+  high <- plot.dt[i, high]
+  shape <- plot.dt[i, shape]
+  distribution <- plot.dt[i, distribution]
+  plotnum <- paste("plot", i, sep = "")
+  if (high < 1){
+    upperlim <- 1
+  }
+  else {
+      upperlim <- high + 20
+      }
+  if (distribution == "beta") {
+    p = seq(0., upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dbeta(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0.7, high),
+         main = abbreviation)
+  }
+  else if (distribution == "gamma") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dgamma(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0.7, high),
+         main = abbreviation)
+  }
+  else if (distribution == "uniform") {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dunif(p, min = low, max = high),
+         ylab = "density", type = "l", col = 4, xlim = c(0.7, high),
+         main = abbreviation)
+  }
+  else {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dpert(p, min = low, mode = mid,
+                        max = high, shape = shape),
+         ylab = "density", type = "l", col = 4, xlim = c(0.7, high),
+         main = abbreviation)
+  }
+}
+# Restore margins...could also do it with dev.off()  ?
+par(mfrow = c(1,1))
 
 # mid <- 0.8733333
 # low <- 0.8558
@@ -809,7 +839,6 @@ for(i in 1:Num_SIm) {
   att <- simdata[simnumber, att]
   rradj <- simdata[simnumber, rradj]
   cattend <- simdata[simnumber, cattend]
-  cattendspec <- simdata[simnumber, cattendspec]
   csae <- simdata[simnumber, csae]
   cscreenqft <- simdata[simnumber, cscreenqft]
   cscreentst <- simdata[simnumber, cscreentst]
@@ -1126,16 +1155,16 @@ plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer > WTP, wtp.colour :=
 
 # Save this table to file
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
-saveRDS(simdata, "perfect treatr sens and spec.rds")
+saveRDS(simdata, "base onshore.rds")
 
 # # Read back in simdata
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
 # simdata <- readRDS("simdata.rds")
 
-ylimmin <- -2.5
-ylimmax <- 18
-xlimmin <- -200
-xlimmax <- 140
+ylimmin <- -4
+ylimmax <- 4
+xlimmin <- -140
+xlimmax <- 40
 
 pointsize <- 2.5
 textsize <- 6
@@ -1161,8 +1190,7 @@ ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
   coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
-        legend.position = "none",
-        axis.title.x = element_blank())
+        legend.position = "none")
 
 
 # Plot of acceptability curve
