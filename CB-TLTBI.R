@@ -22,7 +22,7 @@ library(data.table) # required
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("CB-TLTBI Functions.R")
 
-if (exists("tornado.analysis") == TRUE) {
+if (exists("parameters.already.set") == TRUE) {
   
 } else {
   source("Parameter values.R")
@@ -318,7 +318,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
 pop.master <- CreatePopulationMaster()
 # pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 # 
-# factor <- 235.054674910158# 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
+# factor <- 296.205858356641# 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 
 # pop.master[, NUMP := NUMP/factor]
 # pop.master[, LTBP := LTBP/factor]

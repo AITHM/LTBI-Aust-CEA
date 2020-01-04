@@ -17,7 +17,7 @@
 library(data.table)
 library(reshape2) 
 
-tornado.analysis <- 1
+parameters.already.set <- 1
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
@@ -100,26 +100,9 @@ for(tornado.x in 1:nrow(tornado.dt)) {
   ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
   ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
   
-  # Adjusting the costs of LTBI treatment so that they are dependent 
-  # on the sampled number of appointments and medicine costs
-  # Medical consultation costs (MBS website)
-  c.gp.b.vr <- 38.20
-  c.gp.b.nonvr <- 21.00
-  c.gp.b.afterhours <- 49.80
-  c.gp.c.vr <- 73.95
-  c.gp.c.nonvr <- 38.00
-  c.gp.c.afterhours <- 85.30
-  c.spec.first <- 155.60
-  c.spec.review <- 77.90
-  
-  proportion.nonvr <- 0.137
-  
-  # Medical assessment costs (MBS website)
-  c.qft.git <- 34.90
-  c.tst <- 11.20
-  c.cxr <- 47.15
-  c.liver <- 17.70
-  c.mcs <- 43.00
+  # Sourcing the medical costs
+  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+  source("Medical costs.R")
   
   # These specify how much of the appointment and medicine
   # costs are applied for the partial costs and treatment

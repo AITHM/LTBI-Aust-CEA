@@ -371,35 +371,35 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # 
 # 
 # 
-base <- files[[1]]
-dt <- files[[2]]
-unique(dt$STRAT)
-#
-base[, p.sum := rowSums(.SD), .SDcols = c(9:29)]
-base[, sum(p.sum), by = cycle]
-base[, sum(p.tb), by = cycle]
-base[, sum(NUMP), by = cycle]
-
-
-dt[YARP == 2020, sum(NUMP), by = cycle]
-dt[YEAR == 2020 & YARP == 2020, sum(NUMP), by = cycle]
-dt[YARP == 2021, sum(NUMP), by = cycle]
-dt[YARP == 2022, sum(NUMP), by = cycle]
-dt[,sum(p.emigrate), by = cycle]
-
-check <- subset(dt, YARP == 2020)
-check <- subset(check, AGERP == 30 )
-check <- subset(check, ISO3 == "150-199")
-
-
-bc <- subset(base, YARP == 2020)
-bc <- subset(bc, AGERP == 30 )
-bc <- subset(bc, ISO3 == "150-199")
-
-
-# # Write the table to clipboard so I can paste it into Excel
-# write.table(base, file = "clipboard-16384", sep = "\t", row.names = FALSE)
-options(scipen = 999)
+# base <- files[[1]]
+# dt <- files[[2]]
+# unique(dt$STRAT)
+# #
+# base[, p.sum := rowSums(.SD), .SDcols = c(9:29)]
+# base[, sum(p.sum), by = cycle]
+# base[, sum(p.tb), by = cycle]
+# base[, sum(NUMP), by = cycle]
+# 
+# 
+# dt[YARP == 2020, sum(NUMP), by = cycle]
+# dt[YEAR == 2020 & YARP == 2020, sum(NUMP), by = cycle]
+# dt[YARP == 2021, sum(NUMP), by = cycle]
+# dt[YARP == 2022, sum(NUMP), by = cycle]
+# dt[,sum(p.emigrate), by = cycle]
+# 
+# check <- subset(dt, YARP == 2020)
+# check <- subset(check, AGERP == 30 )
+# check <- subset(check, ISO3 == "150-199")
+# 
+# 
+# bc <- subset(base, YARP == 2020)
+# bc <- subset(bc, AGERP == 30 )
+# bc <- subset(bc, ISO3 == "150-199")
+# 
+# 
+# # # Write the table to clipboard so I can paste it into Excel
+# # write.table(base, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# options(scipen = 999)
 
 
 # 

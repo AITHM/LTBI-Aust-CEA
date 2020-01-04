@@ -3,39 +3,9 @@ library(data.table)
 
 # Cost calculations
 
-# Medical consultation costs (MBS website)
-c.gp.b.vr <- 38.20
-c.gp.b.nonvr <- 21.00
-c.gp.b.afterhours <- 49.80
-c.gp.c.vr <- 73.95
-c.gp.c.nonvr <- 38.00
-c.gp.c.afterhours <- 85.30
-c.spec.first <- 155.60
-c.spec.review <- 77.90
-
-proportion.nonvr <- 0.137
-
-# Medical assessment costs (MBS website)
-c.qft.git <- 34.90
-c.tst <- 11.20
-c.cxr <- 47.15
-c.liver <- 17.70
-c.mcs <- 43.00
-
-# Mid Medicine costs
-c.inh.mid <- 14.60 # GDF 
-c.rifamp.mid <- 13.04 # VTP
-c.rifapent.mid <- 21.90  # GDF
-
-# Low (currently the same as the mid) Medicine costs
-c.inh.low <- 14.60 # GDF 
-c.rifamp.low <- 13.04 # VTP
-c.rifapent.low <- 21.90  # GDF
-
-# High Medicine costs
-c.inh.high <- 22.11 # PBS 
-c.rifamp.high <- 115.77 # PBS
-c.rifapent.high <- 35.04 # US$1 per tablet = US$24 = AUD$105.12
+# Sourcing the medical costs
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+source("Medical costs.R")
 
 
 # Create table of parameters
@@ -44,6 +14,24 @@ p <- c("rradj", "att", "begintrt", "snqftgit", "spqftgit",
        "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
        "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", 
        "csae", "cscreenqft", "cscreentst", "ctb", 
+       "num.appt1HP",
+       "cmed1HP",
+       "ctreat1HP",
+       "ctreatspec1HP",
+       "cparttreat1HP",
+       "cparttreatspec1HP",
+       "num.appt3HR",
+       "cmed3HR",
+       "ctreat3HR",
+       "ctreatspec3HR",
+       "cparttreat3HR",
+       "cparttreatspec3HR",
+       "num.appt6wP",
+       "cmed6wP",
+       "ctreat6wP",
+       "ctreatspec6wP",
+       "cparttreat6wP",
+       "cparttreatspec6wP",
        "cmed3HP", "cmed4R", "cmed6H", "cmed9H",
        "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
        "ctreat3HP", "cparttreat3HP", "ctreat4R", "cparttreat4R",  
@@ -98,6 +86,110 @@ params[p == "cattend",
 # costs are applied for the partial costs and treatment
 part.appt <- 2
 part.med <- 3
+
+
+# Cost of 1HP latent TB treatment
+inh.packets <- 1
+rpt.packets <- 5
+
+params[p == "num.appt1HP", mid := 1] 
+params[p == "num.appt1HP", low := 1] 
+params[p == "num.appt1HP", high := 2] 
+
+appt.num.1HP <- params[p == "num.appt1HP", mid]
+
+med.mid <- inh.packets * c.inh.mid + rpt.packets * c.rifapent.mid
+med.low <- inh.packets * c.inh.low + rpt.packets * c.rifapent.low
+med.high <- inh.packets * c.inh.high + rpt.packets * c.rifapent.high
+
+params[p == "cmed1HP", mid := med.mid] 
+params[p == "cmed1HP", low := med.low] 
+params[p == "cmed1HP", high := med.high] 
+
+med.cost.1HP <- params[p == "cmed1HP", mid]
+
+appt <- (appt.num.1HP * c.gp.review) + c.liver
+
+spec.appt <- c.spec.first + (appt.num.1HP - 1) * c.spec.review + c.liver
+
+params[p == "ctreat1HP", mid := appt + med.cost.1HP] 
+
+params[p == "cparttreat1HP",
+       mid := appt / part.appt + med.cost.1HP / part.med] 
+
+params[p == "ctreatspec1HP", mid := spec.appt + med.cost.1HP] 
+
+params[p == "cparttreatspec1HP",
+       mid := spec.appt / part.appt + med.cost.1HP / part.med] 
+
+
+# Cost of 6wP, 6 weeks daily rifapentine latent TB treatment
+rpt.packets <- 7
+
+params[p == "num.appt6wP", mid := 2]
+params[p == "num.appt6wP", low := 1]
+params[p == "num.appt6wP", high := 3]
+
+appt.num.6wP <- params[p == "num.appt6wP", mid]
+
+med.mid <- rpt.packets * c.rifapent.mid
+med.low <- rpt.packets * c.rifapent.low
+med.high <- rpt.packets * c.rifapent.high
+
+params[p == "cmed6wP", mid := med.mid]
+params[p == "cmed6wP", low := med.low]
+params[p == "cmed6wP", high := med.high]
+
+med.cost.6wP <- params[p == "cmed6wP", mid]
+
+appt <- (appt.num.6wP * c.gp.review) + c.liver
+
+spec.appt <- c.spec.first + (appt.num.6wP - 1) * c.spec.review + c.liver
+
+params[p == "ctreat6wP", mid := appt + med.cost.6wP]
+
+params[p == "cparttreat6wP",
+       mid := appt / part.appt + med.cost.6wP / part.med]
+
+params[p == "ctreatspec6wP", mid := spec.appt + med.cost.6wP]
+
+params[p == "cparttreatspec6wP",
+       mid := spec.appt / part.appt + med.cost.6wP / part.med]
+
+
+# Cost of 3HR latent TB treatment
+inh.packets <- 1
+rif.packets <- 2
+
+params[p == "num.appt3HR", mid := 3] 
+params[p == "num.appt3HR", low := 2] 
+params[p == "num.appt3HR", high := 5] 
+
+appt.num.3HR <- params[p == "num.appt3HR", mid]
+
+med.mid <- inh.packets * c.inh.mid + rif.packets * c.rifamp.mid
+med.low <- inh.packets * c.inh.low + rif.packets * c.rifamp.low
+med.high <- inh.packets * c.inh.high + rif.packets * c.rifamp.high
+
+params[p == "cmed3HR", mid := med.mid] 
+params[p == "cmed3HR", low := med.low] 
+params[p == "cmed3HR", high := med.high] 
+
+med.cost.3HR <- params[p == "cmed3HR", mid]
+
+appt <- (appt.num.3HR * c.gp.review) + c.liver
+
+spec.appt <- c.spec.first + (appt.num.3HR - 1) * c.spec.review + c.liver
+
+params[p == "ctreat3HR", mid := appt + med.cost.3HR] 
+
+params[p == "cparttreat3HR",
+       mid := appt / part.appt + med.cost.3HR / part.med] 
+
+params[p == "ctreatspec3HR", mid := spec.appt + med.cost.3HR] 
+
+params[p == "cparttreatspec3HR",
+       mid := spec.appt / part.appt + med.cost.3HR / part.med]
 
 # Cost of 3HP latent TB treatment
 inh.packets <- 1
@@ -328,21 +420,21 @@ params[p == "treatr9H", high.treat.complete := 0.618]
 params[p == "treatr9H", low.treat.eff := 0.332]
 params[p == "treatr9H", high.treat.eff := 0.718]
 
-params[p == "ttt3HP", mid := 0.375]
-params[p == "ttt3HP", low := 0.292]
-params[p == "ttt3HP", high := 0.500]
+params[p == "ttt3HP", mid := 0.250]
+params[p == "ttt3HP", low := 0.167]
+params[p == "ttt3HP", high := 0.375]
 
-params[p == "ttt4R", mid := 0.458]
-params[p == "ttt4R", low := 0.375]
-params[p == "ttt4R", high := 0.583]
+params[p == "ttt4R", mid := 0.292]
+params[p == "ttt4R", low := 0.208]
+params[p == "ttt4R", high := 0.417]
 
-params[p == "ttt6H", mid := 0.625]
-params[p == "ttt6H", low := 0.542]
-params[p == "ttt6H", high := 0.750]
+params[p == "ttt6H", mid := 0.375]
+params[p == "ttt6H", low := 0.292]
+params[p == "ttt6H", high := 0.500]
 
-params[p == "ttt9H", mid := 0.875]
-params[p == "ttt9H", low := 0.792]
-params[p == "ttt9H", high := 1.00]
+params[p == "ttt9H", mid := 0.500]
+params[p == "ttt9H", low := 0.417]
+params[p == "ttt9H", high := 0.625]
 
 
 # Utility calculations

@@ -106,9 +106,9 @@ aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
 # aust[, LTBP := NULL]
 # setnames(aust, "tfnum", "LTBP")
 
-# # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
-# aust[, LTBP := NULL]
-# setnames(aust, "sfnum", "LTBP")
+# Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
+aust[, LTBP := NULL]
+setnames(aust, "sfnum", "LTBP")
 
 
 # reformat data table
@@ -186,24 +186,9 @@ simdata[, ultbipart4R := uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)]
 simdata[, ultbipart6H := uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)]
 simdata[, ultbipart9H := uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)]
 
-# Adjusting the costs of LTBI treatment so that they are dependent 
-# on the sampled number of appointments and medicine costs
-# Medical consultation costs (MBS website)
-c.gp.b.vr <- 38.20
-c.gp.b.nonvr <- 21.00
-c.gp.b.afterhours <- 49.80
-c.gp.c.vr <- 73.95
-c.gp.c.nonvr <- 38.00
-c.gp.c.afterhours <- 85.30
-c.spec.first <- 155.60
-c.spec.review <- 77.90
-
-# Medical assessment costs (MBS website)
-c.qft.git <- 34.90
-c.tst <- 11.20
-c.cxr <- 47.15
-c.liver <- 17.70
-c.mcs <- 43.00
+# Sourcing the medical costs
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+source("Medical costs.R")
 
 # These specify how much of the appointment and medicine
 # costs are applied for the partial costs and treatment
@@ -506,15 +491,17 @@ Get.RR <- function(xDT, year) {
   
   DT[AGERP > 110, AGERP := 110]
   
-  mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
-                                                                           ysa = ST, cobi = COBI)]
-
-  # # assuming a higher LTBI prevalence and a lower rate of reactivation
-  # low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                         ysa = ST, cobi = COBI)]
+  # mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                          ysa = ST, cobi = COBI)]
+  
   # # assuming a lower prevalence of LTBI and a higher rate of reactivation
   # high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
   #                                                                          ysa = ST, cobi = COBI)]
+
+  # assuming a higher LTBI prevalence and a lower rate of reactivation
+  low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                          ysa = ST, cobi = COBI)]
+
   # set.seed(set.seed.number[simnumber])
   # rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
@@ -1155,7 +1142,7 @@ plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer > WTP, wtp.colour :=
 
 # Save this table to file
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
-saveRDS(simdata, "base onshore.rds")
+saveRDS(simdata, "high ltbi low react onshore.rds")
 
 # # Read back in simdata
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")

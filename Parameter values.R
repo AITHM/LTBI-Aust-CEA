@@ -5,11 +5,11 @@ library(data.table)
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-# onshore <- 1
+params <- readRDS("params onshore.rds")
+onshore <- 1
 
-params <- readRDS("params offshore.rds")
-onshore <- 0
+# params <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 params <- as.data.table(params)
 
@@ -25,7 +25,7 @@ params <- as.data.table(params)
 #   params[p == paramname, mid:= newvalue]
 # }
 #################################################################################################
-
+ 
 # sensfunc(csae, high)
 
 # params[p == "treatr4R", mid := 1]
@@ -47,16 +47,15 @@ params <- as.data.table(params)
 # sensfunc(ultbipart9H, low)
 
 
-# # the perfect world - figure 8
+# # # the perfect world - figure 8
 # params[p == "treatr4R", mid := 1]
-# params[p == "snqftgit", mid := 1]
-# params[p == "spqftgit", mid := 1]
+# params[p == "sntst10", mid := 1]
+# params[p == "sptst10", mid := 1]
 # params[p == "att", mid := 1]
 # params[p == "begintrt", mid := 1]
 # params[p == "begintrt", mid := 1]
 
 #################################################################################################
-
 
 # Target population
 Get.POP <- function(DT, strategy) {
@@ -66,10 +65,10 @@ Get.POP <- function(DT, strategy) {
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
-  # 40+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
-  # Adjust age
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+    # 40+
+    (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+    # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
        ifelse(DT[, AGERP] < 36, 1, 0))
   
@@ -107,26 +106,9 @@ ultbipart4R <- uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)
 ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
 ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
 
-# Adjusting the costs of LTBI treatment so that they are dependent 
-# on the sampled number of appointments and medicine costs
-# Medical consultation costs (MBS website)
-c.gp.b.vr <- 38.20
-c.gp.b.nonvr <- 21.00
-c.gp.b.afterhours <- 49.80
-c.gp.c.vr <- 73.95
-c.gp.c.nonvr <- 38.00
-c.gp.c.afterhours <- 85.30
-c.spec.first <- 155.60
-c.spec.review <- 77.90
-
-proportion.nonvr <- 0.137
-
-# Medical assessment costs (MBS website)
-c.qft.git <- 34.90
-c.tst <- 11.20
-c.cxr <- 47.15
-c.liver <- 17.70
-c.mcs <- 43.00
+# Sourcing the medical costs
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+source("Medical costs.R")
 
 # These specify how much of the appointment and medicine
 # costs are applied for the partial costs and treatment
@@ -290,7 +272,7 @@ Get.SAE <- function(xDT, treat) {
 # Source emigrate data
 emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
 # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
-# emigrate.rate <- as.data.table(emigrate.rate)
+emigrate.rate <- as.data.table(emigrate.rate)
 
 # Emigrate rate from emigrate.rate (age dependent)
 Get.EMIGRATE <- function(xDT, year) {
