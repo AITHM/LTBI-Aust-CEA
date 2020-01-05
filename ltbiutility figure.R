@@ -20,7 +20,7 @@ library(scales)
 # setwd("H:/Katie/PhD/CEA/Data")
 # df <- read.csv("ltbi utility plot.csv")
 
-tornado.analysis <- 1
+parameters.already.set <- 1
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
@@ -153,7 +153,8 @@ myplot1 <-
   scale_x_continuous(breaks = seq(0, 0.1, 0.0005)) +
   coord_cartesian(xlim = c(0, 0.005), ylim = c(-20, 20)) +
   theme(text = element_text(size = 20),
-        panel.border = element_blank())
+        panel.border = element_blank(),
+        panel.grid.major = element_line(colour = "grey"))
 
 
 setwd("H:/Katie/PhD/CEA/Health eco conference")

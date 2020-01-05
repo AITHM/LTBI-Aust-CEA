@@ -29,7 +29,7 @@ params <- as.data.table(params)
 # of targets, i.e. by age and TB incidence in country of birth
 
 # Define age target
-lower.age.targets <- c(11)
+lower.age.targets <- c(10)
 upper.age.targets <- c(36, 66)
 tbincid.targets <- c("40+", "100+", "150+", "200+")
 target.dt<- expand.grid(lower.age.targets, upper.age.targets, tbincid.targets)
@@ -98,8 +98,8 @@ for(target.x in 1:nrow(target.dt)) {
   # Add some intial columns in table1
   # that specifies the target group
   table1 <- data.table(rep(target.tbincid, nrow(table1)), table1)
-  table1 <- data.table(rep(age.limit.younger.than, nrow(table1)), table1)
-  table1 <- data.table(rep(age.limit.older.than, nrow(table1)), table1)
+  table1 <- data.table(rep(age.limit.younger.than - 1, nrow(table1)), table1)
+  table1 <- data.table(rep(age.limit.older.than + 1, nrow(table1)), table1)
   setnames(table1, 1, "age.low")
   setnames(table1, 2, "age.high")
   setnames(table1, 3, "tbincid")
