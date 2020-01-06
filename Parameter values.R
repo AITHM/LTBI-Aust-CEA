@@ -5,11 +5,11 @@ library(data.table)
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-onshore <- 1
+# params <- readRDS("params onshore.rds")
+# onshore <- 1
 
-# params <- readRDS("params offshore.rds")
-# onshore <- 0
+params <- readRDS("params offshore.rds")
+onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 params <- as.data.table(params)
 
@@ -65,9 +65,9 @@ Get.POP <- function(DT, strategy) {
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
     # 40+
-    (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
        ifelse(DT[, AGERP] < 36, 1, 0))
@@ -83,8 +83,8 @@ totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migr
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
-testlist <- c("QTFGIT", "TST10", "TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle
@@ -218,6 +218,24 @@ Get.RR <- function(xDT, year) {
   #                                                                  ysa = ST, cobi = COBI)]
   
 }
+
+
+# Reactivation rate adjustment for existing TB control
+Get.RRADJ <- function(xDT, year) {
+  
+  DT <- copy(xDT[, .(year, AGERP, YARP)])
+  
+  DT[AGERP > 110, AGERP := 110]
+  
+  rradjrates[DT[, .(AGERP, ST = year - YARP)], rate, on = .(aaa = AGERP, ysa = ST)]
+  
+  # rradjrates[DT[, .(AGERP, ST = year - YARP)], lower, on = .(Age = AGERP, ysa = ST)]
+  
+  # rradjrates[DT[, .(AGERP, ST = year - YARP)], upper, on = .(Age = AGERP, ysa = ST)]
+  
+}
+
+
 
 # Change the makeup of the migrant inflow by TB incidence in country of birth
 # Altering the COBI for all those who have arrived from 

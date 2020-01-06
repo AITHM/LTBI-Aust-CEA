@@ -56,7 +56,7 @@ sae.rate <- as.data.table(sae.rate)
 sae.mortality <- readRDS("Data/sae.mortality.rds") # this is also required
 sae.mortality <- as.data.table(sae.mortality)
     # SAE mortality data from: ...
-
+rradjrates <- readRDS("Data/rradjrates.rds")
 
 # Creating a vector of state names
 state.names <- c("p.sus",	"p.sus.notest", "p.sus.nf",	"p.sus.nbt",	"p.sus.nct",	"p.sus.tc",
@@ -278,7 +278,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                RR = Get.RR(DT, year),
                                TBMR = Get.TBMR(DT, year),
                                # TBMR = 0.001,
-                               RRADJUST = rradj,
+                               RRADJUST = Get.RRADJ(DT,year),
                                # RRADJUST takes into account the fact that a proportion (10% in Victoria)
                                # of TB cases are picked up each year with existing TB control strategies, i.e.
                                # during follow-up as a result of an abnormal CXR during pre-migration off-shore screening.
