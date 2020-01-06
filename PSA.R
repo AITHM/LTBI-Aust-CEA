@@ -265,7 +265,7 @@ simdata[, cparttreatspec9H :=  spec.appt / part.appt + cmed9H / part.med]
 # Plotting the distributions used for all of the different
 # parameters
 #plotting transitions
-a <- which( dt$abbreviation == "rradj" )
+a <- which( dt$abbreviation == "att" )
 b <- which( dt$abbreviation == "saemr" )
 plot.dt <- dt[a:b,]
 nrow(plot.dt)
@@ -491,16 +491,16 @@ Get.RR <- function(xDT, year) {
   
   DT[AGERP > 110, AGERP := 110]
   
-  # mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                          ysa = ST, cobi = COBI)]
+  mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
+                                                                           ysa = ST, cobi = COBI)]
   
   # # assuming a lower prevalence of LTBI and a higher rate of reactivation
   # high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
   #                                                                          ysa = ST, cobi = COBI)]
 
-  # assuming a higher LTBI prevalence and a lower rate of reactivation
-  low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                          ysa = ST, cobi = COBI)]
+  # # assuming a higher LTBI prevalence and a lower rate of reactivation
+  # low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+  #                                                                         ysa = ST, cobi = COBI)]
 
   # set.seed(set.seed.number[simnumber])
   # rpert(1, min = low, mode = mid, max = high, shape = shape)
@@ -509,6 +509,30 @@ Get.RR <- function(xDT, year) {
   # return(out)
   
 } 
+
+# Reactivation rate adjustment for existing TB control
+Get.RRADJ <- function(xDT, year) {
+  
+  DT <- copy(xDT[, .(year, AGERP, YARP)])
+  
+  DT[AGERP > 110, AGERP := 110]
+  
+  mid <- rradjrates[DT[, .(AGERP, ST = year - YARP)], 
+             rate, on = .(aaa = AGERP, ysa = ST)]
+  
+  low <- rradjrates[DT[, .(AGERP, ST = year - YARP)], 
+             lower, on = .(Age = AGERP, ysa = ST)]
+  
+  high <- rradjrates[DT[, .(AGERP, ST = year - YARP)], 
+             upper, on = .(Age = AGERP, ysa = ST)]
+  
+  set.seed(set.seed.number[simnumber])
+  rpert(1, min = low, mode = mid, max = high, shape = shape)
+  
+}
+
+
+
 # Get.EMIGRATE
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
@@ -763,7 +787,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                RR = Get.RR(DT, year),
                                TBMR = Get.TBMR(DT, year),
                                # TBMR = 0.001,
-                               RRADJUST = rradj,
+                               RRADJUST = Get.RRADJ(DT, year),
                                # RRADJUST takes into account the fact that a proportion (10% in Victoria)
                                # of TB cases are picked up each year with existing TB control strategies, i.e.
                                # during follow-up as a result of an abnormal CXR during pre-migration off-shore screening.
@@ -824,7 +848,6 @@ for(i in 1:Num_SIm) {
   PSA <- 1
   begintrt <- simdata[simnumber, begintrt]
   att <- simdata[simnumber, att]
-  rradj <- simdata[simnumber, rradj]
   cattend <- simdata[simnumber, cattend]
   csae <- simdata[simnumber, csae]
   cscreenqft <- simdata[simnumber, cscreenqft]
@@ -977,7 +1000,6 @@ for(i in 1:Num_SIm) {
 #   PSA <- 1
 #   begintrt <- simdata[simnumber, begintrt]
 #   att <- simdata[simnumber, att]
-#   rradj <- simdata[simnumber, rradj]
 #   cattend <- simdata[simnumber, cattend]
 #   csae <- simdata[simnumber, csae]
 #   cscreenqft <- simdata[simnumber, cscreenqft]

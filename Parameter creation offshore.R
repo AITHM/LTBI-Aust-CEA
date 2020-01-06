@@ -9,7 +9,7 @@ source("Medical costs.R")
 
 
 # Create table of parameters
-p <- c("rradj", "att", "begintrt", "snqftgit", "spqftgit",
+p <- c("att", "begintrt", "snqftgit", "spqftgit",
        "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
        "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
        "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", 
@@ -346,11 +346,6 @@ params[p == "cscreenqft", high := 0]
 params[p == "cscreentst", mid := 0] 
 params[p == "cscreentst", low := 0] 
 params[p == "cscreentst", high := 0] 
-
-
-params[p == "rradj", mid := 0.9]
-params[p == "rradj", low := 0.875]
-params[p == "rradj", high := 0.952]
 
 params[p == "att", mid := 0.684]
 params[p == "att", low := 0.646]

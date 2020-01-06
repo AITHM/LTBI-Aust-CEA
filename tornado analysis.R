@@ -53,7 +53,7 @@ pselect<- c("sntst15","sptst15",
             "begintrt","saemr",
             "uactivetbr","uactivetb",
             "ultbi4R", "csae", "num.appt4R",
-            "prop.spec", "ultbitreatsae", "rradj")
+            "prop.spec", "ultbitreatsae")
 tornado.dt <- tornado.dt[tornado.dt$p %in% pselect,]
 
 tornado.dt <- melt(tornado.dt, id = c("p", "icer"))
