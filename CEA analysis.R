@@ -71,7 +71,9 @@ tabfunc <- function(dt) {
   migflow <- dt[YEAR == start.year & YARP == start.year, sum(NUMP),]
   
   # percentage with LTBI
-  percentltbi <- (dt[YEAR == start.year & YARP == start.year, sum(LTBP),]/migflow) * 100
+  cdt <- targetfunc(dt)
+  cdt <- as.data.table(cdt)
+  percentltbi <- (cdt[YEAR == start.year & YARP == start.year, sum(LTBP),]/cdt[YEAR == start.year & YARP == start.year, sum(NUMP),]) * 100
   
   # annual average number emigrating
   emigflow <- dt[YEAR == final.year, sum(p.emigrate)]/totalcycles
@@ -83,30 +85,43 @@ tabfunc <- function(dt) {
   emigproboneyear <- (-1/totalcycles * log(1 - (emigpercent/100))) * 100
   
   # annual number screened/tested
-  cdt <- copy(dt)
-  numscreened <- cdt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
+  # all those in every state except the "no test" states (and ignoring TB cases)
+  numscreened <- dt[YEAR == start.year + 1 & YARP == start.year,
+                     sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
                   sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nf) + sum(p.ltbi.nbt) +
                   sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
+  # cdt <- targetfunc(dt)
+  # cdt <- as.data.table(cdt)
+  # numscreened <- (cdt[YEAR == start.year & YARP == start.year, sum(NUMP),]) * attscreen
   
-  # number referred annually
-  # could calculate it by working backwards. i.e. work out the number that attended and 
-  # we know that is 0.684 of all that were referred.
-  numatt <- dt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nbt) + sum(p.sus.nct) +
+  # annual number referred 
+  # this will either be:
+      # those with and without LTBI in the target population (which I get using the targetfunc) 
+      # multiplied by the relevent sensitivities and specificities and multiplied by
+      # the proportion that attended the screen:
+  # cdt <- targetfunc(dt)
+  # cdt <- as.data.table(cdt)
+  # numref <- ((cdt[YEAR == start.year & YARP == start.year, sum(LTBP),]) * attscreen * sntst10) +
+  #   ((cdt[YEAR == start.year & YARP == start.year, sum(NUMP),] -
+  #      cdt[YEAR == start.year & YARP == start.year, sum(LTBP),]) * attscreen * (1 - sptst10))
+  
+  # or it will be the number that attended in each of the LTBI and SUS categories
+  # divided by the chance of attending
+  numref <- dt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nbt) +
+                      sum(p.sus.nct) + sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
+                       sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] / att
+  
+  
+  
+  # number attending annually
+  # all those in the "did not begin treatment", "did not complete treatment" etc.
+  numatt <- dt[YEAR == start.year + 1 & YARP == start.year, 
+               sum(p.sus.nbt) + sum(p.sus.nct) +
                  sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
                  sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
-  numref <- numatt/att
-  
-  
-  # number attending annually (should be 0.684 * the number referred)
-  numatt <- dt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nbt) + sum(p.sus.nct) +
-       sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
-       sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
-  
+
   # total number screened/tested
-  cdt <- copy(dt)
-  totscreen <- cdt[, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
-                       sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nf) + sum(p.ltbi.nbt) +
-                       sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
+  totscreen <- numscreened
   
   # total number attended during the whole time period
   cdt <- copy(dt)
@@ -397,8 +412,8 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # bc <- subset(bc, ISO3 == "150-199")
 # 
 # 
-# # # Write the table to clipboard so I can paste it into Excel
-# # write.table(base, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# # Write the table to clipboard so I can paste it into Excel
+# write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
 # options(scipen = 999)
 
 

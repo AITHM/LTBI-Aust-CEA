@@ -11,6 +11,7 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 params <- readRDS("params offshore.rds")
 onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
+options(scipen = 999)
 params <- as.data.table(params)
 
 # This function can be used to choose which parameters to change
@@ -26,7 +27,9 @@ params <- as.data.table(params)
 # }
 #################################################################################################
  
-# sensfunc(csae, high)
+# sensfunc(attscreen, high)
+
+# params[p == "attscreen", mid := 1]
 
 # params[p == "treatr4R", mid := 1]
 
@@ -48,16 +51,19 @@ params <- as.data.table(params)
 
 
 # # # the perfect world - figure 8
+# params[p == "attscreen", mid := 1]
 # params[p == "treatr4R", mid := 1]
 # params[p == "sntst10", mid := 1]
 # params[p == "sptst10", mid := 1]
 # params[p == "att", mid := 1]
+# params[p == "attscreen", mid := 1]
 # params[p == "begintrt", mid := 1]
 # params[p == "begintrt", mid := 1]
 
 #################################################################################################
 
 # Target population
+
 Get.POP <- function(DT, strategy) {
   
   # 200+
@@ -74,6 +80,22 @@ Get.POP <- function(DT, strategy) {
   
 }
 
+targetfunc <- function(DT) {
+  
+  # 200+
+  # DT <- subset(DT, ISO3 == "200+")
+  # 150+
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
+  # 100+
+  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  # 40+
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
+  # Adjust age
+  DT <- subset(DT, AGERP > 10 &
+                 AGERP < 36)
+  DT
+}
+
 # Assigning other parameter values
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
@@ -83,12 +105,12 @@ totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migr
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
-testlist <- c("QTFGIT", "TST10", "TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle
-migrant.inflow.size <- 434340 # baseline 434340, permanent 103740
+migrant.inflow.size <- 103740 # baseline 434340, permanent 103740
 finalinflow <- 0
 
 # Taking the values from the params table and
@@ -233,6 +255,8 @@ Get.RRADJ <- function(xDT, year) {
   
   # rradjrates[DT[, .(AGERP, ST = year - YARP)], upper, on = .(Age = AGERP, ysa = ST)]
   
+  # 1
+  
 }
 
 
@@ -290,6 +314,7 @@ Get.SAE <- function(xDT, treat) {
 # Source emigrate data
 emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
 # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
+
 emigrate.rate <- as.data.table(emigrate.rate)
 
 # Emigrate rate from emigrate.rate (age dependent)
@@ -299,9 +324,9 @@ Get.EMIGRATE <- function(xDT, year) {
 
   DT[AGERP > 110, AGERP := 110]
 
-  emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)]
+  emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)] # use this one for a 11.72% perm rates
   # emigrate.rate[DT[, .(AGERP)], lower, on = .(Age = AGERP)]
-  # emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)]
+  # emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)] # use this one for a 14.76% perm rates
 
 }
 

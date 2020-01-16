@@ -1,98 +1,124 @@
-# This script creates a cost-effectivenes plane, showing incremental cost and effectiveness (in QALYs) of
-# different intervention strategies.
-# To be used in the cost-effectivness model for latent TB screening and treatment program.
-# The files CB-TLTBI.R and CEA analyses need to be run to create the output, which was then added into
-# an excel spreadsheet ("Model paramenter") into the sheet names "Table 3"
-# and then these results are transferred into the sheet called "CEA plane", which is read by this script.
 
-library(xlsx)
+# This script runs several analyses, one after the other
+# with different age group targets
+# and puts the results into a large table that can be pasted 
+# into excel. This can then be used to create nice tables 
+# for the main text and supplement.
+
+library(plyr)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
 library(data.table)
-library(ggplot2)
-library(RColorBrewer)
-library(ggrepel)
 
-# Need to obtain chance of having sae with different treatment regimens.
-# I have researched this and it is in an excel file in "Model parameters"
+# # Reading in the data
+# setwd("H:/Katie/PhD/CEA/Data")
+# df <- read.csv("ltbi utility plot.csv")
 
-# # Reading in the data from excel
-# setwd("H:/Katie/PhD/CEA")
-# data <- read.xlsx("Model parameters.xlsx", 
-#                   sheetName = "CEA plane input",
-#                   startRow = 2)
+parameters.already.set <- 1
 
-# Reading in the data from excel
-setwd("H:/Katie/PhD/CEA/Data")
-data <- read.csv("cea plane age target.csv")
-data <- as.data.table(data)
-data[, incremental.cost := as.numeric(gsub('\\D+','', incremental.cost))]
-data[, icer := as.numeric(gsub('\\D+','', icer))]
+# read in parameter list and values, which is defined in the "Parameter creation" script
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
+params <- readRDS("params onshore.rds")
+# params <- readRDS("params offshore.rds")
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
+################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
+params <- as.data.table(params)
 
-percent <- function(x, digits = 1, format = "f", ...) {
-  paste0(formatC(x, format = format, digits = digits, ...), "%")
+# Create a datatable that contains all of the combinations
+# of targets, i.e. by age and TB incidence in country of birth
+
+# Define age target
+lower.age.targets <- c(10, 19, 29, 39, 49, 59)
+tbincid.targets <- c("100+")
+target.dt<- expand.grid(lower.age.targets, tbincid.targets)
+target.dt <- as.data.table(target.dt)
+setnames(target.dt, "Var1", "age.low")
+setnames(target.dt, "Var2", "tbincid")
+target.dt[, age.high := age.low + 12]
+target.dt[age.low == 10, age.high := 20]
+
+
+# The following loops down the rows of the table
+# and runs the model with each specified target
+# Then the output is analysed and entered
+# into a new enormous data table.
+
+# Testing:
+# target.x <- 3
+# target.dt <- target.dt[1:2,]
+
+for(target.x in 1:nrow(target.dt)) {
+  
+  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+  source("CB-TLTBI Functions.R")
+  source("Parameter values.R")
+  
+  # Define target: TB incidence in country of birth: "40+" "100+" "150+" "200+"
+  target.tbincid <- target.dt[target.x, tbincid]
+  
+  # Define age target
+  age.limit.older.than <- target.dt[target.x, age.low]
+  age.limit.younger.than <- target.dt[target.x, age.high]
+  
+  # Function that defines target population for model run
+  Get.POP <- function(DT, strategy) {
+    
+    if (target.tbincid == "200+") {
+      (ifelse(DT[, ISO3] == "200+", 1, 0)) &
+        (ifelse(DT[, AGERP] > age.limit.older.than, 1, 0) &
+           ifelse(DT[, AGERP] < age.limit.younger.than, 1, 0))
+    } else if (target.tbincid == "150+") {
+      (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) &
+        (ifelse(DT[, AGERP] > age.limit.older.than, 1, 0) &
+           ifelse(DT[, AGERP] < age.limit.younger.than, 1, 0))
+    } else if (target.tbincid == "100+") {
+      (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) |
+         ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+        (ifelse(DT[, AGERP] > age.limit.older.than, 1, 0) &
+           ifelse(DT[, AGERP] < age.limit.younger.than, 1, 0))
+    } else if (target.tbincid == "40+") {
+      (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) |
+         ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+        (ifelse(DT[, AGERP] > age.limit.older.than, 1, 0) &
+           ifelse(DT[, AGERP] < age.limit.younger.than, 1, 0))
+    }
+  }
+  
+  # Run the data prep
+  source("CB-TLTBI_DataPreparation.R")
+  
+  # Run the model
+  source("CB-TLTBI.R")
+  
+  # Run the analysis file to sort the 
+  # model output and put the main findings 
+  # into a table called "table1"
+  source("CEA analysis.R")
+  
+  # Add some intial columns in table1
+  # that specifies the target group
+  table1 <- data.table(rep(target.tbincid, nrow(table1)), table1)
+  table1 <- data.table(rep(age.limit.younger.than - 1, nrow(table1)), table1)
+  table1 <- data.table(rep(age.limit.older.than + 1, nrow(table1)), table1)
+  setnames(table1, 1, "age.low")
+  setnames(table1, 2, "age.high")
+  setnames(table1, 3, "tbincid")
+  
+  # Bind the results from each model run together
+  # into one large table
+  if (target.x == 1) {
+    results.dt <- copy(table1)
+  } else {
+    results.dt <- rbind(results.dt, table1)
+  }
+  
 }
 
-data$tb.prev.percent <- percent(data$tb.prev.percent)
+# Save the output to file
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+saveRDS(results.dt, file = "Data/agetarget.rds")
 
-# Get the colour palatte
-# I need 4 fill colours
-getPalette<-brewer.pal(8, "Spectral")
-getPalette
-
-data <- subset(data, strategy != "11-35" & strategy != "11-65")
-
-textsize <- 8
-options(scipen = 5)
-dev.off()
-myplot1 <-  
-  ggplot(data, aes(x = incremental.qalys, y = incremental.cost/1000000,
-                 fill = strategy,
-                 shape =  strategy)) +
-  geom_point(size = 7, alpha = 1, na.rm = T) +
-  geom_vline(xintercept = 0, color = "black") +
-  geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
-              size = 1.5) +
-  labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUS$millions)",
-       fill = "Target by:\nage group\n(years)",
-       shape = "Target by:\nage group\n(years)") +
-  # scale_size_continuous(limits = c(250, 450), 
-  #                       range = c(5, 12), 
-  #                       breaks = c(250, 350,
-  #                                  450))+
-  scale_shape_manual(values = c(21, 21,
-                                21, 21,
-                                21, 21)) +
-  scale_fill_manual(values = c(getPalette, getPalette)) +
-  geom_text_repel (aes(label = tb.prev.percent),
-                   hjust = 0.5, vjust = -1,
-                   segment.color = "transparent",
-                   size = textsize) +
-  geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-            hjust = -0.03, vjust = 1.5, size = textsize, 
-            colour = "black") +
-  geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-            hjust = 1, vjust = 1.5, size = textsize, 
-            colour = "black") +
-  geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-            hjust = -0.03, vjust = -0.7, size = textsize, 
-            colour = "black") +
-  geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-            hjust = 1, vjust = -0.7, size = textsize, 
-            colour = "black") +
-  scale_y_continuous(breaks = seq(-10, 25, 1)) +
-  scale_x_continuous(breaks = seq(-10, 50, 5)) +
-  theme_bw() +
-  coord_cartesian(xlim = c(-12, 22), 
-                  ylim = c(-500000/1000000, 2000000/1000000)) +
-  theme(text = element_text(size = 27),
-        panel.border = element_blank())
-#legend.position = c(0.80, 0.8),
-#axis.text.x = element_text(angle=45, hjust=1),
-setwd("H:/Katie/PhD/CEA/Health eco conference")
-tiff('ceaplaneage.tiff', units = "in", width = 15, height = 7,
-     res = 400)
-myplot1
-dev.off()
-
+# Write the table to clipboard so I can paste it into Excel
+write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)

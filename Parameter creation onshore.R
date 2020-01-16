@@ -8,8 +8,9 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("Medical costs.R")
 
 # Create table of parameters
-p <- c("att", "begintrt", "snqftgit", "spqftgit",
+p <- c("attscreen", "att", "begintrt", "snqftgit", "spqftgit",
        "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
+       "treat.complete.3HP", "treat.complete.4R", "treat.complete.6H", "treat.complete.9H",
        "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
        "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", 
        "csae", "cscreenqft", "cscreentst", "ctb", 
@@ -356,9 +357,13 @@ params[p == "csae", mid := 1222.64]
 params[p == "csae", low := 500] 
 params[p == "csae", high := 10000] 
 
-params[p == "att", mid := 0.684]
-params[p == "att", low := 0.646]
-params[p == "att", high := 0.721]
+params[p == "attscreen", mid := 0.325]
+params[p == "attscreen", low := 0.3227817]
+params[p == "attscreen", high := 0.3272284]
+
+params[p == "att", mid := 0.8748806]
+params[p == "att", low := 0.8191342]
+params[p == "att", high := 0.9334222]
 
 params[p == "begintrt", mid := 0.596]
 params[p == "begintrt", low := 0.262]
@@ -387,6 +392,22 @@ params[p == "sntst10", high := 0.9103] # 0.8444
 params[p == "sptst10", mid := 0.89119] # 0.82227
 params[p == "sptst10", low := 0.8868] # 0.81780
 params[p == "sptst10", high := 0.8957] # 0.82686
+
+params[p == "treat.complete.3HP", mid := 0.764]
+params[p == "treat.complete.3HP", low := 0.740]
+params[p == "treat.complete.3HP", high := 0.90]
+
+params[p == "treat.complete.4R", mid := 0.852]
+params[p == "treat.complete.4R", low := 0.60]
+params[p == "treat.complete.4R", high := 0.872]
+
+params[p == "treat.complete.6H", mid := 0.780]
+params[p == "treat.complete.6H", low := 0.441]
+params[p == "treat.complete.6H", high := 0.850]
+
+params[p == "treat.complete.9H", mid := 0.730]
+params[p == "treat.complete.9H", low := 0.400]
+params[p == "treat.complete.9H", high := 0.850]
 
 params[p == "treatr3HP", mid := 0.543]
 params[p == "treatr3HP", low := 0.221]
@@ -508,7 +529,7 @@ uactivetbfunct <- function(symptom.mths, sae.mths, chance.of.sae) {
 # # 0.0708244
 
 params[p == "uactivetb", mid := uactivetbfunct(6, 1, 0.007)]
-params[p == "uactivetb", low := uactivetbfunct(8, 2, 0.0051)]
+params[p == "uactivetb", low := 0.7068]
 params[p == "uactivetb", high := uactivetbfunct(4, 0.5, 0.003)]
 
 # LTBI treatment utility calculations
