@@ -5,15 +5,15 @@ library(data.table)
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-# onshore <- 1
+params <- readRDS("params onshore.rds")
+onshore <- 1
 
-params <- readRDS("params offshore.rds")
-onshore <- 0
+# params <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 options(scipen = 999)
 params <- as.data.table(params)
-
+ 
 # This function can be used to choose which parameters to change
 # for sensitivity analysis.
 # It replaces the "mid" value in the dataframe with a 
@@ -27,7 +27,7 @@ params <- as.data.table(params)
 # }
 #################################################################################################
  
-# sensfunc(attscreen, high)
+# sensfunc(attscreen, low)
 
 # params[p == "attscreen", mid := 1]
 
@@ -76,7 +76,7 @@ Get.POP <- function(DT, strategy) {
     # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
-       ifelse(DT[, AGERP] < 36, 1, 0))
+       ifelse(DT[, AGERP] < 66, 1, 0))
   
 }
 
@@ -92,7 +92,7 @@ targetfunc <- function(DT) {
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
   # Adjust age
   DT <- subset(DT, AGERP > 10 &
-                 AGERP < 36)
+                 AGERP < 66)
   DT
 }
 
@@ -100,17 +100,17 @@ targetfunc <- function(DT) {
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
 start.year <- startyear
-totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 80  # cycles ... The mortality data continues until 2100 and migrant 
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
-testlist <- c("TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("QTFGIT", "TST10", "TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle
-migrant.inflow.size <- 103740 # baseline 434340, permanent 103740
+migrant.inflow.size <- 434340 # baseline 434340, permanent 103740
 finalinflow <- 0
 
 # Taking the values from the params table and
@@ -251,9 +251,9 @@ Get.RRADJ <- function(xDT, year) {
   
   rradjrates[DT[, .(AGERP, ST = year - YARP)], rate, on = .(aaa = AGERP, ysa = ST)]
   
-  # rradjrates[DT[, .(AGERP, ST = year - YARP)], lower, on = .(Age = AGERP, ysa = ST)]
+  # rradjrates[DT[, .(AGERP, ST = year - YARP)], lower, on = .(aaa = AGERP, ysa = ST)]
   
-  # rradjrates[DT[, .(AGERP, ST = year - YARP)], upper, on = .(Age = AGERP, ysa = ST)]
+  # rradjrates[DT[, .(AGERP, ST = year - YARP)], upper, on = .(aaa = AGERP, ysa = ST)]
   
   # 1
   

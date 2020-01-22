@@ -14,7 +14,12 @@ library(ggplot2)
 library(RColorBrewer)
 library(grid)
 library(scales)
-
+library(ggrepel)
+library(scales)
+library(egg)
+library(cowplot)
+library(grid)
+library(gridExtra)
 
 # # Reading in the data
 # setwd("H:/Katie/PhD/CEA/Data")
@@ -67,7 +72,7 @@ for(ltbi.x in 1:nrow(ultbi.dt)) {
   # Below runs the data prep
   source("CB-TLTBI_DataPreparation.R")
   # Below runs the model
-  tornado.analysis <- 1
+  parameters.already.set <- 1
   source("CB-TLTBI.R")
   
   # This is the modified script form the cea analysis R file that analyses the 
@@ -138,11 +143,23 @@ ultbi.dt[, utility := uhealthy - utility.dec]
 # Create plot
 options(scipen=5)
 
+# Function that estimates where th eline intercepts the x-axis
+f2 <- approxfun(ultbi.dt$incremental.qalys, ultbi.dt$utility.dec)
+f2(0)
+
+
+
 #dev.off()
 myplot1 <-
   ggplot(ultbi.dt, aes(x = utility.dec, y = incremental.qalys)) +
   geom_line(size = 1, color = "steelblue2") +
+  geom_point(aes(x = f2(0),
+                 y = 0), colour = "black", size = 12,
+             shape = 1) + # this adds a point at the intercept
   theme_bw() +
+  geom_text(aes(x = f2(0), y = 0),
+                   hjust = 0.5, vjust = -1,
+                   size = 10, label = "0.002355495") +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   labs(y = "Incremental QALYS",
@@ -154,11 +171,13 @@ myplot1 <-
   coord_cartesian(xlim = c(0, 0.005), ylim = c(-20, 20)) +
   theme(text = element_text(size = 20),
         panel.border = element_blank(),
+        legend.position = "none",
         panel.grid.major = element_line(colour = "grey"))
 
 
-setwd("H:/Katie/PhD/CEA/Health eco conference")
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
 tiff('ltbiutility.tiff', units = "in", width = 14, height = 6,
-     res = 400)
+     res = 200)
 myplot1
 dev.off()
+

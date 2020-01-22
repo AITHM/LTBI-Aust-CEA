@@ -36,13 +36,14 @@ setwd("H:/Katie/PhD/CEA/Data")
 # Reading in the original base ICER
 df <- read.csv("tornado plot.csv")
 # original value of output
-base.value <- (as.character(df[1,2]))
+base.value <- (as.character(df[1,3]))
 base.value <-  as.numeric(gsub('\\D+','', base.value))
 
 # Reading in the rest of the sensitivity analysis data from excel
 setwd("H:/Katie/PhD/CEA/Data")
 df <- read.csv("tornado plot.csv", skip = 2)
 df <- as.data.table(df)
+df[, X := NULL]
 df[, parameter := as.character(parameter)]
 setnames(df,"icer.lower.limit","lower")
 setnames(df,"icer.upper.limit","upper")
@@ -94,14 +95,17 @@ df.2 <- df %>%
 # create plot
 # (use scale_x_continuous to change labels in y axis to name of parameters)
 #png(width = 960, height = 540)
-options(scipen=5)
+options(scipen = 5)
 
-#dev.off()
+# dev.off()
+# OFFSHORE SCREENING
 myplot1 <- 
   ggplot() + 
   geom_rect(data = df.2, 
             aes(ymax = ymax, ymin = ymin, 
                 xmax = xmax, xmin = xmin, fill = type)) +
+  geom_text(aes(x = 0, y = base.value),
+            size = 3.5, label = "Base case ICER: $58,347") +
   theme_bw() + 
   labs(y = "Cost per QALY (AUS$)") +
   scale_fill_manual(values = c("steelblue2", "darksalmon")) +
@@ -120,17 +124,23 @@ myplot1 <-
   theme(text = element_text(size = 12),
         legend.position = c(0.75, 0.1))
 
-grid.text("Base case ICER: $73,477",
-          x = unit(0.6, "npc"),
-          y = unit(0.022, "npc"))
-
-
+# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
+# tiff('tornadooffshore.tiff', units = "in", width = 14, height = 6,
+#      res = 200)
+# myplot1
 # dev.off()
-ggplot() + 
+
+
+# ONSHORE SCREENING
+dev.off()
+myplot1<- 
+  ggplot() + 
   geom_rect(data = df.2, 
             aes(ymax = ymax, ymin = ymin, 
                 xmax = xmax, xmin = xmin, fill = type)) +
   theme_bw() + 
+  geom_text(aes(x = 0, y = base.value),
+            size = 3.5, label = "Base case ICER: $350,327") +
   labs(y = "Cost per QALY (AUS$)") +
   scale_fill_manual(values = c("steelblue2", "darksalmon")) +
   theme(legend.position = 'bottom',
@@ -142,18 +152,15 @@ ggplot() +
   scale_x_continuous(breaks = c(1:length(order.parameters)), 
                      labels = order.parameters) +
   scale_y_continuous(position = "bottom", 
-                     breaks = seq(0, 5000000, 200000),
+                     breaks = seq(0, 5000000, 100000),
                      labels = comma) +
-  coord_flip(ylim = c(0, 2000000))+
+  coord_flip(ylim = c(0, 800000))+
   theme(text = element_text(size = 12),
-        legend.position = c(0.75, 0.1))
+        legend.position = c(0.75, 0.2))
 
-grid.text("Base case ICER: $820,731",
-          x = unit(0.6, "npc"),
-          y = unit(0.022, "npc"))
 
-setwd("H:/Katie/PhD/CEA/Health eco conference")
-tiff('tornado.tiff', units = "in", width = 14, height = 6,
-     res = 400)
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
+tiff('tornadoonshore.tiff', units = "in", width = 14, height = 6,
+     res = 200)
 myplot1
 dev.off()
