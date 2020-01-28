@@ -413,18 +413,18 @@ params[p == "treatr3HP", mid := 0.543]
 params[p == "treatr3HP", low := 0.221]
 params[p == "treatr3HP", high := 0.749]
 
-params[p == "treatr3HP", low.treat.complete := 0.538]
+params[p == "treatr3HP", low.treat.complete := 0.539]
 params[p == "treatr3HP", high.treat.complete := 0.632]
 params[p == "treatr3HP", low.treat.eff := 0.218]
-params[p == "treatr3HP", high.treat.eff := 0.642]
+params[p == "treatr3HP", high.treat.eff := 0.643]
 
 params[p == "treatr4R", mid := 0.604]
 params[p == "treatr4R", low := 0.301]
 params[p == "treatr4R", high := 0.79]
 
-params[p == "treatr4R", low.treat.complete := 0.4565]
-params[p == "treatr4R", high.treat.complete := 0.615]
-params[p == "treatr4R", low.treat.eff := 0.3820]
+params[p == "treatr4R", low.treat.complete := 0.458]
+params[p == "treatr4R", high.treat.complete := 0.616]
+params[p == "treatr4R", low.treat.eff := 0.3826]
 params[p == "treatr4R", high.treat.eff := 0.774]
 
 params[p == "treatr6H", mid := 0.557]

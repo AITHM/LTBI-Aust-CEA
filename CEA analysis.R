@@ -11,8 +11,8 @@ library(data.table)
 
 # Model setup located within this file.
 # It defines all the states, transition matrices, strategies, costs and parameters.
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-source("CB-TLTBI Parameter values.R")
+# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# source("CB-TLTBI Parameter values.R")
 
 # Read in the output files
 filenames <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern = "*.rds", full.names = TRUE)
@@ -86,8 +86,7 @@ tabfunc <- function(dt) {
   
   # annual number screened/tested
   # all those in every state except the "no test" states (and ignoring TB cases)
-  numscreened <- dt[YEAR == start.year + 1 & YARP == start.year,
-                     sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
+  numscreened <- dt[, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
                   sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nf) + sum(p.ltbi.nbt) +
                   sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
   # cdt <- targetfunc(dt)
@@ -107,16 +106,15 @@ tabfunc <- function(dt) {
   
   # or it will be the number that attended in each of the LTBI and SUS categories
   # divided by the chance of attending
-  numref <- dt[YEAR == start.year + 1 & YARP == start.year, sum(p.sus.nbt) +
+  numref <- dt[, sum(p.sus.nbt) +
                       sum(p.sus.nct) + sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
                        sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] / att
-  
+  # YEAR == start.year + 1 & YARP == start.year, 
   
   
   # number attending annually
   # all those in the "did not begin treatment", "did not complete treatment" etc.
-  numatt <- dt[YEAR == start.year + 1 & YARP == start.year, 
-               sum(p.sus.nbt) + sum(p.sus.nct) +
+  numatt <- dt[, sum(p.sus.nbt) + sum(p.sus.nct) +
                  sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
                  sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
 
@@ -139,7 +137,6 @@ tabfunc <- function(dt) {
   # total number treated (effective) during the whole time period
   cdt <- copy(dt)
   cdt <- as.data.table(cdt)
-  cdt[YEAR == YARP + 1, sum(p.sus.tc) + sum(p.ltbi.tc)] 
   numbertreated <- cdt[, sum(p.sus.tc) + sum(p.ltbi.tc)] 
   
   # total base cost

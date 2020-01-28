@@ -60,7 +60,7 @@ cycles <- totalcycles
 final.year <- start.year + totalcycles
 
 # The tests and treatments I want to consider in this analysis
-testlist <- c("QTFGIT") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+testlist <- c("TST10") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # The number of migrant inflows I want to include
@@ -82,7 +82,7 @@ Get.POP <- function(DT, strategy) {
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
     (ifelse(DT[, AGERP] > 10, 1, 0) &
-       ifelse(DT[, AGERP] < 36, 1, 0))
+       ifelse(DT[, AGERP] < 66, 1, 0))
   
 }
 
@@ -94,21 +94,22 @@ Get.POP <- function(DT, strategy) {
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-# onshore <- 1
+dt <- readRDS("params onshore.rds")
+onshore <- 1
 
-dt <- readRDS("params offshore.rds")
-onshore <- 0
+# dt <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 
 aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
+
 # # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
 # aust[, LTBP := NULL]
 # setnames(aust, "tfnum", "LTBP")
 
-# Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
-aust[, LTBP := NULL]
-setnames(aust, "sfnum", "LTBP")
+# # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
+# aust[, LTBP := NULL]
+# setnames(aust, "sfnum", "LTBP")
 
 
 # reformat data table
@@ -214,6 +215,8 @@ chance.of.needing.mcs <- 0.1
 # Also, all ongoing appointments related to LTBI treatment will be
 # review appointments
 
+prop.spec <- dt[abbreviation == "prop.spec", mid]
+
 if (onshore == 0) {
   cattend <- c.gp.first + (c.mcs * chance.of.needing.mcs) + c.cxr
 } else if (onshore == 1) {
@@ -265,14 +268,14 @@ simdata[, cparttreatspec9H :=  spec.appt / part.appt + cmed9H / part.med]
 # Plotting the distributions used for all of the different
 # parameters
 #plotting transitions
-a <- which( dt$abbreviation == "att" )
+a <- which( dt$abbreviation == "attscreen" )
 b <- which( dt$abbreviation == "saemr" )
 plot.dt <- dt[a:b,]
 nrow(plot.dt)
 # dev.off()
 # set up the plotting space
 #layout(matrix(1:nrow(plot.dt), ncol = 6))
-par(mfrow = c(4, 5))
+par(mfrow = c(4, 6))
 for(i in 1:nrow(plot.dt)) {
   # store data in column.i as x
   abbreviation <- plot.dt[i, abbreviation]
@@ -318,14 +321,32 @@ for(i in 1:nrow(plot.dt)) {
   }
 }
 
-#plotting costs
-a <- which( dt$abbreviation == "cattend" )
-b <- which( dt$abbreviation == "num.appt9H" )
-plot.dt <- dt[a:b,]
+#plotting costs - a
+dtcopy <- copy(dt)
+dtcopy <- as.data.table(dtcopy)
+dtcopy <- subset(dtcopy, abbreviation != "cscreenqft")
+dtcopy <- subset(dtcopy, abbreviation != "cscreentst")
+dtcopy <- subset(dtcopy, abbreviation != "ctreat1HP")
+dtcopy <- subset(dtcopy, abbreviation != "ctreatspec1HP")
+dtcopy <- subset(dtcopy, abbreviation != "cparttreat1HP")
+dtcopy <- subset(dtcopy, abbreviation != "cparttreatspec1HP")
+dtcopy <- subset(dtcopy, abbreviation != "ctreat3HR")
+dtcopy <- subset(dtcopy, abbreviation != "ctreatspec3HR")
+dtcopy <- subset(dtcopy, abbreviation != "cparttreat3HR")
+dtcopy <- subset(dtcopy, abbreviation != "cparttreatspec3HR")
+dtcopy <- subset(dtcopy, abbreviation != "ctreat6wP")
+dtcopy <- subset(dtcopy, abbreviation != "ctreatspec6wP")
+dtcopy <- subset(dtcopy, abbreviation != "cparttreat6wP")
+dtcopy <- subset(dtcopy, abbreviation != "cparttreatspec6wP")
+dtcopy <- subset(dtcopy, abbreviation != "num.appt1HP")
+dtcopy <- subset(dtcopy, abbreviation != "cmed1HP")
+a <- which( dtcopy$abbreviation == "cattend" )
+b <- which( dtcopy$abbreviation == "num.appt9H" )
+plot.dt <- dtcopy[a:b,]
 nrow(plot.dt)
 dev.off()
 # set up the plotting space
-par(mfrow = c(3, 5))
+par(mfrow = c(3, 6))
 #layout(matrix(1:nrow(plot.dt), ncol = 11))
 for(i in 1:nrow(plot.dt)) {
   # store data in column.i as x
@@ -370,6 +391,7 @@ for(i in 1:nrow(plot.dt)) {
          main = abbreviation)
   }
 }
+
 
 # mid <- 12550.5200000
 # low <- 6330.7300000
@@ -521,10 +543,10 @@ Get.RRADJ <- function(xDT, year) {
              rate, on = .(aaa = AGERP, ysa = ST)]
   
   low <- rradjrates[DT[, .(AGERP, ST = year - YARP)], 
-             lower, on = .(Age = AGERP, ysa = ST)]
+             lower, on = .(aaa = AGERP, ysa = ST)]
   
   high <- rradjrates[DT[, .(AGERP, ST = year - YARP)], 
-             upper, on = .(Age = AGERP, ysa = ST)]
+             upper, on = .(aaa = AGERP, ysa = ST)]
   
   set.seed(set.seed.number[simnumber])
   rpert(1, min = low, mode = mid, max = high, shape = shape)
@@ -643,6 +665,7 @@ sae.rate <- as.data.table(sae.rate)
 sae.mortality <- readRDS("Data/sae.mortality.rds") # this is also required
 sae.mortality <- as.data.table(sae.mortality)
 # SAE mortality data from: ...
+rradjrates <- readRDS("Data/rradjrates.rds")
 
 
 # Creating a vector of state names
@@ -786,7 +809,7 @@ for(i in 1:Num_SIm) {
   PSA <- 1
   begintrt <- simdata[simnumber, begintrt]
   att <- simdata[simnumber, att]
-  att <- simdata[simnumber, attscreen]
+  attscreen <- simdata[simnumber, attscreen]
   cattend <- simdata[simnumber, cattend]
   csae <- simdata[simnumber, csae]
   cscreenqft <- simdata[simnumber, cscreenqft]
@@ -814,6 +837,10 @@ for(i in 1:Num_SIm) {
   spqftgit <- simdata[simnumber, spqftgit]
   sptst10 <- simdata[simnumber, sptst10]
   sptst15 <- simdata[simnumber, sptst15]
+  treat.complete.3HP <- simdata[simnumber, treat.complete.3HP]
+  treat.complete.4R <- simdata[simnumber, treat.complete.4R]
+  treat.complete.6H <- simdata[simnumber, treat.complete.6H]
+  treat.complete.9H <- simdata[simnumber, treat.complete.9H]
   treatr3HP <- simdata[simnumber, treatr3HP]
   treatr4R <- simdata[simnumber, treatr4R]
   treatr6H <- simdata[simnumber, treatr6H]
@@ -1104,16 +1131,16 @@ plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer > WTP, wtp.colour :=
 
 # Save this table to file
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
-saveRDS(simdata, "high ltbi low react onshore.rds")
+saveRDS(simdata, "onshore mid.rds")
 
-# # Read back in simdata
+# # Read back in simdata 
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
 # simdata <- readRDS("simdata.rds")
 
-ylimmin <- -4
-ylimmax <- 4
-xlimmin <- -140
-xlimmax <- 40
+ylimmin <- -2
+ylimmax <- 8
+xlimmin <- -200
+xlimmax <- 100
 
 pointsize <- 2.5
 textsize <- 6
@@ -1151,7 +1178,7 @@ better.and.costly.list <- plotdata$icer[plotdata$better.and.costly == 1]
 dominant <- plotdata$dominant
 dominated <- plotdata$dominated
 
-maxwtp <- 100000
+maxwtp <- 300000
 wtp <- c(0:maxwtp)
 
 
@@ -1180,14 +1207,14 @@ myplot1 <-
        y = "Proportion cost-effective (%)") +
     coord_cartesian(xlim = c(0, maxwtp), ylim = c(0, 100)) +
   scale_y_continuous(breaks = seq(0, 100, 10)) +
-  scale_x_continuous(label = comma, breaks = seq(0, 150000, 20000)) +
+  scale_x_continuous(label = comma, breaks = seq(0, 300000, 50000)) +
   theme_bw() +
   theme(text = element_text(size = 25))
 
 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-tiff('acceptability.tiff',
+tiff('acceptability onshore mid.tiff',
      units = "in", width = 15, height = 12,
-     res = 600)
+     res = 200)
 myplot1
 dev.off()

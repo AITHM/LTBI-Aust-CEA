@@ -16,6 +16,14 @@ library(data.table)
 
 parameters.already.set <- 1
 
+
+######################################################################################################
+################### ###################################################################################
+# MAKE SURE THE DATA OUTPUTS FOLDER IS EMPTY BEFORE RUNNING THIS
+######################################################################################################
+######################################################################################################
+
+
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
@@ -29,10 +37,12 @@ params <- as.data.table(params)
 # of targets, i.e. by age and TB incidence in country of birth
 
 # Define the three targets I want to present
-age.low <- c(10, 10, 10, 10)
-age.high <- c(36, 36, 36, 36)
-tbincid <- c("100+", "100+", "100+", "100+")
-other <- c("30yr horizon", "80yr horizon", "perm emigration", "LTBI decrement")
+age.low <- c(rep(10, 5)) 
+age.high <- c(rep(66, 5))
+tbincid <- c(rep("100+",5))
+other <- c("30yr horizon", "80yr horizon", 
+           "perm emigration", "LTBI decrement",
+           "30 inflows")
 target.dt <- data.table(age.low, age.high, tbincid, other)
 
 
@@ -43,7 +53,7 @@ target.dt <- data.table(age.low, age.high, tbincid, other)
 
 # Testing:
 # target.x <- 3
-# target.dt <- target.dt[1:2,]
+# target.dt <- target.dt[c(1,3),]
 
 for(target.x in 1:nrow(target.dt)) {
   
@@ -57,6 +67,7 @@ for(target.x in 1:nrow(target.dt)) {
   # Define age target
   age.limit.older.than <- target.dt[target.x, age.low]
   age.limit.younger.than <- target.dt[target.x, age.high]
+  other.cat <- target.dt[target.x, other]
   
   # Function that defines target population for model run
   Get.POP <- function(DT, strategy) {
@@ -82,18 +93,20 @@ for(target.x in 1:nrow(target.dt)) {
     }
   }
   
-  if (other == "30yr horizon") {
+  if (other.cat == "30yr horizon") {
     
     totalcycles <- 30
     
-  } else if (other == "80yr horizon") {
+  } else if (other.cat == "80yr horizon") {
     
     totalcycles <- 80
     
-  } else if (other == "perm emigration") {
+  } else if (other.cat == "perm emigration") {
     
-    setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
-    emigrate.rate <- as.data.table(emigrate.rate)
+    migrant.inflow.size <- 103740 # baseline 434340, permanent 103740
+    
+    setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+    emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds")
     Get.EMIGRATE <- function(xDT, year) {
       
       DT <- copy(xDT[, .(year, AGERP, YARP)])
@@ -101,10 +114,9 @@ for(target.x in 1:nrow(target.dt)) {
       DT[AGERP > 110, AGERP := 110]
       
       emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)] # use this one for a 14.76% perm rates
-      
     }
     
-  } else if (other == "LTBI decrement") {
+    } else if (other.cat == "LTBI decrement") {
     
     ultbi3HP <- params[p == "ultbi3HP", low]
     ultbi4R <- params[p == "ultbi4R", low]
@@ -119,11 +131,16 @@ for(target.x in 1:nrow(target.dt)) {
     ultbipart4R <- uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)
     ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
     ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
-
-  }
+    
+    } else if (other.cat == "30 inflows") {
+      finalinflow <- 29
+    }
   
+  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
   # Run the data prep
   source("CB-TLTBI_DataPreparation.R")
+  
+  parameters.already.set <- 1
   
   # Run the model
   source("CB-TLTBI.R")
@@ -135,7 +152,7 @@ for(target.x in 1:nrow(target.dt)) {
   
   # Add some intial columns in table1
   # that specifies the target group
-  table1 <- data.table(rep(other, nrow(table1)), table1)
+  table1 <- data.table(rep(other.cat, nrow(table1)), table1)
   setnames(table1, 1, "other")
   
   # Bind the results from each model run together
