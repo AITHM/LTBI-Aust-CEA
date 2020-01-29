@@ -91,8 +91,8 @@ tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"),
 
 # Create a sample treatment data table
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
-                           rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
-                           treat.complete = c(treat.complete.3HP, treat.complete.4R, treat.complete.6H, treat.complete.9H))
+                           treat.complete = c(treat.complete.3HP, treat.complete.4R, treat.complete.6H, treat.complete.9H),
+                           treat.effic = c(treat.effic.3HP, treat.effic.4R, treat.effic.6H, treat.effic.9H))
 
 # Create a sample treatment cost data table
 treatmentcost.dt <- data.table(treatment = c("3HP","4R", "6H", "9H", "3HP","4R", "6H", "9H"),
@@ -305,7 +305,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
                                TESTC = Get.TEST(S = "cost.primary", testing),
-                               TREATR = Get.TREAT(S = "rate", treatment),
+                               TREATR = Get.TREATR(C = "treat.complete", E = "treat.effic", treatment),
                                TREATCOMPLETE = Get.TREAT(S = "treat.complete", treatment),
                                TREATC = Get.TREATC(S = "cost.primary", treatment),
                                POP = Get.POP(DT, strategy),

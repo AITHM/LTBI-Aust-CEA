@@ -398,7 +398,7 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # dt[YARP == 2021, sum(NUMP), by = cycle]
 # dt[YARP == 2022, sum(NUMP), by = cycle]
 # dt[,sum(p.emigrate), by = cycle]
-# 
+# wa
 # check <- subset(dt, YARP == 2020)
 # check <- subset(check, AGERP == 30 )
 # check <- subset(check, ISO3 == "150-199")
@@ -410,7 +410,7 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # 
 # 
 # # Write the table to clipboard so I can paste it into Excel
-# write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# write.table(params, file = "clipboard-16384", sep = "\t", row.names = FALSE)
 # options(scipen = 999)
 
 

@@ -8,12 +8,16 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("Medical costs.R")
 
 # Create table of parameters
-p <- c("attscreen", "att", "begintrt", "snqftgit", "spqftgit",
-       "sntst15", "sptst15", "sntst10", "sptst10", "treatr3HP",
+p <- c("attscreen", "att", "cscreenqft", "cscreentst",
+       "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
+       "begintrt", "prop.spec", "saemr",
+       "snqftgit", "spqftgit",
+       "sntst15", "sptst15", "sntst10", "sptst10",
        "treat.complete.3HP", "treat.complete.4R", "treat.complete.6H", "treat.complete.9H",
-       "treatr4R", "treatr6H", "treatr9H", "ttt3HP", "ttt4R", 
-       "ttt6H", "ttt9H", "prop.spec", "saemr", "cattend", 
-       "csae", "cscreenqft", "cscreentst", "ctb", 
+       "treat.effic.3HP", "treat.effic.4R", "treat.effic.6H", "treat.effic.9H",
+       "ttt3HP", "ttt4R", "ttt6H", "ttt9H", 
+       "cattend", "csae", "ctb",
+       "cmed3HP", "cmed4R", "cmed6H", "cmed9H",
        "num.appt1HP",
        "cmed1HP",
        "ctreat1HP",
@@ -32,17 +36,15 @@ p <- c("attscreen", "att", "begintrt", "snqftgit", "spqftgit",
        "ctreatspec6wP",
        "cparttreat6wP",
        "cparttreatspec6wP",
-       "cmed3HP", "cmed4R", "cmed6H", "cmed9H",
-       "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
        "ctreat3HP", "cparttreat3HP", "ctreat4R", "cparttreat4R",  
        "ctreat6H", "cparttreat6H", "ctreat9H", 
        "cparttreat9H", "ctreatspec3HP", "cparttreatspec3HP", 
        "ctreatspec4R", "cparttreatspec4R", "ctreatspec6H", 
        "cparttreatspec6H", "ctreatspec9H", 
        "cparttreatspec9H", "uactivetb", "uactivetbr", 
-       "uhealthy", "ultbi3HP", "ultbipart3HP", "ultbi4R", 
-       "ultbipart4R", "ultbi6H", "ultbipart6H", 
-       "ultbi9H", "ultbipart9H", "ultbitreatsae")
+       "uhealthy", "ultbi3HP", "ultbi4R",
+       "ultbi6H", "ultbi9H", "ultbitreatsae",
+       "ultbipart3HP", "ultbipart4R", "ultbipart6H", "ultbipart9H")
 params <- data.frame(p)
 params <- as.data.table(p)
 params[, mid := 0]
@@ -393,57 +395,33 @@ params[p == "sptst10", mid := 0.89119] # 0.82227
 params[p == "sptst10", low := 0.8868] # 0.81780
 params[p == "sptst10", high := 0.8957] # 0.82686
 
-params[p == "treat.complete.3HP", mid := 0.764]
-params[p == "treat.complete.3HP", low := 0.740]
-params[p == "treat.complete.3HP", high := 0.90]
+params[p == "treat.effic.3HP", mid := 0.69] # IUAT
+params[p == "treat.effic.3HP", low := 0.27] # Zenner
+params[p == "treat.effic.3HP", high := 0.82] # Zenner
+params[p == "treat.complete.3HP", mid := 0.764] # Belknap
+params[p == "treat.complete.3HP", low := 0.740] # Belknap
+params[p == "treat.complete.3HP", high := 0.900] # Denholm
 
-params[p == "treat.complete.4R", mid := 0.852]
-params[p == "treat.complete.4R", low := 0.60]
-params[p == "treat.complete.4R", high := 0.872]
+params[p == "treat.effic.4R", mid := 0.69] # IUAT
+params[p == "treat.effic.4R", low := 0.43] # Zenner
+params[p == "treat.effic.4R", high := 0.89] # Zenner
+params[p == "treat.complete.4R", mid := 0.852] # Belknap
+params[p == "treat.complete.4R", low := 0.6] # Belknap
+params[p == "treat.complete.4R", high := 0.872] # Denholm
 
-params[p == "treat.complete.6H", mid := 0.780]
-params[p == "treat.complete.6H", low := 0.441]
-params[p == "treat.complete.6H", high := 0.850]
+params[p == "treat.effic.6H", mid := 0.69] # IUAT
+params[p == "treat.effic.6H", low := 0.4] # Zenner
+params[p == "treat.effic.6H", high := 0.74] # Zenner
+params[p == "treat.complete.6H", mid := 0.78] # Belknap
+params[p == "treat.complete.6H", low := 0.441] # Belknap
+params[p == "treat.complete.6H", high := 0.85] # Denholm
 
-params[p == "treat.complete.9H", mid := 0.730]
-params[p == "treat.complete.9H", low := 0.400]
-params[p == "treat.complete.9H", high := 0.850]
-
-params[p == "treatr3HP", mid := 0.543]
-params[p == "treatr3HP", low := 0.221]
-params[p == "treatr3HP", high := 0.749]
-
-params[p == "treatr3HP", low.treat.complete := 0.539]
-params[p == "treatr3HP", high.treat.complete := 0.632]
-params[p == "treatr3HP", low.treat.eff := 0.218]
-params[p == "treatr3HP", high.treat.eff := 0.643]
-
-params[p == "treatr4R", mid := 0.604]
-params[p == "treatr4R", low := 0.301]
-params[p == "treatr4R", high := 0.79]
-
-params[p == "treatr4R", low.treat.complete := 0.458]
-params[p == "treatr4R", high.treat.complete := 0.616]
-params[p == "treatr4R", low.treat.eff := 0.3826]
-params[p == "treatr4R", high.treat.eff := 0.774]
-
-params[p == "treatr6H", mid := 0.557]
-params[p == "treatr6H", low := 0.224]
-params[p == "treatr6H", high := 0.642]
-
-params[p == "treatr6H", low.treat.complete := 0.352]
-params[p == "treatr6H", high.treat.complete := 0.599]
-params[p == "treatr6H", low.treat.eff := 0.331]
-params[p == "treatr6H", high.treat.eff := 0.596]
-
-params[p == "treatr9H", mid := 0.561]
-params[p == "treatr9H", low := 0.248]
-params[p == "treatr9H", high := 0.812]
-
-params[p == "treatr9H", low.treat.complete := 0.402]
-params[p == "treatr9H", high.treat.complete := 0.618]
-params[p == "treatr9H", low.treat.eff := 0.332]
-params[p == "treatr9H", high.treat.eff := 0.718]
+params[p == "treat.effic.9H", mid := 0.69] # IUAT
+params[p == "treat.effic.9H", low := 0.4] # Zenner
+params[p == "treat.effic.9H", high := 0.93] # Zenner
+params[p == "treat.complete.9H", mid := 0.73] # Belknap
+params[p == "treat.complete.9H", low := 0.4] # Belknap
+params[p == "treat.complete.9H", high := 0.85] # Denholm
 
 params[p == "ttt3HP", mid := 0.292]
 params[p == "ttt3HP", low := 0.028]
