@@ -12,9 +12,6 @@ CreateStates <- function(state.names) {
 
 # Creates a master migrant population table
 CreatePopulationMaster <- function(Modify = FALSE) {
-  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-  aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
-  aust <- as.data.table(aust)
   # Create a pop.master table merging census (2006,2011, 2016) and ABS projection data.
   # It must be a long format table with the following structure.
   #

@@ -576,9 +576,9 @@ params[p == "ultbitreatsae", mid := 0.8525000]
 params[p == "ultbitreatsae", low := 0.8420833]
 params[p == "ultbitreatsae", high := 0.8629167]
 
-params[p == "saemr", mid := 0.000813]
+params[p == "saemr", mid := 0.066666667]
 params[p == "saemr", low := 0]
-params[p == "saemr", high := 0.0316]
+params[p == "saemr", high := 0.105]
 
 # Write the table to clipboard so I can 
 # paste it into my Excel spreadsheet

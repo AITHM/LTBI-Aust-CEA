@@ -71,9 +71,8 @@ tabfunc <- function(dt) {
   migflow <- dt[YEAR == start.year & YARP == start.year, sum(NUMP),]
   
   # percentage with LTBI
-  cdt <- targetfunc(dt)
-  cdt <- as.data.table(cdt)
-  percentltbi <- (cdt[YEAR == start.year & YARP == start.year, sum(LTBP),]/cdt[YEAR == start.year & YARP == start.year, sum(NUMP),]) * 100
+  percentltbi <- (dt[YEAR == start.year & YARP == start.year,
+                      sum(LTBP),]/dt[YEAR == start.year & YARP == start.year, sum(NUMP),]) * 100
   
   # annual average number emigrating
   emigflow <- dt[YEAR == final.year, sum(p.emigrate)]/totalcycles
