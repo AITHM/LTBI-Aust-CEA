@@ -136,7 +136,7 @@ for(target.x in 1:nrow(target.dt)) {
       finalinflow <- 29
     }
   
-  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI") 
   # Run the data prep
   source("CB-TLTBI_DataPreparation.R")
   

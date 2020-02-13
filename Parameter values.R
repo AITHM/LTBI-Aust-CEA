@@ -19,16 +19,16 @@ params <- as.data.table(params)
 # It replaces the "mid" value in the dataframe with a 
 # low or high value depending on what is specified.
 
-# sensfunc <- function(paramname, loworhigh) {
-#   paramname <- deparse(substitute(paramname))
-#   colname <- deparse(substitute(loworhigh))
-#   newvalue <- params[p == paramname, ..colname]
-#   params[p == paramname, mid:= newvalue]
-# }
+sensfunc <- function(paramname, loworhigh) {
+  paramname <- deparse(substitute(paramname))
+  colname <- deparse(substitute(loworhigh))
+  newvalue <- params[p == paramname, ..colname]
+  params[p == paramname, mid:= newvalue]
+}
 #################################################################################################
  
 # sensfunc(attscreen, low)
-
+# params[p == "ctb", mid := 19807.19] # 22298.82
 # params[p == "attscreen", mid := 1]
 
 # params[p == "treatr4R", mid := 1]
@@ -50,14 +50,15 @@ params <- as.data.table(params)
 # sensfunc(ultbipart9H, low)
 
 
-# # # the perfect world - figure 8
+# # the perfect world - figure 8
 # params[p == "attscreen", mid := 1]
-# params[p == "treatr4R", mid := 1]
+# params[p == "treat.effic.4R", mid := 1]
+# params[p == "treat.complete.4R", mid := 1]
 # params[p == "sntst10", mid := 1]
 # params[p == "sptst10", mid := 1]
+# params[p == "sntst15", mid := 1]
+# params[p == "sptst15", mid := 1]
 # params[p == "att", mid := 1]
-# params[p == "attscreen", mid := 1]
-# params[p == "begintrt", mid := 1]
 # params[p == "begintrt", mid := 1]
 
 #################################################################################################
@@ -67,14 +68,14 @@ params <- as.data.table(params)
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  #(ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
   (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
     # 40+
     # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
-    # Adjust age
+    # Adjust age at arrival
     (ifelse(DT[, AGERP] > 10, 1, 0) &
        ifelse(DT[, AGERP] < 66, 1, 0))
   
@@ -90,7 +91,7 @@ targetfunc <- function(DT) {
   DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
-  # Adjust age
+  # Adjust age at arrival
   DT <- subset(DT, AGERP > 10 &
                  AGERP < 66)
   DT
@@ -275,6 +276,10 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   # To lookup all ages beyond 110
   DT[AGEP > 100, AGEP := 100]
   
+  # Knocking everyone off at 80 years of age
+  # vic.mortality[Age > 79, Prob := 0.5]
+  
+  
   vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
   
 }
@@ -300,13 +305,15 @@ Get.TBMR <- function(xDT, year) {
 # Look up SAE rate from sae.rate (age and treatment dependent)
 Get.SAE <- function(xDT, treat) {
   
-  DT <- copy(xDT[, .(AGERP)])
+  DT <- copy(xDT[, .(AGEP)])
   
-  DT[AGERP > 110, AGERP := 110]
+  DT[AGEP > 110, AGEP := 110]
   
   DT$treatment <- as.character(treat)
   
-  sae.rate[DT[, .(AGERP, treatment)], Rate, on = .(Age = AGERP, treatment = treatment)]
+  sae.rate[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
+  # sae.rate[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
+  # sae.rate[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
   
 }
 
@@ -320,13 +327,16 @@ emigrate.rate <- as.data.table(emigrate.rate)
 # Emigrate rate from emigrate.rate (age dependent)
 Get.EMIGRATE <- function(xDT, year) {
 
-  DT <- copy(xDT[, .(year, AGERP, YARP)])
+  DT <- copy(xDT[, .(year, AGEP, YARP)])
 
-  DT[AGERP > 110, AGERP := 110]
+  DT[AGEP > 110, AGEP := 110]
+  
+  # Knocking everyone off at 80 years of age
+  # emigrate.rate[Age > 79, Rate := 0.5]
 
-  emigrate.rate[DT[, .(AGERP)], Rate, on = .(Age = AGERP)] # use this one for a 11.72% perm rates
-  # emigrate.rate[DT[, .(AGERP)], lower, on = .(Age = AGERP)]
-  # emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)] # use this one for a 14.76% perm rates
+  emigrate.rate[DT[, .(AGEP)], Rate, on = .(Age = AGEP)] # use this one for a 11.72% perm rates
+  # emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]
+  # emigrate.rate[DT[, .(AGEP)], upper, on = .(Age = AGEP)] # use this one for a 14.76% perm rates
 
 }
 

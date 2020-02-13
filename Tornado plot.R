@@ -154,7 +154,7 @@ myplot1<-
   scale_y_continuous(position = "bottom", 
                      breaks = seq(0, 5000000, 100000),
                      labels = comma) +
-  coord_flip(ylim = c(0, 800000))+
+  coord_flip(ylim = c(0, 875000))+
   theme(text = element_text(size = 12),
         legend.position = c(0.75, 0.2))
 

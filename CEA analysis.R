@@ -170,10 +170,18 @@ tabfunc <- function(dt) {
   tbdeathprev <- basetbdeath - tbdeath
   
   #Cost per TB death prevented
-  costpertbdeath <- totaddcost/tbdeathprev
+  if (totaddcost < 0) {
+    costpertbdeath <- "cost saving"
+  } else {
+    costpertbdeath <- totaddcost/tbdeathprev
+  }
   
   #Cost per TB case prevented
-  costpertb <- totaddcost/tbprev
+  if (totaddcost < 0) {
+    costpertb <- "cost saving"
+  } else {
+    costpertb <- totaddcost/tbprev
+  }
   
   # number needed to screen (to prevent a tb case)
   nns <- totscreen/tbprev
@@ -183,9 +191,6 @@ tabfunc <- function(dt) {
   
   # number needed to at least start treat (to prevent a tb case)
   nnbt <- numberstarttreat/tbprev
-  
-  
-  
   
   # number of SAEs among those with ltbi
   saeltbi <- dt[YEAR == YARP + 1, sum(p.ltbi.sae)]
@@ -215,7 +220,20 @@ tabfunc <- function(dt) {
   incremqaly <- qalytot - qalybase
   
   # Cost per QALY - ICER
-  costperqaly <- totaddcost/incremqaly
+  
+  if (totaddcost < 0 & incremqaly > 0) {
+    
+    costperqaly <- "cost saving"
+    
+  } else if(totaddcost > 0 & incremqaly < 0) {
+    
+    costperqaly <- "dominated"
+    
+  } else {
+    
+    costperqaly <- totaddcost/incremqaly
+    
+  }
   
   tablist<-list(nameofdt,
                 migflow,
@@ -409,7 +427,7 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # 
 # 
 # # Write the table to clipboard so I can paste it into Excel
-# write.table(params, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
 # options(scipen = 999)
 
 

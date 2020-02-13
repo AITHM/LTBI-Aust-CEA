@@ -79,18 +79,18 @@ myplot1 <-
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.5, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.5, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.7, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.7, size = textsize, 
-  #           colour = "black") +
+  geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
+            hjust = -0.03, vjust = 1.5, size = geomtextsize,
+            colour = "black") +
+  geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
+            hjust = 1, vjust = 1.5, size = geomtextsize,
+            colour = "black") +
+  geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
+            hjust = -0.03, vjust = -0.7, size = geomtextsize,
+            colour = "black") +
+  geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
+            hjust = 1, vjust = -0.7, size = geomtextsize,
+            colour = "black") +
   scale_y_continuous(breaks = seq(-200000/1000, 1000000/1000, 200000/1000),
                      label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
@@ -99,10 +99,21 @@ myplot1 <-
                   ylim = c(-240000/1000, 1200000/1000)) +
   theme(text = element_text(size = textsize),
         # axis.title.x = element_blank(),
-        legend.position = "none",
+        #legend.position = "none",
         panel.border = element_blank())
 #legend.position = c(0.80, 0.8),
 #axis.text.x = element_text(angle=45, hjust=1),
+
+
+
+
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
+tiff('ceaplaneagetalk.tiff', units = "in", width = 15, height = 7,
+     res = 200)
+myplot1
+dev.off()
+
+
 
 # Reading in the data without emigration
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")

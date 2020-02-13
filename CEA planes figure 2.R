@@ -5,7 +5,7 @@
 # The files CB-TLTBI.R and CEA analyses need to be run to create the output, which was then added into
 # csv spreadsheets of various names, which are read in below
 
-library(xlsx)
+
 library(data.table)
 library(ggplot2)
 library(RColorBrewer)
@@ -17,7 +17,7 @@ library(gridExtra)
 # Need to obtain chance of having sae with different treatment regimens.
 # I have researched this and it is in an excel file in "Model parameters"
 
-# Save the output to file
+# Load data
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
 data <- readRDS("cea.plane.2.rds")
 data <- as.data.table(data)
@@ -172,7 +172,19 @@ myplot4 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  annotate("text", x = -250, y = 6.5, 
+  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
+  #         hjust = -0.03, vjust = 1.2, size = textsize,
+  #         colour = "black") +
+  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
+  #         hjust = 1, vjust = 1.2, size = textsize,
+  #         colour = "black") +
+  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
+  #         hjust = -0.03, vjust = -0.2, size = textsize,
+  #         colour = "black") +
+  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
+  #         hjust = 1, vjust = -0.2, size = textsize,
+  #         colour = "black") +
+  annotate("text", x = -250, y = 6.5,
            label = "Applying health utility values for those on\nLTBI treatment from Bauer et al 2015") +
   scale_shape_manual(values = c(19,
                                 24, 24, 24, 24,
@@ -185,13 +197,19 @@ myplot4 <-
 scale_y_continuous(breaks = seq(-10, 250, 1)) +
   scale_x_continuous(breaks = seq(-500, 1000, 100)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-600, 5), ylim = c(ylimmin, ylimmax)) +
+  coord_cartesian(xlim = c(-600, 100), ylim = c(ylimmin, ylimmax)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
-        axis.title.y = element_blank(),
-        legend.position = "none")
+        legend.position = "none",
+        axis.title.y = element_blank())
 #legend.position = c(0.80, 0.8),
 #axis.text.x = element_text(angle=45, hjust=1),
+
+# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
+# tiff('ceaplaneultbi.tiff', units = "in", width = 8, height = 4,
+#      res = 200)
+# myplot4
+# dev.off()
 
 
 myplot5 <-

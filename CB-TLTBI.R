@@ -319,9 +319,9 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
  
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+#pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
-# factor <-  1755.166 # 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
+# factor <-  85.706 # 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 
 # pop.master[, NUMP := NUMP/factor]
 # pop.master[, LTBP := LTBP/factor]

@@ -56,13 +56,13 @@ simdata <- as.data.table(simdata)
 # Define all the parameters which we aren't varying:
 discount <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 start.year <- 2020 # start.year
-totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 80  # cycles ... The mortality data continues until 2100 and migrant 
 cycles <- totalcycles 
 # inflows are possible until 2050
 final.year <- start.year + totalcycles
 
 # The tests and treatments I want to consider in this analysis
-testlist <- c("TST10") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+testlist <- c("TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # The number of migrants I want to include in each inflow
@@ -757,16 +757,16 @@ emigrate.rate <- as.data.table(emigrate.rate)
 
 Get.EMIGRATE <- function(xDT, year) {
   
-  DT <- copy(xDT[, .(year, AGERP, YARP)])
+  DT <- copy(xDT[, .(year, AGEP, YARP)])
   
   DT[AGERP > 110, AGERP := 110]
   
-  mid <- emigrate.rate[DT[, .(AGERP)], 
-                       Rate, on = .(Age = AGERP)]
-  low <- emigrate.rate[DT[, .(AGERP)],
-                       lower, on = .(Age = AGERP)]
-  high <- emigrate.rate[DT[, .(AGERP)],
-                        upper, on = .(Age = AGERP)]
+  mid <- emigrate.rate[DT[, .(AGEP)], 
+                       Rate, on = .(Age = AGEP)]
+  low <- emigrate.rate[DT[, .(AGEP)],
+                       lower, on = .(Age = AGEP)]
+  high <- emigrate.rate[DT[, .(AGEP)],
+                        upper, on = .(Age = AGEP)]
   set.seed(set.seed.number[simnumber])
   rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
@@ -815,18 +815,18 @@ Get.TBMR <- function(xDT, year) {
 # Look up SAE rate from sae.rate (age and treatment dependent)
 Get.SAE <- function(xDT, treat) {
   
-  DT <- copy(xDT[, .(AGERP)])
+  DT <- copy(xDT[, .(AGEP)])
   
-  DT[AGERP > 110, AGERP := 110]
+  DT[AGEP > 110, AGEP := 110]
   
   DT$treatment <- as.character(treat)
   
-  mid <- sae.rate[DT[, .(AGERP, treatment)], 
-                  Rate, on = .(Age = AGERP, treatment = treatment)]
-  low <- sae.rate[DT[, .(AGERP, treatment)],
-                  low, on = .(Age = AGERP, treatment = treatment)]
-  high <- sae.rate[DT[, .(AGERP, treatment)],
-                   high, on = .(Age = AGERP, treatment = treatment)]
+  mid <- sae.rate[DT[, .(AGEP, treatment)], 
+                  Rate, on = .(Age = AGEP, treatment = treatment)]
+  low <- sae.rate[DT[, .(AGEP, treatment)],
+                  low, on = .(Age = AGEP, treatment = treatment)]
+  high <- sae.rate[DT[, .(AGEP, treatment)],
+                   high, on = .(Age = AGEP, treatment = treatment)]
   set.seed(set.seed.number[simnumber])
   rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
@@ -1326,14 +1326,14 @@ plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer > WTP, wtp.colour :=
 
 # Save this table to file
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
-saveRDS(simdata, "onshore mid.rds")
+saveRDS(simdata, "offshore mid.rds")
 
 # # Read back in simdata 
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
 # simdata <- readRDS("simdata.rds")
 
-ylimmin <- -2
-ylimmax <- 8
+ylimmin <- -6
+ylimmax <- 5
 xlimmin <- -200
 xlimmax <- 100
 
@@ -1408,7 +1408,7 @@ myplot1 <-
 
 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-tiff('acceptability onshore mid.tiff',
+tiff('acceptability offshore mid.tiff',
      units = "in", width = 15, height = 12,
      res = 200)
 myplot1

@@ -59,10 +59,10 @@ PROPTREATED <- TESTSN * ATTEND * BEGINTREAT * TREATR
 a <- (1 - POP) * (1 - (RR * RRADJUST))
                   
 # p.ltbi to p.tb transition 
-# Explanation: if we assume the attenuated reactivation rate is 0.9, but 0.2 are treated (i.e. PROPTREATED) 
-# the react rate is then attenuated again to 0.72, i.e. 0.9 * (1 - 0.2). 
-# but because those 0.2 who are treated don't receive their treatment for 4 months 
-# (i.e. until a third of the way through the year, 0.3) they still have a risk of reactivation 
+# Explanation: if we assume the attenuated reactivation rate is 0.9, but 0.2 are treated (i.e. PROPTREATED)
+# the react rate is then attenuated again to 0.72, i.e. 0.9 * (1 - 0.2).
+# but because those 0.2 who are treated don't receive their treatment for 4 months
+# (i.e. until a third of the way through the year, 0.3) they still have a risk of reactivation
 # of 0.3 (timetotreat), so reducing the reactivation rate by 0.2 is too much.
 # 0.2 must be multiplied by 1 - timetotreat, i.e. the time they are protected for: 0.2 * (1 - 0.3) = 0.14
 # 0.9 * (1 - 0.14) = 0.774
@@ -166,3 +166,40 @@ g <- param$POP * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$SAE
 h <- param$POP * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR
 
 a + b + c + e + f + g + h
+
+
+
+
+
+POP <- 1
+ATTENDSCREEN <- 1
+RRADJUST <- 0.7443366
+RR <- 0.00843
+TESTSN <- 0.6923
+ATTEND <- 0.684
+BEGINTREAT <- 0.596
+
+treat.effic <- 0.69
+treat.complete <- 0.852
+
+TIMETOTREAT <-  0.292
+
+toTB <- ((1 - (POP * ATTENDSCREEN)) * RR * RRADJUST) + 
+  ((POP * ATTENDSCREEN) * RR * RRADJUST * (1 - ((TESTSN * ATTEND * BEGINTREAT * TREATR) * (1 - TIMETOTREAT))))
+
+
+1 - ((TESTSN * ATTEND * BEGINTREAT * TREATR) * (1 - TIMETOTREAT))
+
+
+nf <- (POP * ATTENDSCREEN) * (1 - (TESTSN * ATTEND) - (RR * RRADJUST * (1 - ((TESTSN * ATTEND * BEGINTREAT * TREATR) * (1 - TIMETOTREAT)))))
+
+
+RR * RRADJUST * LTBI
+
+
+
+LTBI <- 717.74795758036
+
+toTB * LTBI
+
+nf * LTBI

@@ -47,8 +47,9 @@ tornado.dt[, icer := NA]
 tornado.dt[, icer := as.numeric(icer)]
 pselect<- c("sntst15","sptst15",
             "sntst10","sptst10",
-            "treatr4R","cmed4R",
-            "cparttreat4R","ttt4R",
+            "treat.complete.4R",
+            "treat.effic.4R",
+            "cmed4R", "ttt4R",
             "ctb","att",
             "begintrt","saemr",
             "uactivetbr","uactivetb",
@@ -59,24 +60,21 @@ tornado.dt <- tornado.dt[tornado.dt$p %in% pselect,]
 tornado.dt <- melt(tornado.dt, id = c("p", "icer"))
 tornado.dt <- subset(tornado.dt, !is.na(value))
 # Adding some other variables
-tornado.dt <- rbindlist(list(tornado.dt,  data.table(p = "disc", 
-                                                     icer = NA, 
-                                                     variable = "low", 
-                                                     value = 0.00)))
-tornado.dt <- rbindlist(list(tornado.dt,  data.table(p = "disc", 
-                                                     icer = NA, 
-                                                     variable = "high", 
-                                                     value = 0.05)))
-tornado.dt <- rbindlist(list(tornado.dt,  data.table(p = "totalcycles", 
-                                                     icer = NA, 
-                                                     variable = "low", 
-                                                     value = 10)))
-tornado.dt <- rbindlist(list(tornado.dt,  data.table(p = "totalcycles", 
-                                                     icer = NA, 
-                                                     variable = "high", 
-                                                     value = 80)))
-
-# tornado.dt <- tornado.dt[6:8, ]
+p <- c("rradj", "ltbi.react", "sae", "tbmr",
+       "disc", "totalcycles", "base")
+variable <- c("low", "high")
+newparams <- expand.grid(p, variable)
+setnames(newparams, "Var1", "p")
+setnames(newparams, "Var2", "variable")
+newparams <- as.data.table(newparams)
+newparams[, icer := 0]
+newparams[, value := 0]
+newparams[p == "disc" & variable == "low", value := 0]
+newparams[p == "disc" & variable == "high", value := 0.05]
+newparams[p == "totalcycles" & variable == "low", value := 10]
+newparams[p == "totalcycles" & variable == "high", value := 80]
+tornado.dt <- rbind(tornado.dt, newparams)
+tornado.dt[, p := as.character(p)]
 
 
 # The following loops down the rows of the table
@@ -90,7 +88,145 @@ for(tornado.x in 1:nrow(tornado.dt)) {
   source("Parameter values.R")
   paraname <- tornado.dt[tornado.x, p]
   limit <- tornado.dt[tornado.x, value]
+  highlow <- tornado.dt[tornado.x, variable]
   assign(paraname, limit)
+  
+  
+  if (paraname == "tbmr" & highlow == "low") {
+    # Look up TB mortality rate
+    Get.TBMR <- function(xDT, year) {
+      
+      DT <- copy(xDT[, .(AGEP, SEXP)])
+      
+      # To lookup all ages beyond 95 & 97
+      DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
+      DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
+      DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
+      
+      vic.tb.mortality[DT[, .(AGEP, SEXP)], lowerProb, on = .(age = AGEP, sex = SEXP)]
+    }
+      
+  } else if (paraname == "tbmr" & highlow == "high") {
+    # Look up TB mortality rate
+    Get.TBMR <- function(xDT, year) {
+      
+      DT <- copy(xDT[, .(AGEP, SEXP)])
+      
+      # To lookup all ages beyond 95 & 97
+      DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
+      DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
+      DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
+      
+      vic.tb.mortality[DT[, .(AGEP, SEXP)], upperProb, on = .(age = AGEP, sex = SEXP)]
+    }
+      
+   } else if (paraname == "rradj" & highlow == "low") {
+    
+    # Reactivation rate adjustment for existing TB control
+    Get.RRADJ <- function(xDT, year) {
+      
+      DT <- copy(xDT[, .(year, AGERP, YARP)])
+      
+      DT[AGERP > 110, AGERP := 110]
+
+      rradjrates[DT[, .(AGERP, ST = year - YARP)], lower, on = .(aaa = AGERP, ysa = ST)]
+    }
+      
+    } else if (paraname == "rradj" & highlow == "high") {
+    
+    # Reactivation rate adjustment for existing TB control
+    Get.RRADJ <- function(xDT, year) {
+      
+      DT <- copy(xDT[, .(year, AGERP, YARP)])
+      
+      DT[AGERP > 110, AGERP := 110]
+      
+      rradjrates[DT[, .(AGERP, ST = year - YARP)], upper, on = .(aaa = AGERP, ysa = ST)]
+    }
+    
+    } else if (paraname == "sae" & highlow == "low") {
+      # Look up SAE rate from sae.rate (age and treatment dependent)
+      Get.SAE <- function(xDT, treat) {
+        
+        DT <- copy(xDT[, .(AGERP)])
+        
+        DT[AGERP > 110, AGERP := 110]
+        
+        DT$treatment <- as.character(treat)
+        
+        sae.rate[DT[, .(AGERP, treatment)], low, on = .(Age = AGERP, treatment = treatment)]
+      }
+      
+    } else if (paraname == "sae" & highlow == "high") {
+      # Look up SAE rate from sae.rate (age and treatment dependent)
+      Get.SAE <- function(xDT, treat) {
+        
+        DT <- copy(xDT[, .(AGERP)])
+        
+        DT[AGERP > 110, AGERP := 110]
+        
+        DT$treatment <- as.character(treat)
+        
+        sae.rate[DT[, .(AGERP, treatment)], high, on = .(Age = AGERP, treatment = treatment)]
+      }
+      
+    } else if (paraname == "ltbi.react" & highlow == "low") {
+      setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+      aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
+      aust <- as.data.table(aust)
+      # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
+    aust[, LTBP := NULL]
+    setnames(aust, "tfnum", "LTBP")
+    
+    # Reactivation rates
+    Get.RR <- function(xDT, year) {
+      
+      DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+      
+      DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
+      
+      DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]  
+      
+      DT[AGERP > 110, AGERP := 110]
+      
+      # assuming a lower LTBI prevalence and a higher rate of reactivation
+      RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                        ysa = ST, cobi = COBI)]
+    }
+
+    } else if (paraname == "ltbi.react" & highlow == "high") {
+      setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+      aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
+      aust <- as.data.table(aust)
+    
+    # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
+    aust[, LTBP := NULL]
+    setnames(aust, "sfnum", "LTBP")
+    
+    # Reactivation rates
+    Get.RR <- function(xDT, year) {
+      
+      DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+      
+      DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
+      
+      DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]  
+      
+      DT[AGERP > 110, AGERP := 110]
+    
+      # assuming a higher prevalence of LTBI and a lower rate of reactivation
+      RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                       ysa = ST, cobi = COBI)]
+    }
+    
+    } else if (paraname == "base") {
+ 
+    } else {
+      
+    }
+  
+  
+  
   # Adjusting the partial LTBI treatment utilities so 
   # they are dependent on the value of
   # the sampled utility for full treatment
@@ -276,7 +412,7 @@ for(tornado.x in 1:nrow(tornado.dt)) {
 
 }
 
-
+tornado.dt <- tornado.dt[order(variable),]
 
 # Write the table to clipboard so I can paste it into Excel
 write.table(tornado.dt, "clipboard", sep = "\t", row.names = FALSE)

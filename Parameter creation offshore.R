@@ -331,7 +331,7 @@ params[p == "cparttreatspec9H",
 
 
 # Cost of active TB
-params[p == "ctb", mid := 12550.52] 
+params[p == "ctb", mid := 19807.19] 
 params[p == "ctb", low := 6330.73] 
 params[p == "ctb", high := 185047.81] #18491.84
 params[p == "ctb", shape := 40]

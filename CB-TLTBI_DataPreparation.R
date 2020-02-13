@@ -15,7 +15,7 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   # Create a pop.master table merging census (2006,2011, 2016) and ABS projection data.
   # It must be a long format table with the following structure.
   #
-  # Sex of person (SEXP), Age at census (AGEP), Year of arrival (YARP),
+  # Sex of person (SEXP), Age (AGEP), Year of arrival (YARP),
   # Birth place of person (ISO3), local government area (LGA),
   # Number of persons	(NUMP)
   #__________________________________________________
