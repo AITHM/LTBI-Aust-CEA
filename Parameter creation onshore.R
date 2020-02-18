@@ -396,28 +396,28 @@ params[p == "sptst10", low := 0.8868] # 0.81780
 params[p == "sptst10", high := 0.8957] # 0.82686
 
 params[p == "treat.effic.3HP", mid := 0.69] # IUAT
-params[p == "treat.effic.3HP", low := 0.27] # Zenner
+params[p == "treat.effic.3HP", low := 0.28] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
 params[p == "treat.effic.3HP", high := 0.82] # Zenner
 params[p == "treat.complete.3HP", mid := 0.764] # Belknap
 params[p == "treat.complete.3HP", low := 0.740] # Belknap
 params[p == "treat.complete.3HP", high := 0.900] # Denholm
 
 params[p == "treat.effic.4R", mid := 0.69] # IUAT
-params[p == "treat.effic.4R", low := 0.43] # Zenner
-params[p == "treat.effic.4R", high := 0.89] # Zenner
+params[p == "treat.effic.4R", low := 0.50] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
+params[p == "treat.effic.4R", high := 0.88] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
 params[p == "treat.complete.4R", mid := 0.852] # Belknap
-params[p == "treat.complete.4R", low := 0.6] # Belknap
+params[p == "treat.complete.4R", low := 0.535] # Roland
 params[p == "treat.complete.4R", high := 0.872] # Denholm
 
 params[p == "treat.effic.6H", mid := 0.69] # IUAT
-params[p == "treat.effic.6H", low := 0.4] # Zenner
+params[p == "treat.effic.6H", low := 0.41] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
 params[p == "treat.effic.6H", high := 0.74] # Zenner
 params[p == "treat.complete.6H", mid := 0.78] # Belknap
 params[p == "treat.complete.6H", low := 0.441] # Belknap
 params[p == "treat.complete.6H", high := 0.85] # Denholm
 
 params[p == "treat.effic.9H", mid := 0.69] # IUAT
-params[p == "treat.effic.9H", low := 0.4] # Zenner
+params[p == "treat.effic.9H", low := 0.41] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
 params[p == "treat.effic.9H", high := 0.93] # Zenner
 params[p == "treat.complete.9H", mid := 0.73] # Belknap
 params[p == "treat.complete.9H", low := 0.4] # Belknap

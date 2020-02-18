@@ -31,7 +31,7 @@ sensfunc <- function(paramname, loworhigh) {
 # params[p == "ctb", mid := 19807.19] # 22298.82
 # params[p == "attscreen", mid := 1]
 
-# params[p == "treatr4R", mid := 1]
+# params[p == "saemr", mid := 0]
 
 # # alter treatr values, i.e. treatment completion and treatment efficacy separately
 # sensfunc(treatr4R, low.treat.complete)
@@ -49,17 +49,22 @@ sensfunc <- function(paramname, loworhigh) {
 # sensfunc(ultbi9H, low)
 # sensfunc(ultbipart9H, low)
 
-
-# # the perfect world - figure 8
+# # # the perfect cascade - figure 8
 # params[p == "attscreen", mid := 1]
-# params[p == "treat.effic.4R", mid := 1]
 # params[p == "treat.complete.4R", mid := 1]
+# params[p == "att", mid := 1]
+# params[p == "begintrt", mid := 1]
+
+# # the perfect everything - figure 8
+# params[p == "attscreen", mid := 1]
+# params[p == "treat.complete.4R", mid := 1]
+# params[p == "att", mid := 1]
+# params[p == "begintrt", mid := 1]
 # params[p == "sntst10", mid := 1]
 # params[p == "sptst10", mid := 1]
 # params[p == "sntst15", mid := 1]
 # params[p == "sptst15", mid := 1]
-# params[p == "att", mid := 1]
-# params[p == "begintrt", mid := 1]
+# params[p == "treat.effic.4R", mid := 1]
 
 #################################################################################################
 
@@ -101,7 +106,10 @@ targetfunc <- function(DT) {
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
 start.year <- startyear
-totalcycles <- 30  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 80  # cycles ... The mortality data continues until 2100 and migrant 
+
+kill.off.above <- 100 # age above which all enter death state
+
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
 final.year <- finalyear
@@ -219,7 +227,7 @@ aust <- as.data.table(aust)
 # Reactivation rates
 Get.RR <- function(xDT, year) {
   
-  DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+  DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
   
   DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
   
@@ -227,18 +235,28 @@ Get.RR <- function(xDT, year) {
   
   DT[AGERP > 110, AGERP := 110]
   
-  # Baseline reactivation rates
-  RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
-                                                                    ysa = ST, cobi = COBI)]
-  
-  
-  # # assuming a lower LTBI prevalence and a higher rate of reactivation
-  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                   ysa = ST, cobi = COBI)]
-  
-  # # assuming a higher prevalence of LTBI and a lower rate of reactivation
-  # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                  ysa = ST, cobi = COBI)]
+  # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
+
+  if (DT[1, AGEP] > kill.off.above) {
+
+    0
+
+  } else {
+   
+    # Baseline reactivation rates
+    RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
+                                                                      ysa = ST, cobi = COBI)]
+    
+    
+    # # assuming a lower LTBI prevalence and a higher rate of reactivation
+    # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+    #                                                                   ysa = ST, cobi = COBI)]
+    
+    # # assuming a higher prevalence of LTBI and a lower rate of reactivation
+    # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+    #                                                                  ysa = ST, cobi = COBI)]
+    
+  }
   
 }
 
@@ -246,7 +264,7 @@ Get.RR <- function(xDT, year) {
 # Reactivation rate adjustment for existing TB control
 Get.RRADJ <- function(xDT, year) {
   
-  DT <- copy(xDT[, .(year, AGERP, YARP)])
+  DT <- copy(xDT[, .(year, AGERP, YARP, AGEP)])
   
   DT[AGERP > 110, AGERP := 110]
   
@@ -274,11 +292,10 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   DT <- copy(xDT[, .(AGEP, SEXP)])
   
   # To lookup all ages beyond 110
-  DT[AGEP > 100, AGEP := 100]
+  DT[AGEP > 110, AGEP := 110]
   
-  # Knocking everyone off at 80 years of age
-  # vic.mortality[Age > 79, Prob := 0.5]
-  
+  # Knocking everyone off at 100 years of age
+  vic.mortality[Age > kill.off.above, Prob := 1]
   
   vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
   
@@ -293,7 +310,6 @@ Get.TBMR <- function(xDT, year) {
   DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
   DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
   DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
-  
   
   vic.tb.mortality[DT[, .(AGEP, SEXP)], Prob, on = .(age = AGEP, sex = SEXP)]
   # vic.tb.mortality[DT[, .(AGEP, SEXP)], lowerProb, on = .(age = AGEP, sex = SEXP)]
@@ -317,6 +333,24 @@ Get.SAE <- function(xDT, treat) {
   
 }
 
+# Look up SAE rate from sae.rate (age and treatment dependent)
+Get.SAEMR <- function(xDT, treat) {
+  
+  DT <- copy(xDT[, .(AGEP)])
+  
+  DT[AGEP > 110, AGEP := 110]
+  
+  DT$treatment <- as.character(treat)
+  
+  # Knocking everyone off at 100 years of age
+  sae.mortality[Age > kill.off.above, Rate := 0]
+  
+  sae.mortality[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
+  # sae.mortality[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
+  # sae.mortality[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
+  
+}
+
 # Emigrate rate from emigrate.rate (zero)
 # Source emigrate data
 emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
@@ -332,7 +366,7 @@ Get.EMIGRATE <- function(xDT, year) {
   DT[AGEP > 110, AGEP := 110]
   
   # Knocking everyone off at 80 years of age
-  # emigrate.rate[Age > 79, Rate := 0.5]
+  emigrate.rate[Age > kill.off.above, Rate := 0]
 
   emigrate.rate[DT[, .(AGEP)], Rate, on = .(Age = AGEP)] # use this one for a 11.72% perm rates
   # emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]

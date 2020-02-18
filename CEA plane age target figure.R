@@ -24,6 +24,14 @@ library(gridExtra)
 #                   sheetName = "CEA plane input",
 #                   startRow = 2)
 
+
+ylimupper <- 600000/1000
+ylimlower <- -600000/1000
+xlimupper <- -5
+xlimlower <- 30
+
+
+
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
 data <- readRDS("agetarget.rds")
@@ -52,7 +60,7 @@ getPalette
 textsize <- 17
 geomtextsize <- 5
 options(scipen = 5)
-dev.off()
+#dev.off()
 myplot1 <-  
   ggplot(data, aes(x = incremental.qalys, y = incremental.cost/1000,
                    fill = strategy,
@@ -79,27 +87,27 @@ myplot1 <-
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-  geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-            hjust = -0.03, vjust = 1.5, size = geomtextsize,
-            colour = "black") +
-  geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-            hjust = 1, vjust = 1.5, size = geomtextsize,
-            colour = "black") +
-  geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-            hjust = -0.03, vjust = -0.7, size = geomtextsize,
-            colour = "black") +
-  geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-            hjust = 1, vjust = -0.7, size = geomtextsize,
-            colour = "black") +
-  scale_y_continuous(breaks = seq(-200000/1000, 1000000/1000, 200000/1000),
+  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
+  #           hjust = -0.03, vjust = 1.5, size = geomtextsize,
+  #           colour = "black") +
+  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
+  #           hjust = 1, vjust = 1.5, size = geomtextsize,
+  #           colour = "black") +
+  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
+  #           hjust = -0.03, vjust = -0.7, size = geomtextsize,
+  #           colour = "black") +
+  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
+  #           hjust = 1, vjust = -0.7, size = geomtextsize,
+  #           colour = "black") +
+  scale_y_continuous(breaks = seq(-600000/1000, 1000000/1000, 200000/1000),
                      label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-12, 22), 
-                  ylim = c(-240000/1000, 1200000/1000)) +
+  coord_cartesian(xlim = c(xlimlower, xlimupper), 
+                  ylim = c(ylimlower, ylimupper)) +
   theme(text = element_text(size = textsize),
         # axis.title.x = element_blank(),
-        #legend.position = "none",
+        legend.position = "none",
         panel.border = element_blank())
 #legend.position = c(0.80, 0.8),
 #axis.text.x = element_text(angle=45, hjust=1),
@@ -141,7 +149,7 @@ getPalette<-brewer.pal(8, "Spectral")
 getPalette
 
 options(scipen = 5)
-dev.off()
+#dev.off()
 myplot2 <-  
   ggplot(data, aes(x = incremental.qalys, y = incremental.cost/1000,
                    fill = strategy,
@@ -180,12 +188,12 @@ myplot2 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #           hjust = 1, vjust = -0.7, size = textsize, 
   #           colour = "black") +
-  scale_y_continuous(breaks = seq(-200000/1000, 1000000/1000, 200000/1000),
+  scale_y_continuous(breaks = seq(-600000/1000, 600000/1000, 200000/1000),
                      label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-12, 22), 
-                  ylim = c(-240000/1000, 1200000/1000)) +
+  coord_cartesian(xlim = c(xlimlower, xlimupper), 
+                  ylim = c(ylimlower, ylimupper)) +
   theme(text = element_text(size = textsize),
         axis.title.y = element_blank(),
         #legend.position = "none",
@@ -234,12 +242,12 @@ myplot2 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #           hjust = 1, vjust = -0.7, size = textsize, 
 #           colour = "black") +
-scale_y_continuous(breaks = seq(-200000/1000, 1000000/1000, 200000/1000),
+scale_y_continuous(breaks = seq(-600000/1000, 600000/1000, 200000/1000),
                    label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-12, 22), 
-                  ylim = c(-240000/1000, 1200000/1000)) +
+  coord_cartesian(xlim = c(xlimlower, xlimupper), 
+                  ylim = c(ylimlower, ylimupper)) +
   theme(text = element_text(size = textsize),
         axis.title.y = element_blank(),
         legend.position = "none",

@@ -19,8 +19,8 @@ parameters.already.set <- 1
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-# params <- readRDS("params offshore.rds")
+# params <- readRDS("params onshore.rds")
+params <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -113,8 +113,8 @@ for(target.x in 1:nrow(target.dt)) {
 
 # Save the output to file
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-# saveRDS(results.dt, file = "Data/cea.plane.offshore.rds")
-saveRDS(results.dt, file = "Data/cea.plane.onshore.rds")
+saveRDS(results.dt, file = "Data/cea.plane.offshore.rds")
+# saveRDS(results.dt, file = "Data/cea.plane.onshore.rds")
 
 # Write the table to clipboard so I can paste it into Excel
 write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)

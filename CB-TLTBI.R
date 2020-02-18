@@ -300,7 +300,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                # follow-up and treatment process is complete. The time that they remain 
                                # at risk will be dependent on the treatment regimen (see timetotreat.dt).
                                SAE = Get.SAE(DT, treatment),
-                               SAEMR = saemr,
+                               SAEMR = Get.SAEMR(DT, treatment),
                                EMIGRATE = Get.EMIGRATE(DT, year),
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
@@ -319,9 +319,9 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
  
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-#pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+pop.master <- subset(pop.master, AGERP == 95 | AGERP == 91)
 
-# factor <-  85.706 # 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
+# factor <-  709.094374272965 # 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 
 # pop.master[, NUMP := NUMP/factor]
 # pop.master[, LTBP := LTBP/factor]
