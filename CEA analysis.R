@@ -427,7 +427,7 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # 
 # 
 # # Write the table to clipboard so I can paste it into Excel
-# write.table(base, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
 # options(scipen = 999)
 
 

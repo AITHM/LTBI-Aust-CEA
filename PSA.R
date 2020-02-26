@@ -56,7 +56,7 @@ simdata <- as.data.table(simdata)
 # Define all the parameters which we aren't varying:
 discount <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 start.year <- 2020 # start.year
-totalcycles <- 80  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 90  # cycles ... The mortality data continues until 2100 and migrant 
 cycles <- totalcycles 
 # inflows are possible until 2050
 final.year <- start.year + totalcycles
@@ -701,7 +701,7 @@ Get.TREATC <- function(S, treat) {
 # Reactivation rates
 Get.RR <- function(xDT, year) {
   
-  DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+  DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
   
   DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
   
@@ -709,17 +709,24 @@ Get.RR <- function(xDT, year) {
   
   DT[AGERP > 110, AGERP := 110]
   
-  mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
-                                                                           ysa = ST, cobi = COBI)]
+  # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
   
-  # # assuming a lower prevalence of LTBI and a higher rate of reactivation
-  # high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                          ysa = ST, cobi = COBI)]
-
-  # # assuming a higher LTBI prevalence and a lower rate of reactivation
-  # low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-  #                                                                         ysa = ST, cobi = COBI)]
-
+  ifelse(DT[, AGEP] > kill.off.above, 0,
+         
+         # Baseline reactivation rates
+         RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
+                                                                           ysa = ST, cobi = COBI)]
+         
+         
+         # # assuming a lower LTBI prevalence and a higher rate of reactivation
+         # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+         #                                                                   ysa = ST, cobi = COBI)]
+         
+         # # assuming a higher prevalence of LTBI and a lower rate of reactivation
+         # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+         #                                                                  ysa = ST, cobi = COBI)]
+  )
+  
   # set.seed(set.seed.number[simnumber])
   # rpert(1, min = low, mode = mid, max = high, shape = shape)
   # betaparam <- findbeta2(mid, low, high)
@@ -761,6 +768,9 @@ Get.EMIGRATE <- function(xDT, year) {
   
   DT[AGERP > 110, AGERP := 110]
   
+  # Knocking everyone off at 80 years of age
+  emigrate.rate[Age > kill.off.above, Rate := 0]
+  
   mid <- emigrate.rate[DT[, .(AGEP)], 
                        Rate, on = .(Age = AGEP)]
   low <- emigrate.rate[DT[, .(AGEP)],
@@ -781,6 +791,9 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   
   # To lookup all ages beyond 110
   DT[AGEP > 100, AGEP := 100]
+  
+  # Knocking everyone off at 100 years of age
+  vic.mortality[Age > kill.off.above, Prob := 1]
   
   vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
   
@@ -834,6 +847,25 @@ Get.SAE <- function(xDT, treat) {
   # return(out)
 }
 
+# Look up SAE rate from sae.rate (age and treatment dependent)
+Get.SAEMR <- function(xDT, treat) {
+  
+  DT <- copy(xDT[, .(AGEP)])
+  
+  DT[AGEP > 110, AGEP := 110]
+  
+  DT$treatment <- as.character(treat)
+  
+  # Knocking everyone off at 100 years of age
+  sae.mortality[Age > kill.off.above, Rate := 0]
+  
+  mid <- sae.mortality[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
+  low <- sae.mortality[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
+  high <- sae.mortality[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
+  set.seed(set.seed.number[simnumber])
+  rpert(1, min = low, mode = mid, max = high, shape = shape)
+  
+}
 
 
 # MODEL SET UP
@@ -962,8 +994,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                # follow-up and treatment process is complete. The time that they remain 
                                # at risk will be dependent on the treatment regimen (see timetotreat.dt).
                                SAE = Get.SAE(DT, treatment),
-                               SAEMR = saemr,
-                               # SAEMR = Get.SAEMR(DT, treatment),
+                               SAEMR = Get.SAEMR(DT, treatment),
                                EMIGRATE = Get.EMIGRATE(DT, year),
                                TESTSN = Get.TEST(S = "SN", testing),
                                TESTSP = Get.TEST(S = "SP", testing),
@@ -1044,7 +1075,6 @@ for(i in 1:Num_SIm) {
   ttt4R <- simdata[simnumber, ttt4R]
   ttt6H <- simdata[simnumber, ttt6H]
   ttt9H <- simdata[simnumber, ttt9H]
-  saemr <- simdata[simnumber, saemr]
   prop.spec <- simdata[simnumber, prop.spec]
   uactivetb <- simdata[simnumber, uactivetb]
   uactivetbr <- simdata[simnumber, uactivetbr]

@@ -47,8 +47,8 @@ df[, X := NULL]
 df[, parameter := as.character(parameter)]
 setnames(df,"icer.lower.limit","lower")
 setnames(df,"icer.upper.limit","upper")
-df[, lower := as.numeric(gsub('\\D+','', lower))]
-df[, upper := as.numeric(gsub('\\D+','', upper))]
+df[, lower := as.numeric(gsub("[^0-9\\-]", "", lower))]
+df[, upper := as.numeric(gsub("[^0-9\\-]", "", upper))]
 df[, UL_Difference := abs(upper - lower)]
 # 
 # order.parameters <- df %>% arrange(UL_Difference) 
@@ -105,7 +105,7 @@ myplot1 <-
             aes(ymax = ymax, ymin = ymin, 
                 xmax = xmax, xmin = xmin, fill = type)) +
   geom_text(aes(x = 0, y = base.value),
-            size = 3.5, label = "Base case ICER: $58,347") +
+            size = 3.5, label = "Base case ICER: $8,801") +
   theme_bw() + 
   labs(y = "Cost per QALY (AUS$)") +
   scale_fill_manual(values = c("steelblue2", "darksalmon")) +
@@ -118,17 +118,17 @@ myplot1 <-
   scale_x_continuous(breaks = c(1:length(order.parameters)), 
                      labels = order.parameters) +
   scale_y_continuous(position = "bottom", 
-                     breaks = seq(0, 500000, 50000),
+                     breaks = seq(-25000, 500000, 25000),
                      labels = comma) +
-  coord_flip(ylim = c(0, 210000))+
+  coord_flip(ylim = c(-22000, 110000))+
   theme(text = element_text(size = 12),
         legend.position = c(0.75, 0.1))
 
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-# tiff('tornadooffshore.tiff', units = "in", width = 14, height = 6,
-#      res = 200)
-# myplot1
-# dev.off()
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
+tiff('tornadooffshore.tiff', units = "in", width = 14, height = 6,
+     res = 200)
+myplot1
+dev.off()
 
 
 # ONSHORE SCREENING

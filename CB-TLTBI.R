@@ -319,7 +319,10 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
  
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-pop.master <- subset(pop.master, AGERP == 95 | AGERP == 91)
+# pop.master <- subset(pop.master, AGERP == 95 | AGERP == 91)
+# pop.master <- subset(pop.master, AGERP == 20 | AGERP == 21)
+
+
 
 # factor <-  709.094374272965 # 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 

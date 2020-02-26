@@ -5,11 +5,11 @@ library(data.table)
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################# CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-# onshore <- 1
+params <- readRDS("params onshore.rds")
+onshore <- 1
 
-params <- readRDS("params offshore.rds")
-onshore <- 0
+# params <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 options(scipen = 999)
 params <- as.data.table(params)
@@ -49,7 +49,7 @@ sensfunc <- function(paramname, loworhigh) {
 # sensfunc(ultbi9H, low)
 # sensfunc(ultbipart9H, low)
 
-# # # the perfect cascade - figure 8
+# # the perfect cascade - figure 8
 # params[p == "attscreen", mid := 1]
 # params[p == "treat.complete.4R", mid := 1]
 # params[p == "att", mid := 1]
@@ -73,11 +73,11 @@ sensfunc <- function(paramname, loworhigh) {
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  #(ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
     # 40+
     # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age at arrival
@@ -89,11 +89,11 @@ Get.POP <- function(DT, strategy) {
 targetfunc <- function(DT) {
   
   # 200+
-  # DT <- subset(DT, ISO3 == "200+")
+  DT <- subset(DT, ISO3 == "200+")
   # 150+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
   # 100+
-  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
   # Adjust age at arrival
@@ -106,9 +106,9 @@ targetfunc <- function(DT) {
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
 start.year <- startyear
-totalcycles <- 80  # cycles ... The mortality data continues until 2100 and migrant 
+totalcycles <- 90  # cycles ... The mortality data continues until 2150 and migrant 
 
-kill.off.above <- 100 # age above which all enter death state
+kill.off.above <- 99 # age above which all enter death state
 
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
@@ -237,26 +237,21 @@ Get.RR <- function(xDT, year) {
   
   # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
 
-  if (DT[1, AGEP] > kill.off.above) {
-
-    0
-
-  } else {
-   
-    # Baseline reactivation rates
-    RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
-                                                                      ysa = ST, cobi = COBI)]
-    
-    
-    # # assuming a lower LTBI prevalence and a higher rate of reactivation
-    # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-    #                                                                   ysa = ST, cobi = COBI)]
-    
-    # # assuming a higher prevalence of LTBI and a lower rate of reactivation
-    # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-    #                                                                  ysa = ST, cobi = COBI)]
-    
-  }
+  ifelse(DT[, AGEP] > kill.off.above, 0,
+         
+         # Baseline reactivation rates
+         RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], Rate, on = .(aaa = AGERP, Sex = SEXP,
+                                                                           ysa = ST, cobi = COBI)]
+         
+         
+         # # assuming a lower LTBI prevalence and a higher rate of reactivation
+         # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+         #                                                                   ysa = ST, cobi = COBI)]
+         
+         # # assuming a higher prevalence of LTBI and a lower rate of reactivation
+         # RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+         #                                                                  ysa = ST, cobi = COBI)]
+  )
   
 }
 

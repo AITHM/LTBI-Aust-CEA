@@ -174,7 +174,7 @@ CalculateCMP <- function(tM, l, z) {
   # dropping the 3rd dimension in order to select the rowSums in sequence.
   valC <- 1 - rowSums(y, dims = 2)[which(posC, arr.ind = TRUE)[, -3]]
   
-  browser()
+  # browser()
   if (any(valC < 0)) {
     stop("Negative CMP value")
     

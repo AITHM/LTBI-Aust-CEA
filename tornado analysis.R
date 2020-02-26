@@ -23,7 +23,7 @@ parameters.already.set <- 1
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
 params <- readRDS("params onshore.rds")
-# params <- readRDS("params offshore.rds")
+#params <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -51,7 +51,7 @@ pselect<- c("sntst15","sptst15",
             "treat.effic.4R",
             "cmed4R", "ttt4R",
             "ctb","att",
-            "begintrt","saemr",
+            "begintrt",
             "uactivetbr","uactivetb",
             "ultbi4R", "csae", "num.appt4R",
             "prop.spec", "ultbitreatsae")
@@ -60,7 +60,7 @@ tornado.dt <- tornado.dt[tornado.dt$p %in% pselect,]
 tornado.dt <- melt(tornado.dt, id = c("p", "icer"))
 tornado.dt <- subset(tornado.dt, !is.na(value))
 # Adding some other variables
-p <- c("rradj", "ltbi.react", "sae", "tbmr",
+p <- c("rradj", "ltbi.react", "sae", "saemr", "tbmr",
        "disc", "totalcycles", "base")
 variable <- c("low", "high")
 newparams <- expand.grid(p, variable)
@@ -120,6 +120,44 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       vic.tb.mortality[DT[, .(AGEP, SEXP)], upperProb, on = .(age = AGEP, sex = SEXP)]
     }
       
+  } else if (paraname == "saemr" & highlow == "low") {
+    # Look up TB mortality rate
+    Get.SAEMR <- function(xDT, treat) {
+      
+      DT <- copy(xDT[, .(AGEP)])
+      
+      DT[AGEP > 110, AGEP := 110]
+      
+      DT$treatment <- as.character(treat)
+      
+      # Knocking everyone off at 100 years of age
+      sae.mortality[Age > kill.off.above, low := 0]
+      
+      # sae.mortality[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
+      sae.mortality[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
+      # sae.mortality[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
+      
+    }
+    
+  } else if (paraname == "saemr" & highlow == "high") {
+    # Look up TB mortality rate
+    Get.SAEMR <- function(xDT, treat) {
+      
+      DT <- copy(xDT[, .(AGEP)])
+      
+      DT[AGEP > 110, AGEP := 110]
+      
+      DT$treatment <- as.character(treat)
+      
+      # Knocking everyone off at 100 years of age
+      sae.mortality[Age > kill.off.above, high := 0]
+      
+      # sae.mortality[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
+      # sae.mortality[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
+      sae.mortality[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
+      
+    }
+    
    } else if (paraname == "rradj" & highlow == "low") {
     
     # Reactivation rate adjustment for existing TB control
@@ -181,7 +219,7 @@ for(tornado.x in 1:nrow(tornado.dt)) {
     # Reactivation rates
     Get.RR <- function(xDT, year) {
       
-      DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+      DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
       
       DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
       
@@ -189,9 +227,16 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       
       DT[AGERP > 110, AGERP := 110]
       
-      # assuming a lower LTBI prevalence and a higher rate of reactivation
-      RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                        ysa = ST, cobi = COBI)]
+      # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
+      
+      ifelse(DT[, AGEP] > kill.off.above, 0,
+             
+            # assuming a lower LTBI prevalence and a higher rate of reactivation
+            RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                              ysa = ST, cobi = COBI)]
+
+      )
+
     }
 
     } else if (paraname == "ltbi.react" & highlow == "high") {
@@ -206,7 +251,7 @@ for(tornado.x in 1:nrow(tornado.dt)) {
     # Reactivation rates
     Get.RR <- function(xDT, year) {
       
-      DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3)])
+      DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
       
       DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
       
@@ -214,9 +259,15 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       
       DT[AGERP > 110, AGERP := 110]
     
-      # assuming a higher prevalence of LTBI and a lower rate of reactivation
-      RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                       ysa = ST, cobi = COBI)]
+      # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
+      
+      ifelse(DT[, AGEP] > kill.off.above, 0,
+             
+             # assuming a higher prevalence of LTBI and a lower rate of reactivation
+             RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                              ysa = ST, cobi = COBI)]
+      )
+      
     }
     
     } else if (paraname == "base") {

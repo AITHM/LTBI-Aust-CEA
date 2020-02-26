@@ -69,7 +69,7 @@ pointsize <- 2
 textsize <- 3
 textsize2 <- 10
 
-dev.off()
+#dev.off()
 
 options(scipen=5)
 myplot1 <-

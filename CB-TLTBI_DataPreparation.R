@@ -95,7 +95,6 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   # Remove the populations who arrived under the age of 11 years and over 100
   
   pop.master <- subset (pop.master, AGERP > 10)
-  pop.master <- subset (pop.master, AGERP < 101)
   
   # Calculate the susceptible and latent population
   
@@ -112,12 +111,10 @@ CreatePopulationMaster <- function(Modify = FALSE) {
                                                 0, 0, 0, 0, 0)]
   
   # Because we are running the model from 2020 the retrospective cohort must be aged from 2016 to 2020
-  # pop.master[YARP <= 2016, AGEP := AGEP + 4] # Census was taken in 2016
-  # pop.master[YARP == 2017, AGEP := AGEP + 3]
-  # pop.master[YARP == 2018, AGEP := AGEP + 2]
-  # pop.master[YARP == 2019, AGEP := AGEP + 1]
-  # 
-  pop.master <- subset (pop.master, YARP > 2019)
+  pop.master[YARP <= 2016, AGEP := AGEP + 4] # Census was taken in 2016
+  pop.master[YARP == 2017, AGEP := AGEP + 3]
+  pop.master[YARP == 2018, AGEP := AGEP + 2]
+  pop.master[YARP == 2019, AGEP := AGEP + 1]
   
   pop.master
   
