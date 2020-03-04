@@ -482,6 +482,9 @@ uactivetbfunct <- function(symptom.mths, sae.mths, chance.of.sae) {
   } else if (symptom.mths == 4) {
     utbactive <- (utb.base * symptom.mths) + utb.1mth + 2 * utb.2mths +
       2 * utb.4mths + 3 * utb.6mths
+  } else if (symptom.mths == 3) {
+    utbactive <- (utb.base * symptom.mths) + utb.1mth + 2 * utb.2mths +
+      2 * utb.4mths + 3 * utb.6mths + 1 * utb.9mths
   } else if (symptom.mths == 2) {
     utbactive <- (utb.base * symptom.mths) + utb.1mth + 2 * utb.2mths +
       2 * utb.4mths + 3 * utb.6mths + 2 * utb.9mths
@@ -506,9 +509,10 @@ uactivetbfunct <- function(symptom.mths, sae.mths, chance.of.sae) {
 # uhealthy.fix - uactivetbfunct(4, 0.5, 0.003)
 # # 0.0708244
 
+
 params[p == "uactivetb", mid := uactivetbfunct(6, 1, 0.007)]
 params[p == "uactivetb", low := 0.7068]
-params[p == "uactivetb", high := uactivetbfunct(4, 0.5, 0.003)]
+params[p == "uactivetb", high := uactivetbfunct(3, 1, 0.003)]
 
 # LTBI treatment utility calculations
 

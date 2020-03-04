@@ -5,11 +5,11 @@ library(data.table)
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################# CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-onshore <- 1
+# params <- readRDS("params onshore.rds")
+# onshore <- 1
 
-# params <- readRDS("params offshore.rds")
-# onshore <- 0
+params <- readRDS("params offshore.rds")
+onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 options(scipen = 999)
 params <- as.data.table(params)
@@ -73,11 +73,11 @@ sensfunc <- function(paramname, loworhigh) {
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
     # 40+
     # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age at arrival
@@ -89,11 +89,11 @@ Get.POP <- function(DT, strategy) {
 targetfunc <- function(DT) {
   
   # 200+
-  DT <- subset(DT, ISO3 == "200+")
+  # DT <- subset(DT, ISO3 == "200+")
   # 150+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
   # 100+
-  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
   # Adjust age at arrival
@@ -106,9 +106,9 @@ targetfunc <- function(DT) {
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # start.year
 start.year <- startyear
-totalcycles <- 90  # cycles ... The mortality data continues until 2150 and migrant 
+totalcycles <- 91  # cycles ... The mortality data continues until 2150 and migrant 
 
-kill.off.above <- 99 # age above which all enter death state
+kill.off.above <- 120 # age above which all enter death state
 
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
@@ -307,8 +307,8 @@ Get.TBMR <- function(xDT, year) {
   DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
   
   vic.tb.mortality[DT[, .(AGEP, SEXP)], Prob, on = .(age = AGEP, sex = SEXP)]
-  # vic.tb.mortality[DT[, .(AGEP, SEXP)], lowerProb, on = .(age = AGEP, sex = SEXP)]
-  # vic.tb.mortality[DT[, .(AGEP, SEXP)], upperProb, on = .(age = AGEP, sex = SEXP)]
+  # vic.tb.mortality[DT[, .(AGEP, SEXP)], lower, on = .(age = AGEP, sex = SEXP)]
+  # vic.tb.mortality[DT[, .(AGEP, SEXP)], upper, on = .(age = AGEP, sex = SEXP)]
   
 }
 
@@ -366,15 +366,15 @@ Get.EMIGRATE <- function(xDT, year) {
   emigrate.rate[DT[, .(AGEP)], Rate, on = .(Age = AGEP)] # use this one for a 11.72% perm rates
   # emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]
   # emigrate.rate[DT[, .(AGEP)], upper, on = .(Age = AGEP)] # use this one for a 14.76% perm rates
-
+  
 }
+
 
 # Get.EMIGRATE <- function(xDT, year) {
 # 
 #   0
 # 
 # }
-
 
 # Look up treatment costs (it's treatment dependent)
 Get.TREATC <- function(S, treat) {
@@ -390,7 +390,7 @@ Get.TREATR <- function(C, E, treat) {
   treat.complete <- as.numeric(treatment.dt[treatment == treat, ..C])
 
   treat.effic <- as.numeric(treatment.dt[treatment == treat, ..E])
-  
+
   treatment <- as.character(treat)
   
   if (treat == '3HP') {
