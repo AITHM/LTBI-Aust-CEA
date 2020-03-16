@@ -21,14 +21,11 @@ library(cowplot)
 library(grid)
 library(gridExtra)
 
-# # Reading in the data
-# setwd("H:/Katie/PhD/CEA/Data")
-# df <- read.csv("ltbi utility plot.csv")
-
 parameters.already.set <- 1
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
 # params <- readRDS("params onshore.rds")
 params <- readRDS("params offshore.rds")
@@ -39,7 +36,7 @@ params <- as.data.table(params)
 # Create a datatable that will contain 
 # different utility decrements we want 
 # to apply
-utility.dec <- c(seq(0, 0.01, by = 0.001))
+utility.dec <- c(seq(0, 0.013, by = 0.001))
 ultbi.dt <- as.data.frame(utility.dec)
 ultbi.dt <- as.data.table(ultbi.dt)
 ultbi.dt[, utility.dec := as.numeric(utility.dec)]
@@ -56,7 +53,6 @@ ultbi.dt[, incremental.qalys := as.numeric(incremental.qalys)]
 
 for(ltbi.x in 1:nrow(ultbi.dt)) {
   
-  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
   source("CB-TLTBI Functions.R")
   source("Parameter values.R")
   healthyutility <- params[p == "uhealthy", mid]
@@ -159,7 +155,7 @@ myplot1 <-
   theme_bw() +
   geom_text(aes(x = f2(0), y = 0),
                    hjust = 0.5, vjust = -1,
-                   size = 10, label = "0.002355495") +
+                   size = 10, label = "0.0086") +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   labs(y = "Incremental QALYS",
@@ -167,16 +163,15 @@ myplot1 <-
   # scale_fill_manual(values = c("steelblue2", "darksalmon")) +
   scale_y_continuous(breaks = seq(-60, 100, 5),
                      labels = comma) +
-  scale_x_continuous(breaks = seq(0, 0.1, 0.0005)) +
-  coord_cartesian(xlim = c(0, 0.005), ylim = c(-20, 20)) +
+  scale_x_continuous(breaks = seq(0, 0.1, 0.002)) +
+  coord_cartesian(xlim = c(0, 0.02), ylim = c(-20, 20)) +
   theme(text = element_text(size = 20),
         panel.border = element_blank(),
         legend.position = "none",
         panel.grid.major = element_line(colour = "grey"))
 
 
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-tiff('ltbiutility.tiff', units = "in", width = 14, height = 6,
+tiff('Figures/ltbiutility.tiff', units = "in", width = 14, height = 6,
      res = 200)
 myplot1
 dev.off()

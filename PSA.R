@@ -42,6 +42,7 @@ library(tidyr)
 
 # Sourcing required functions from other scripts
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 source("CB-TLTBI Functions.R") # contains many functions necessary to run the model
 source("CB-TLTBI_DataPreparation.R") # for sorting the population data
 source("Distribution parameter calculations.R") # for determining distribution parameter values
@@ -106,7 +107,6 @@ Get.POP <- function(DT, strategy) {
 # the upper and lower limits for each
 # is defined in the relevant params.rds file and needs to be read in:
 # read in parameter list and values, which is defined in the "Parameter creation" scripts
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
 # dt <- readRDS("params onshore.rds")
 # onshore <- 1
@@ -529,7 +529,6 @@ simdata[, ultbipart9H := uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)]
 # based on the values of other parameters in the
 # simdata table
 # Sourcing the medical costs
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("Medical costs.R")
 
 
@@ -702,11 +701,8 @@ simdata[, treatr9H :=  treatrcalc9H(treat.complete.9H, treat.effic.9H)]
 # This script also calculates the uncertainty intervals for the rates, so this 
 # can be adjusted here as well.
 
-# set directory
-setwd("H:/Katie/PhD/LTBI to active TB project/R/")
-
 # Load the objects
-raw <- readRDS("raw.rds")
+raw <- readRDS("Data/raw.rds")
 
 makeyearnumeric<-function(dt) {
   dt$year<-as.character(dt$year)
@@ -717,8 +713,7 @@ makeyearnumeric<-function(dt) {
 raw <- makeyearnumeric(raw)
 
 #TO SOURCE GROUPING FUNCTIONS
-setwd("H:/Katie/PhD/LTBI to active TB project/R/")
-source('Grouping functions.R')
+source('Data/Grouping functions.R')
 
 # Specifying the uncertainty
 
@@ -837,8 +832,7 @@ check <- aaagroupfunc(check)
 # Apply fuction that merges the TB incidences in countries of birth
 # for each census year
 addISO3TBincidfunc <- function(dt) {
-  setwd("H:\\Katie\\PhD\\CEA\\Data") 
-  cobtb <- read.csv("TB_burden_countries_2019-04-23.csv", header=T)
+  cobtb <- read.csv("Data/TB_burden_countries_2019-04-23.csv", header=T)
   cobtb <- as.data.table(cobtb)
   cobtb[,iso3 := as.character(iso3)]
   setnames(cobtb, "e_inc_100k", "cob.incid")
@@ -1078,7 +1072,6 @@ Get.RRADJ <- function(xDT, year) {
 }
 
 # Get.EMIGRATE
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
 # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
 emigrate.rate <- as.data.table(emigrate.rate)
@@ -1711,15 +1704,14 @@ plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer > WTP, wtp.colour :=
 
 
 # Save this table to file
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
 
 if (onshore == 1) {
   
-  saveRDS(simdata, "onshore.rds")
+  saveRDS(simdata, "Data/PSA/onshore.rds")
   
 } else if (onshore == 0) {
   
-  saveRDS(simdata, "offshore.rds")
+  saveRDS(simdata, "Data/PSA/offshore.rds")
   
 }
 
@@ -1727,21 +1719,10 @@ if (onshore == 1) {
 
 
 # # Read back in simdata 
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/PSA")
-# simdata <- readRDS("simdata.rds")
+# simdata <- readRDS("Data/PSA/simdata.rds")
 
 
 if (onshore == 1) {
-  
-  
-  ylimmin <- -2
-  ylimmax <- 4
-  xlimmin <- -130
-  xlimmax <- 100
-  
-  pointsize <- 2.5
-  textsize <- 6
-  textsize2 <- 20
   
   plotdata[, wtp.colour := as.factor(wtp.colour)]
   
@@ -1755,7 +1736,6 @@ if (onshore == 1) {
   textsize <- 6
   textsize2 <- 20
   
-  dev.off()
   ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
                        colour = wtp.colour)) +
     geom_point(size = pointsize, alpha = 1, na.rm = T) +
@@ -1788,10 +1768,17 @@ if (onshore == 1) {
   # dev.off()
 } else if (onshore == 0) {
   
+  ylimmin <- -2
+  ylimmax <- 4
+  xlimmin <- -140
+  xlimmax <- 120
+  
+  pointsize <- 2.5
+  textsize <- 6
+  textsize2 <- 20
+  
   # OFFSHORE
-  dev.off()
-  ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
-                       colour = wtp.colour)) +
+  ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000)) +
     geom_point(size = pointsize, alpha = 1, na.rm = T) +
     geom_vline(xintercept = 0, color = "black") +
     geom_hline(yintercept = 0, color = "black") +
@@ -1806,7 +1793,7 @@ if (onshore == 1) {
                 size = 1) +
     labs(x = "Incremental QALYs", 
          y = "Incremental cost (AUD$millions)") +
-    scale_colour_manual(values = c("black", "black")) +
+    #scale_colour_manual(values = c("black", "black")) +
     scale_y_continuous(breaks = seq(-500, 250, 1)) +
     scale_x_continuous(breaks = seq(-5000000, 10000000, 20)) +
     theme_bw() +
@@ -1866,16 +1853,14 @@ myplot1 <-
   theme(text = element_text(size = 25))
 
 
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-
 if (onshore == 1) {
-  tiff('acceptability onshore.tiff',
+  tiff('Figures/acceptability onshore.tiff',
        units = "in", width = 15, height = 12,
        res = 200)
   myplot1
   dev.off()
 } else if (onshore == 0) {
-  tiff('acceptability offshore.tiff',
+  tiff('Figures/acceptability offshore.tiff',
        units = "in", width = 15, height = 12,
        res = 200)
   myplot1

@@ -12,6 +12,7 @@ library(data.table)
 # Model setup located within this file.
 # It defines all the states, transition matrices, strategies, costs and parameters.
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 # source("CB-TLTBI Parameter values.R")
 
 # Read in the output files
@@ -433,19 +434,19 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 
 
 # # year when 99.9% dead
-cyclecount <- 120
-for (i in 2:cyclecount) {
-  total <- dt[YEAR == start.year + i & YARP == start.year, sum(NUMP),]
-  out <- dt[YEAR == start.year + i & YARP == start.year, sum(p.death),] +
-    dt[YEAR == start.year + i & YARP == start.year, sum(p.tb.death),] +
-    dt[YEAR == start.year + i & YARP == start.year, sum(p.emigrate),] +
-    dt[YEAR == start.year + i & YARP == start.year, sum(p.ltbi.sae.death),]
-  if (out/total > 0.999) {
-    cycle.when.almost.all.dead <- i
-    break
-  }
-}
-cycle.when.almost.all.dead
+# cyclecount <- 120
+# for (i in 2:cyclecount) {
+#   total <- dt[YEAR == start.year + i & YARP == start.year, sum(NUMP),]
+#   out <- dt[YEAR == start.year + i & YARP == start.year, sum(p.death),] +
+#     dt[YEAR == start.year + i & YARP == start.year, sum(p.tb.death),] +
+#     dt[YEAR == start.year + i & YARP == start.year, sum(p.emigrate),] +
+#     dt[YEAR == start.year + i & YARP == start.year, sum(p.ltbi.sae.death),]
+#   if (out/total > 0.999) {
+#     cycle.when.almost.all.dead <- i
+#     break
+#   }
+# }
+# cycle.when.almost.all.dead
 
 # 
 # 

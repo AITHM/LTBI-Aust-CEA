@@ -18,23 +18,15 @@ library(gridExtra)
 # Need to obtain chance of having sae with different treatment regimens.
 # I have researched this and it is in an excel file in "Model parameters"
 
-# # Reading in the data from excel
-# setwd("H:/Katie/PhD/CEA")
-# data <- read.xlsx("Model parameters.xlsx", 
-#                   sheetName = "CEA plane input",
-#                   startRow = 2)
-
-
 ylimupper <- 600000/1000
 ylimlower <- -600000/1000
 xlimupper <- -5
 xlimlower <- 30
 
-
-
 # Reading in the data 
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
-data <- readRDS("agetarget.rds")
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
+data <- readRDS("Data/agetarget.rds")
 data <- as.data.table(data)
 
 data <- subset(data, strategy != "0_12...rds")
@@ -115,8 +107,7 @@ myplot1 <-
 
 
 
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-tiff('ceaplaneagetalk.tiff', units = "in", width = 15, height = 7,
+tiff('Figures/ceaplaneagetalk.tiff', units = "in", width = 15, height = 7,
      res = 200)
 myplot1
 dev.off()
@@ -124,8 +115,7 @@ dev.off()
 
 
 # Reading in the data without emigration
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
-data <- readRDS("agetargetnoemig.rds")
+data <- readRDS("Data/agetargetnoemig.rds")
 data <- as.data.table(data)
 
 data <- subset(data, strategy != "0_12...rds")
@@ -260,10 +250,7 @@ plotty <- plot_grid(myplot1, myplot2, legend, ncol = 3,
           rel_widths = c(1, 1, .3),
           labels = c("a)", "b)", " "))
 
-
-
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-tiff('ceaplaneage.tiff', units = "in", width = 15, height = 5,
+tiff('Figures/ceaplaneage.tiff', units = "in", width = 15, height = 5,
      res = 200)
 plotty
 dev.off()

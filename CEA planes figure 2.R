@@ -18,8 +18,9 @@ library(gridExtra)
 # I have researched this and it is in an excel file in "Model parameters"
 
 # Load data
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
-data <- readRDS("cea.plane.2.rds")
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
+data <- readRDS("Data/cea.plane.2.rds")
 data <- as.data.table(data)
 
 off11.35 <- subset(data, other == "30yr horizon")
@@ -205,8 +206,7 @@ scale_y_continuous(breaks = seq(-10, 250, 1)) +
 #legend.position = c(0.80, 0.8),
 #axis.text.x = element_text(angle=45, hjust=1),
 
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-# tiff('ceaplaneultbi.tiff', units = "in", width = 8, height = 4,
+# tiff('Figures/ceaplaneultbi.tiff', units = "in", width = 8, height = 4,
 #      res = 200)
 # myplot4
 # dev.off()
@@ -303,8 +303,7 @@ plot_grid(myplot1, myplot2, myplot3, myplot4, myplot5, legend,
           rel_widths = c(1, 1, 1, 1, 1, 0.3),
           labels = c("a)", "b)", "c)", "d)", "e)", ""))
 
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-tiff('ceaplane2.tiff', units = "in", width = 18, height = 4,
+tiff('Figures/ceaplane2.tiff', units = "in", width = 18, height = 4,
      res = 200)
 plot_grid(myplot1, myplot2, myplot3, myplot4, myplot5, legend,
           nrow = 1, 

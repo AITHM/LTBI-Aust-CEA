@@ -4,12 +4,13 @@ library(data.table)
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################# CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-# onshore <- 1
+params <- readRDS("params onshore.rds")
+onshore <- 1
 
-params <- readRDS("params offshore.rds")
-onshore <- 0
+# params <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 options(scipen = 999)
 params <- as.data.table(params)
@@ -28,7 +29,7 @@ sensfunc <- function(paramname, loworhigh) {
 #################################################################################################
  
 # sensfunc(attscreen, low)
-# params[p == "ctb", mid := 19807.19] # 22298.82
+# params[p == "ctb", mid := 17783.28] # 22298.82
 # params[p == "attscreen", mid := 1]
 
 # params[p == "saemr", mid := 0]
@@ -73,11 +74,11 @@ sensfunc <- function(paramname, loworhigh) {
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
     # 40+
     # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age at arrival
@@ -89,11 +90,11 @@ Get.POP <- function(DT, strategy) {
 targetfunc <- function(DT) {
   
   # 200+
-  # DT <- subset(DT, ISO3 == "200+")
+  DT <- subset(DT, ISO3 == "200+")
   # 150+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
   # 100+
-  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
   # Adjust age at arrival
@@ -114,7 +115,7 @@ kill.off.above <- 120 # age above which all enter death state
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
-testlist <- c("TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+testlist <- c("TST10") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
@@ -138,7 +139,6 @@ ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
 ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
 
 # Sourcing the medical costs
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 source("Medical costs.R")
 
 # These specify how much of the appointment and medicine
@@ -209,7 +209,6 @@ cparttreatspec9H <-  spec.appt / part.appt + cmed9H / part.med
 # sptst10 <- 0.7005
 
 # Initial migrant cohort and LTBI prevalence and reactivation rates
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
 aust <- as.data.table(aust)
 # aust <- subset(aust, ISO3 == "150-199")
@@ -370,11 +369,10 @@ Get.EMIGRATE <- function(xDT, year) {
 }
 
 
-# Get.EMIGRATE <- function(xDT, year) {
-# 
-#   0
-# 
-# }
+Get.EMIGRATE <- function(xDT, year) {
+
+  0
+}
 
 # Look up treatment costs (it's treatment dependent)
 Get.TREATC <- function(S, treat) {

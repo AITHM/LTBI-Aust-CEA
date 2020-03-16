@@ -11,14 +11,11 @@ library(tidyverse)
 library(tidyr)
 library(data.table)
 
-# # Reading in the data
-# setwd("H:/Katie/PhD/CEA/Data")
-# df <- read.csv("ltbi utility plot.csv")
-
 parameters.already.set <- 1
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+#setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
 params <- readRDS("params onshore.rds")
 # params <- readRDS("params offshore.rds")
@@ -51,7 +48,6 @@ target.dt[age.low == 10, age.high := 20]
 
 for(target.x in 1:nrow(target.dt)) {
   
-  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
   source("CB-TLTBI Functions.R")
   source("Parameter values.R")
   
@@ -117,7 +113,6 @@ for(target.x in 1:nrow(target.dt)) {
 }
 
 # Save the output to file
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # saveRDS(results.dt, file = "Data/agetargetnoemig.rds")
 # saveRDS(results.dt, file = "Data/agetargetonshore.rds")
 saveRDS(results.dt, file = "Data/agetargetonshorenoemig.rds")

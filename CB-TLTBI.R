@@ -20,6 +20,7 @@ library(data.table) # required
 # It defines all the states and transition matrices
 # The strategies and all parameters are defined in the "Parameter values" document.
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 source("CB-TLTBI Functions.R")
 
 if (exists("parameters.already.set") == TRUE) {
@@ -324,12 +325,12 @@ pop.master <- CreatePopulationMaster()
 
 
 
-# factor <-  709.094374272965 # 71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
-# 
-# pop.master[, NUMP := NUMP/factor]
-# pop.master[, LTBP := LTBP/factor]
-# pop.master[, p.sus := p.sus/factor]
-# pop.master[, p.ltbi := p.ltbi/factor]
+factor <-  1051.86815545353 #      71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
+
+pop.master[, NUMP := NUMP/factor]
+pop.master[, LTBP := LTBP/factor]
+pop.master[, p.sus := p.sus/factor]
+pop.master[, p.ltbi := p.ltbi/factor]
 
 #set.seed(10)
 #pop.master <- pop.master[sample(.N, 200)]
