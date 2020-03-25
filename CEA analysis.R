@@ -69,7 +69,7 @@ tabfunc <- function(dt) {
   nameofdt <- dt$STRAT[1]
   
   # annual migrant inflow
-  migflow <- dt[YEAR == start.year & YARP == start.year, sum(NUMP),]
+  migflow <- dt[YEAR == start.year & YARP == start.year, sum(NUMP),] * (finalinflow + 1)
   
   # percentage with LTBI
   percentltbi <- (dt[YEAR == start.year & YARP == start.year,

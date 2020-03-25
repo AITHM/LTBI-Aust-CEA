@@ -79,7 +79,7 @@ new.state.names <- c(state.names, paste("V.", state.names, sep = ""),
                      paste("SQ.", state.names, sep = ""))
 
 # Create a sample data table of test sensitivity & specificity
-tests.dt <- data.table(tests = c("QTFGIT", "TST10", "TST15"), 
+tests.dt <- data.table(tests = c("QFTGIT", "TST10", "TST15"), 
                        SN = c(snqftgit, sntst10, sntst15),
                        SP = c(spqftgit, sptst10, sptst15),
                        # Sensitivity and specificity values from: Abubakar I, Drobniewski F, Southern J, et al. Prognostic value 
@@ -325,12 +325,12 @@ pop.master <- CreatePopulationMaster()
 
 
 
-factor <-  1051.86815545353 #      71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
+# factor <-  1051.86815545353 #      71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 
-pop.master[, NUMP := NUMP/factor]
-pop.master[, LTBP := LTBP/factor]
-pop.master[, p.sus := p.sus/factor]
-pop.master[, p.ltbi := p.ltbi/factor]
+# pop.master[, NUMP := NUMP/factor]
+# pop.master[, LTBP := LTBP/factor]
+# pop.master[, p.sus := p.sus/factor]
+# pop.master[, p.ltbi := p.ltbi/factor]
 
 #set.seed(10)
 #pop.master <- pop.master[sample(.N, 200)]

@@ -27,8 +27,8 @@ parameters.already.set <- 1
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-params <- readRDS("params offshore.rds")
+params <- readRDS("params onshore.rds")
+# params <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -40,9 +40,9 @@ params <- as.data.table(params)
 age.low <- c(rep(10, 5)) 
 age.high <- c(rep(66, 5))
 tbincid <- c(rep("100+",5))
-other <- c("30yr horizon", "80yr horizon", 
+other <- c("lifetime horizon", "30yr horizon", 
            "perm emigration", "LTBI decrement",
-           "30 inflows")
+           "30 inflows and horizon")
 target.dt <- data.table(age.low, age.high, tbincid, other)
 
 
@@ -93,17 +93,23 @@ for(target.x in 1:nrow(target.dt)) {
     }
   }
   
-  if (other.cat == "30yr horizon") {
+  if (other.cat == "lifetime horizon") {
+    
+    
+    
+  } else if (other.cat == "30yr horizon") {
     
     totalcycles <- 30
-    
-  } else if (other.cat == "80yr horizon") {
-    
-    totalcycles <- 80
+    finalyear <- startyear + totalcycles
+    final.year <- finalyear
     
   } else if (other.cat == "perm emigration") {
     
     migrant.inflow.size <- 103740 # baseline 434340, permanent 103740
+    
+    totalcycles <- 98
+    finalyear <- startyear + totalcycles
+    final.year <- finalyear
     
     setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
     emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds")
@@ -112,6 +118,9 @@ for(target.x in 1:nrow(target.dt)) {
       DT <- copy(xDT[, .(year, AGERP, YARP)])
       
       DT[AGERP > 110, AGERP := 110]
+      
+      # Knocking everyone off at 80 years of age
+      emigrate.rate[Age > kill.off.above, Rate := 0]
       
       emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)] # use this one for a 14.76% perm rates
     }
@@ -132,8 +141,12 @@ for(target.x in 1:nrow(target.dt)) {
     ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
     ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
     
-    } else if (other.cat == "30 inflows") {
+    } else if (other.cat == "30 inflows and horizon") {
+      
+      totalcycles <- 30
       finalinflow <- 29
+      finalyear <- startyear + totalcycles
+      final.year <- finalyear
     }
   
   setwd("H:/Katie/PhD/CEA/MH---CB-LTBI") 

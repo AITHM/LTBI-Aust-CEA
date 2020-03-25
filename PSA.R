@@ -20,7 +20,7 @@
 # https://google.github.io/styleguide/Rguide.xml
 
 # This will convert any warning into an error and will stop the loop
-options(warn=2)
+options(warn = 2)
 # To restore to the original setting use options("warn"=0) or options(warn=1)
 
 options(scipen = 999)
@@ -50,13 +50,14 @@ source("Distribution parameter calculations.R") # for determining distribution p
 ################## PSA #####################################
 
 # Defining the number of simulations we want
-Num_SIm <- 100
+Num_SIm <- 5
 
 # Generating a random set of numbers, one for each simulation
 # that will be used as a seed number for "set.seed" functions
 # below, so that the sampling from distributions is the same
 # for both the baseline and strategy model runs
-set.seed.number <- sample(1000:1000000, Num_SIm, replace = F)
+set.seed(10000)
+set.seed.number <- sample(1000:1000000, 10000, replace = F)
 
 # Create a datatable that will eventually contain the
 # parameter values to be used for each simulation/model run.
@@ -75,7 +76,7 @@ final.year <- start.year + totalcycles
 kill.off.above <- 120 # age above which all enter death state
 
 # The tests and treatments I want to consider in this analysis
-testlist <- c("TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+testlist <- c("TST10") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # The number of migrants I want to include in each inflow
@@ -88,11 +89,11 @@ finalinflow <- 0
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
   # 40+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
@@ -108,23 +109,16 @@ Get.POP <- function(DT, strategy) {
 # is defined in the relevant params.rds file and needs to be read in:
 # read in parameter list and values, which is defined in the "Parameter creation" scripts
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# dt <- readRDS("params onshore.rds")
-# onshore <- 1
+dt <- readRDS("params onshore.rds")
+onshore <- 1
 
-dt <- readRDS("params offshore.rds")
-onshore <- 0
+# dt <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 
 # Read in the migrant population data, showing how many have LTBI in each population group.
-aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
+austbase <- readRDS("Data/Aust16.psa.rds") # baseline
 
-# # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
-# aust[, LTBP := NULL]
-# setnames(aust, "tfnum", "LTBP")
-
-# # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
-# aust[, LTBP := NULL]
-# setnames(aust, "sfnum", "LTBP")
 
 # reformat data table
 dt <- as.data.table(dt)
@@ -401,17 +395,6 @@ for(i in 1:nrow(plot.dt)) {
          main = abbreviation)
   }
 }
-# mid <- 12550.5200000
-# low <- 6330.7300000
-# high <- 185047.8100000
-# shape <- 30
-# upperlim <- high + 20
-# dev.off()
-# p = seq(0, upperlim, length = 1000)
-# plot(p, dpert(p, min = low, mode = mid,
-#               max = high, shape = shape),
-#      ylab = "density", type = "l", col = 4, xlim = c(0, high))
-
 
 #plotting utilities
 a <- which( dt$abbreviation == "uactivetb" )
@@ -466,55 +449,6 @@ for(i in 1:nrow(plot.dt)) {
 }
 # Restore margins...could also do it with dev.off()  ?
 par(mfrow = c(1,1))
-
-# mid <- 0.8733333
-# low <- 0.8558
-# high <- 0.8733333
-# shape <- 4
-# upperlim <- 1
-# dev.off()
-# p = seq(0, upperlim, length = 1000)
-# plot(p, dpert(p, min = low, mode = mid,
-#               max = high, shape = shape),
-#      ylab = "density", type = "l", col = 4, xlim = c(0.8, high))
-# 
-# p = seq(0, upperlim, length = 1000)
-# plot(p, dunif(p, min = low,
-#               max = high),
-#      ylab = "density", type = "l", col = 4, xlim = c(0.8, high))
-
-# The dependent variables need to be defined separately...
-
-# Look up cost of attending (it's age dependent)
-# Get.ATTENDC <- function(xDT, S) {
-#   
-#   DT <- copy(xDT[, .(AGEP)])
-#   
-#   DT[AGEP > 110, AGEP := 110]
-#   
-#   if(DT$AGEP[1] < 36) {
-#     cattend
-#   } else {
-#     prop.over35.needing.spec * cattendspec + ((1 - prop.over35.needing.spec) * cattend)
-#   }
-#   
-# }
-
-# # Reset some parameters to see what happens
-# simdata <- as.data.table(simdata)
-# simdata[, treatr4R := 1]
-# simdata[, snqftgit := 1]
-# simdata[, spqftgit := 1]
-
-
-# #TEST
-# for(i in 1:nrow(dt)) {
-#   abbreviation <- dt[i, abbreviation]
-#   mid <- dt[i, mid]
-#   simdata[, newcol := mid]
-#   setnames(simdata, "newcol", abbreviation)
-# }
-
 
 # Adjusting the partial LTBI treatment utilities so 
 # they are dependent on the value of
@@ -690,321 +624,11 @@ simdata[, treatr4R :=  treatrcalc4R(treat.complete.3HP, treat.effic.3HP)]
 simdata[, treatr6H :=  treatrcalc6H(treat.complete.6H, treat.effic.6H)] 
 simdata[, treatr9H :=  treatrcalc9H(treat.complete.9H, treat.effic.9H)] 
 
-# Creating the look-up file for the reactivation rates
-
-# Creates the reactivation rate look up tables for PSA
-# This file creates RRates files to be used to provide the TB reactivation rates in
-# the cost-effectiveness analysis that is run using Milinda's github repository titled "MH---CB-LTBI"
-# The specific type of reactivation rates to be used 
-# (i.e. Australia-wide, Victorian, Victorian with certain exclusions etc)
-# can be specified in line ~150.
-# This script also calculates the uncertainty intervals for the rates, so this 
-# can be adjusted here as well.
-
-# Load the objects
-raw <- readRDS("Data/raw.rds")
-
-makeyearnumeric<-function(dt) {
-  dt$year<-as.character(dt$year)
-  dt$year<-as.numeric(dt$year)
-  dt
-}
-
-raw <- makeyearnumeric(raw)
-
-#TO SOURCE GROUPING FUNCTIONS
-source('Data/Grouping functions.R')
-
-# Specifying the uncertainty
-
-# the uncertaintycalc below gives the lower and upper uncertainty intervals (UI) 
-# by the upper and lower 95% confidence intervals of the Poisson exact 
-# test using the number of TB cases and the 75th and 25th percentiles 
-# of the LTBI prevalence estimates, respectively.
-# poptb = the number of TB cases in each population/census group
-# mednum/tfnum/sfnum = 
-# the estimated number with LTBI in each population/census group (median/twenty-fifth percentile/seventy-fifth percentile)
-# upper = upper uncertainty estimate
-# lower = lower uncertainty estimate
-
-uncertaintycalc<-function(dt){
-  dt <- as.data.table(dt)
-  #calculating lower limit
-  e <- pois.exact(dt$poptb, 
-                  pt = dt$sfnum, 
-                  conf.level = 0.95)
-  e <- as.data.table(e)
-  e <- e[, c("x", "lower"), with = FALSE]
-  dt <- bind_cols(dt, e)
-  dt[, x := NULL] 
-  #calculating upper limit
-  e <- pois.exact(dt$poptb, 
-                  pt = dt$tfnum, 
-                  conf.level = 0.95)
-  e <- as.data.table(e)
-  e <- e[, c("x", "upper"), with = FALSE]
-  dt <- bind_cols(dt, e)
-  dt[, x := NULL]   
-  dt$react  <- dt$poptb / dt$mednum
-  dt
-}
-
-
-##################################################################################################################################
-# Choose the raw data file below:
-##################################################################################################################################
-check <- copy(raw)
-##################################################################################################################################
-
-
-##################################################################################################################################
-# Choose the TB incidence in country of birth cut-offs here:
-
-cobi4func <- function(dt) {
-  dt$cobi <- as.factor(cut(dt$cob.incid, breaks=c(-1, 39, 99, 149, 4000),
-                           labels = c('0-39', '40-99', '100-149', '150+' )))
-  dt
-}
-
-cobi5func <- function(dt) {
-  dt$cobi <- as.factor(cut(dt$cob.incid, breaks=c(-1, 39, 99, 
-                                                  149, 199, 4000),
-                           labels = c('0-39', '40-99', 
-                                      '100-149', '150-199','200+' )))
-  dt
-}
-
-cobi6func <- function(dt) {
-  dt$cobi <- as.factor(cut(dt$cob.incid, breaks=c(-1, 50, 100, 150,
-                                                  200, 250, 4000),
-                           labels = c('0-50', '51-100', '101-150', 
-                                      '151-200', '201-250','251+' )))
-  dt
-}
-
-
-cobifunc<-cobi5func
-##################################################################################################################################
-
-
-##################################################################################################################################
-age11dgroup <-function(dt) {
-  dt$aaag <- as.factor(cut(dt$aaa, breaks=c(-1, 4, 10, 19, 29,
-                                            39, 59, 69, 120),
-                           labels=c('0-4','5-10', '11-19', '20-29', '30-39',
-                                    '40-59','60-69',
-                                    '70+' )))
-  dt
-}
-
-
-aaagroupfunc <- age11dgroup
-
-##################################################################################################################################
-
-
-##################################################################################################################################
-# Choose the years since migration cut-offs here:
-##################################################################################################################################
-
-ysa11bgroup<-function(dt) {
-  dt$ysag <- as.factor(cut(dt$ysa, breaks=c(-1,0,1,2,5,10,20,30,
-                                            40,110),
-                           labels=c('0','1','2','3-5','6-10', 
-                                    '11-20','21-30','31-40',
-                                    '41+' )))
-  dt
-}
-
-ysafunc <- ysa11bgroup
-##################################################################################################################################
-
-
-# Creating RRates file without sex, aggregated years since migration and age groups
-# and TB incidence in country of birth, under and over 100.
-
-
-check <- subset(check, iso3 != "AUS")
-# check <- subset(check, year == 2016)
-check <- ysafunc(check)
-check <- aaagroupfunc(check)
-
-# Apply fuction that merges the TB incidences in countries of birth
-# for each census year
-addISO3TBincidfunc <- function(dt) {
-  cobtb <- read.csv("Data/TB_burden_countries_2019-04-23.csv", header=T)
-  cobtb <- as.data.table(cobtb)
-  cobtb[,iso3 := as.character(iso3)]
-  setnames(cobtb, "e_inc_100k", "cob.incid")
-  cobtb <- cobtb[, c("iso3", "cob.incid", "year")]
-  ###Merging the cobtb data in
-  cobtb[, yoa := as.numeric(year)]
-  dt[, yoa := as.character(yoa)]
-  dt[, yoa := as.numeric(yoa)]
-  dt[, yoa2 := yoa]  
-  dt[yoa2 < 2000, yoa2 := 2000] 
-  dt[iso3 == "TLS" & yoa2 < 2002, yoa2 := 2002] 
-  dt[iso3 == "SSD" & yoa2 < 2011, yoa2 := 2011] 
-  dt[iso3 == "SRB" & yoa2 < 2005, yoa2 := 2005] 
-  dt[iso3 == "MNE" & yoa2 < 2005, yoa2 := 2005] 
-  dt[iso3 == "CUW" & yoa2 < 2010, yoa2 := 2010] 
-  setnames(cobtb, "year", "yoa2")
-  dt <- merge(dt, cobtb, by = c("iso3", "yoa2"), all.x = TRUE)
-  #dt<-cobifunc(dt)
-  dt
-}
-
-check<-addISO3TBincidfunc(check)
-
-check[cob.incid > 99, cobi := "100+"]
-check[cob.incid < 100, cobi := "<100"]
-
-check <- check[, c("mednum", "poptb", "ysag", "cobi", 
-                   "aaag", "tfnum", "sfnum", "pop")]
-check <- check %>%
-  group_by(aaag, cobi, ysag) %>% # aggregating by ysa 
-  summarise_all(list(sum))
-check <- uncertaintycalc(check)
-
-check <- subset(check, aaag != "0-4" & aaag != "5-10")
-
-# There were only two population groups for which no TB cases 
-# occurred and the sample in both these groups was so 
-# low that the decision was made to adjust the upper 
-# and lower uncertainty intervals for these groups to zero.
-check[poptb == 0 , upper := 0]
-
-# RRates table in Appendix
-newdata <- check[order(cobi, ysag, aaag),]
-newdata <- newdata[, c("aaag", "cobi", "ysag", 
-                       "react", "lower", "upper")]
-newdata1 <- subset(newdata, cobi == "<100")
-newdata1[ysag == "41+" & aaag == "60-69", cobi := "go"]
-newdata1 <- subset(newdata1, cobi != "go")
-newdata2 <- subset(newdata, cobi == "100+")
-newdata <- cbind (newdata1, newdata2)
-write.table(newdata, "clipboard", sep="\t", row.names=FALSE)
-rm(newdata1, newdata2)
-
-check[, tfnum := NULL]
-check[, sfnum := NULL]
-check[, mednum := NULL]
-check[, pop := NULL]
-check[, poptb := NULL]
-setnames(check, "react", "Rate")
-setnames(check, "upper", "UUI")
-setnames(check, "lower", "LUI")
-
-# Add a new "simulation number" column
-check[, sim := 1]
-
-# Create a base dataframe
-rrates <- copy(check)
-
-# Because the base dataframe for simulation 1
-# already exists and will be built on,
-# create the number of extra data frames we'll need
-# i.e. 2 to the number of simulations
-vector <- c(2:Num_SIm)
-
-# This function copies the dataframe
-# and adds it below for the next 
-# simulation number
-for (i in vector) {
-  
-  dt <- copy(check)
-  dt[, sim := i]
-  rrates <- rbind(rrates, dt)
-  
-}
-
-rm(check, raw, newdata, dt)
-
-# For some reason I can't add a column to the 
-# dataframe with a sample from the distribution
-# using the values from the other columns as
-# inputs. So I have to do it separately
-mid <- rrates[, (Rate)]
-low <- rrates[, (LUI)]
-high <- rrates[, (UUI)]
-simnumber <- rrates[, (sim)]
-
-dt <- copy(rrates)
-
-dt <- as.data.table(dt)
-
-dt[ , rand.samp := rpert(1, min = UUI, mode = Rate, max = UUI)]
-
-
-# Generating a random set of numbers, one for each simulation
-# that will be used as a seed number for "set.seed" functions
-# below, so that the sampling from distributions is the same
-# for both the baseline and strategy model runs
-set.seed.number <- sample(1000:1000000, Num_SIm, replace = F)
-
-# This function takes random sample using the 
-# rate values from each row.
-# the seed is set using the simulation number
-# in that row.
-rpertfunction <- function(x) {
-  set.seed(set.seed.number[simnumber[x]])
-  rpert(1, min = low[x], mode = mid[x], max = high[x])
-}
-vector <- c(1:length(mid))
-answer <- unlist(lapply(vector, rpertfunction))
-
-# Adding the random samples to the dataframe
-rrates[, random.sample := answer]
-rrates[, UUI := NULL]
-rrates[, LUI := NULL]
-rrates[, Rate := NULL]
-setnames(rrates, "random.sample", "Rate")
-
-dt <- copy(rrates)
-
-
-
-# aaag <- c("70+")
-# ysag <- c("31")
-# cobi <- c("<100", "100+")
-# sim <- c(1:Num_SIm)
-
-
-
-sortfunc <- function(dt){
-  # Create new data frame with ages and years of arrival 0 to 110
-  aaa <- c(11:110)
-  ysa <- c(0:110)
-  cobi <- c("<100", "100+")
-  sim <- c(1:Num_SIm)
-  newdt <- expand.grid(aaa, ysa, cobi, sim)
-  newdt <- as.data.table(newdt)
-  setnames(newdt, "Var1", "aaa")
-  setnames(newdt, "Var2", "ysa")
-  setnames(newdt, "Var3", "cobi")
-  setnames(newdt, "Var4", "sim")
-  # Add aggregated data columns
-  newdt <- aaagroupfunc(newdt)  
-  newdt <- ysafunc(newdt)
-  newdt[, cobi := as.character(cobi)]
-  dt[, cobi := as.character(cobi)]
-  newdt <- merge(newdt, dt, by = c("aaag", "cobi", 
-                                   "ysag", "sim"), all.x = TRUE)
-  # Sort the table in order
-  newdt <- newdt[order(sim, cobi, aaag, ysag), ]
-  # setorder(newdt, sim, cobi, aaag, ysag)
-  # Fill down any missing values
-  newdt <- newdt %>% fill(Rate)
-  newdt
-}
-
-rrates <- sortfunc(rrates)
-
 # Get.RR
 # Reactivation rates
 Get.RR <- function(xDT, year) {
   
-  DT <- copy(xDT[, .(AGERP, YARP, ISO3, AGEP)])
+  DT <- copy(xDT[, .(AGERP, YARP, ISO3, AGEP, SEXP)])
   
   DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
   
@@ -1012,20 +636,30 @@ Get.RR <- function(xDT, year) {
   
   DT[AGERP > 110, AGERP := 110]
   
-  # Knocking everyone off at 120 years of age, so I need to adjust RR to zero at 100
+  mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], 
+                Rate, on = .(aaa = AGERP, Sex = SEXP,
+                             ysa = ST, cobi = COBI)]
   
-  ifelse(DT[, AGEP] > kill.off.above, 0,
+  low <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], 
+                LUI, on = .(aaa = AGERP, Sex = SEXP,
+                            ysa = ST, cobi = COBI)]
+  
+  high <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], 
+                 UUI, on = .(aaa = AGERP, Sex = SEXP,
+                             ysa = ST, cobi = COBI)]
+  
+  set.seed(set.seed.number[simnumber])
+  
+  rpertfunction <- function(x) {
+    rpert(1, min = low[x], mode = mid[x], max = high[x])
+  }
+  vector <- c(1:length(mid))
+  
+  # Knocking everyone off at 120 years of age, so I need to adjust RR to zero at 120
+  
+  ifelse(DT[, AGEP] > kill.off.above, 0, unlist(lapply(vector, rpertfunction))
          
-         # Baseline reactivation rates
-         rrates[sim == simnumber][DT[, .(AGERP, COBI, ST = year - YARP)], 
-                                  Rate, on = .(aaa = AGERP, ysa = ST, cobi = COBI)]
   )
-  
-  # set.seed(set.seed.number[simnumber])
-  # rpert(1, min = low, mode = mid, max = high, shape = shape)
-  # betaparam <- findbeta2(mid, low, high)
-  # out <- rbeta(1, betaparam[1], betaparam[2])
-  # return(out)
   
 } 
 
@@ -1219,7 +853,7 @@ sae.mortality <- readRDS("Data/sae.mortality.rds") # this is also required
 sae.mortality <- as.data.table(sae.mortality)
 # SAE mortality data from: ...
 rradjrates <- readRDS("Data/rradjrates.rds")
-
+RRatesbase <- readRDS("Data/RRates.for.psa.rds")
 
 # Creating a vector of state names
 state.names <- c("p.sus",	"p.sus.notest", "p.sus.nf",	"p.sus.nbt",	"p.sus.nct",	"p.sus.tc",
@@ -1337,11 +971,6 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                SAECOST = csae
 )
 
-# Uses aust.rds file to create a sample input
-pop.master <- CreatePopulationMaster()
-# pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
-
-
 # To run the model each of the parameters needs
 # to be in the environment, i.e. not defined within
 # another function so the following loop takes each row of 
@@ -1353,12 +982,39 @@ simrun.output <- c(seq(1, Num_SIm))
 simrun.output <- as.data.frame(simrun.output)
 simrun.output <- as.data.table(simrun.output)
 
-
 # this loops over the number of simulations
 # and runs the model
 for(i in 1:Num_SIm) {
   simnumber <- i
   PSA <- 1
+  # Sort out the LTBI prevalence and reacitvation rate data to use
+  # Sample the percentile from the LTBI prevalence data:
+  set.seed(set.seed.number[simnumber])
+  sampled.percentile <- round(rpert(1, min = 25, mode = 50, max = 75))
+  sampled.percentile <- paste0(sampled.percentile, "%")
+  columns <- c("YARP", "ISO3", "CNSY",
+               "SEXP", "AGEP", "NUMP",
+               "YOBP", sampled.percentile)
+  aust <- copy(austbase[,..columns])
+  colpercent <- which(colnames(aust) == sampled.percentile)
+  setnames(aust, colpercent, "LTBP")
+  # Uses aust.rds file to create a sample input
+  pop.master <- CreatePopulationMaster()
+  # pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
+  # Select the reactivation rate data to use:
+  ratecol <- paste0("rate", sampled.percentile)
+  lowercol <- paste0("lower", sampled.percentile)
+  uppercol <- paste0("upper", sampled.percentile)
+  columns <- c("cobi", "Sex", "aaa", "ysa", 
+               ratecol, lowercol, uppercol)
+  RRates <- copy(RRatesbase[,..columns])
+  colrates <- which(colnames(RRates) == ratecol)
+  collower <- which(colnames(RRates) == lowercol)
+  colupper <- which(colnames(RRates) == uppercol)
+  setnames(RRates, colrates, "Rate")
+  setnames(RRates, collower, "LUI")
+  setnames(RRates, colupper, "UUI")
+
   begintrt <- simdata[simnumber, begintrt]
   att <- simdata[simnumber, att]
   attscreen <- simdata[simnumber, attscreen]
@@ -1510,9 +1166,11 @@ for(i in 1:Num_SIm) {
 # Do parallel trick. This requires the doParallel and foreach package
 # and makes the loop below run simulaneoulsy in the 4 cores of the 
 # computer, and so run four times as quickly!
+
 # my.cl <- makeCluster(4)
 # registerDoParallel(my.cl)
 # foreach (i = 1:nrow(simdata)) %dopar% {
+#   library(data.table)
 #   simnumber <- i
 #   PSA <- 1
 #   begintrt <- simdata[simnumber, begintrt]
@@ -1710,16 +1368,18 @@ if (onshore == 1) {
   saveRDS(simdata, "Data/PSA/onshore.rds")
   
 } else if (onshore == 0) {
-  
+
   saveRDS(simdata, "Data/PSA/offshore.rds")
   
 }
 
 
-
-
 # # Read back in simdata 
 # simdata <- readRDS("Data/PSA/simdata.rds")
+
+
+widthcm <- 8
+heightcm <- 6
 
 
 if (onshore == 1) {
@@ -1735,8 +1395,10 @@ if (onshore == 1) {
   pointsize <- 2.5
   textsize <- 6
   textsize2 <- 20
+
   
-  ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
+  myplot1<-
+    ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
                        colour = wtp.colour)) +
     geom_point(size = pointsize, alpha = 1, na.rm = T) +
     geom_vline(xintercept = 0, color = "black") +
@@ -1761,16 +1423,18 @@ if (onshore == 1) {
           panel.border = element_blank(),
           legend.position = "none")
   
-  # tiff('acceptability onshore mid.tiff',
-  #      units = "in", width = 15, height = 12,
-  #      res = 200)
-  # myplot1
-  # dev.off()
+
+    tiff('Figures/psa onshore.tiff',
+         units = "in", width = widthcm, height = heightcm,
+         res = 200)
+    print(myplot1)
+    dev.off()
+
 } else if (onshore == 0) {
   
   ylimmin <- -2
-  ylimmax <- 4
-  xlimmin <- -140
+  ylimmax <- 6
+  xlimmin <- -180
   xlimmax <- 120
   
   pointsize <- 2.5
@@ -1778,7 +1442,8 @@ if (onshore == 1) {
   textsize2 <- 20
   
   # OFFSHORE
-  ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000)) +
+  myplot1<- 
+    ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000)) +
     geom_point(size = pointsize, alpha = 1, na.rm = T) +
     geom_vline(xintercept = 0, color = "black") +
     geom_hline(yintercept = 0, color = "black") +
@@ -1802,13 +1467,13 @@ if (onshore == 1) {
           panel.border = element_blank(),
           legend.position = "none")
   
-  # tiff('acceptability offshore mid.tiff',
-  #      units = "in", width = 15, height = 12,
-  #      res = 200)
-  # myplot1
-  # dev.off()
-}
+    tiff('Figures/psa offshore.tiff',
+         units = "in", width = widthcm, height = heightcm,
+         res = 200)
+    print(myplot1)
+    dev.off()
 
+}
 
 # Plot of acceptability curve
 # work out the proportion cost-effective
@@ -1855,14 +1520,14 @@ myplot1 <-
 
 if (onshore == 1) {
   tiff('Figures/acceptability onshore.tiff',
-       units = "in", width = 15, height = 12,
+       units = "in", width = widthcm, height = heightcm,
        res = 200)
-  myplot1
+  print(myplot1)
   dev.off()
 } else if (onshore == 0) {
   tiff('Figures/acceptability offshore.tiff',
-       units = "in", width = 15, height = 12,
+       units = "in", width = widthcm, height = heightcm,
        res = 200)
-  myplot1
+  print(myplot1)
   dev.off()
 }

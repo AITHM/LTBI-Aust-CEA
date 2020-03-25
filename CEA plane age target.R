@@ -17,8 +17,8 @@ parameters.already.set <- 1
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 #setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-# params <- readRDS("params offshore.rds")
+# params <- readRDS("params onshore.rds")
+params <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -113,9 +113,10 @@ for(target.x in 1:nrow(target.dt)) {
 }
 
 # Save the output to file
-# saveRDS(results.dt, file = "Data/agetargetnoemig.rds")
+
+saveRDS(results.dt, file = "Data/agetargetnoemig.rds")
 # saveRDS(results.dt, file = "Data/agetargetonshore.rds")
-saveRDS(results.dt, file = "Data/agetargetonshorenoemig.rds")
+# saveRDS(results.dt, file = "Data/agetargetonshorenoemig.rds")
 
 
 # Write the table to clipboard so I can paste it into Excel

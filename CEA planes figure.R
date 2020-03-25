@@ -41,7 +41,14 @@ sortformatfunc <- function(dt){
   setnames(dt, 'Incremental.QALYS', "incremental.qalys")
   setnames(dt, 'total.additional.cost', "incremental.cost")
   dt[1, strategy := "Baseline"]
-  dt[, strategy := as.character(strategy)]
+  dt[strategy == "QTFGIT.3HP", strategy := "QFTGIT.3HP"]
+  dt[strategy == "QTFGIT.4R", strategy := "QFTGIT.4R"]
+  dt[strategy == "QTFGIT.6H", strategy := "QFTGIT.6H"]
+  dt[strategy == "QTFGIT.9H", strategy := "QFTGIT.9H"]
+  dt[, strategy := factor(strategy, levels = c("QFTGIT.3HP", "QFTGIT.4R", "QFTGIT.6H", "QFTGIT.9H",
+                                               "TST10.3HP", "TST10.4R", "TST10.6H", "TST10.9H",
+                                               "TST15.3HP", "TST15.4R", "TST15.6H", "TST15.9H",
+                                               "Baseline"))]
   dt[is.na(incremental.cost), incremental.cost := 0]
   dt[is.na(incremental.qalys), incremental.qalys := 0]
 }
@@ -61,9 +68,9 @@ getPalette
 ylimmin <- -2
 ylimmax <- 10
 xlimmin <- -4
-xlimmax <- 64
+xlimmax <- 92
 
-titleposxaxis <- 30 
+titleposxaxis <- 45 
 titleposyaxis <- 9 
 pointsize <- 2
 textsize <- 3
@@ -86,15 +93,16 @@ myplot1 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values = c(19, 
-                                24, 24, 24, 24,
+  scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
-                                22, 22, 22, 22)) +
+                                22, 22, 22, 22,
+                                19)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize, 
            label = "Offshore LTBI screening\ntargeting 11-35 year olds from 100+/100,000") +
-  scale_fill_manual(values = c(19, getPalette, 
+  scale_fill_manual(values = c(getPalette, 
                                getPalette,
-                               getPalette)) +
+                               getPalette,
+                               19)) +
   scale_y_continuous(breaks = seq(-10, 250, 2)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
@@ -118,16 +126,16 @@ myplot2 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values = c(19,
-                                24, 24, 24, 24,
+  scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
-                                22, 22, 22, 22)) +
+                                22, 22, 22, 22,
+                                19)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize, 
            label = "Offshore LTBI screening\ntargeting 11-65 year olds from 100+/100,000") +
-  scale_fill_manual(values = c(19,
-                               getPalette, 
+  scale_fill_manual(values = c(getPalette, 
                                getPalette,
-                               getPalette)) +
+                               getPalette,
+                               19)) +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -162,14 +170,14 @@ myplot3 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values = c(19,
-                                24, 24, 24, 24,
+  scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
-                                22, 22, 22, 22)) +
-  scale_fill_manual(values = c(19,
-                               getPalette, 
+                                22, 22, 22, 22,
+                                19)) +
+  scale_fill_manual(values = c(getPalette, 
                                getPalette,
-                               getPalette)) +
+                               getPalette,
+                               19)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
            label = "Offshore LTBI screening\ntargeting 11-65 year olds from 200+/100,000") +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
@@ -207,14 +215,14 @@ myplot4 <-
        shape = "Strategy") +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
            label = "Onshore LTBI screening\ntargeting 11-35 year olds from 100+/100,000") +
-  scale_shape_manual(values = c(19,
-                                24, 24, 24, 24,
+  scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
-                                22, 22, 22, 22)) +
-  scale_fill_manual(values = c(19,
-                               getPalette, 
+                                22, 22, 22, 22,
+                                19)) +
+  scale_fill_manual(values = c(getPalette, 
                                getPalette,
-                               getPalette)) +
+                               getPalette,
+                               19)) +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -251,14 +259,14 @@ myplot5 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values = c(19,
-                                24, 24, 24, 24,
+  scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
-                                22, 22, 22, 22)) +
-  scale_fill_manual(values = c(19,
-                               getPalette, 
+                                22, 22, 22, 22,
+                                19)) +
+  scale_fill_manual(values = c(getPalette, 
                                getPalette,
-                               getPalette)) +
+                               getPalette,
+                               19)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
            label = "Onshore LTBI screening\ntargeting 11-65 year olds from 100+/100,000") +
   scale_y_continuous(breaks = seq(-10, 250, 2)) +
@@ -285,14 +293,14 @@ myplot6 <-
        shape = "Strategy") +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize,  
            label = "Onshore LTBI screening\ntargeting 11-65 year olds from 200+/100,000") +
-  scale_shape_manual(values = c(19,
-                                24, 24, 24, 24,
+  scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
-                                22, 22, 22, 22)) +
-  scale_fill_manual(values = c(19,
-                               getPalette, 
+                                22, 22, 22, 22,
+                                19)) +
+  scale_fill_manual(values = c(getPalette, 
                                getPalette,
-                               getPalette)) +
+                               getPalette,
+                               19)) +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +

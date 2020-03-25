@@ -23,13 +23,11 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 data <- readRDS("Data/cea.plane.2.rds")
 data <- as.data.table(data)
 
-off11.35 <- subset(data, other == "30yr horizon")
-off11.35_80yrs <- subset(data, other == "80yr horizon")
+lifetime <- subset(data, other == "lifetime horizon")
+thirtyyrs <- subset(data, other == "30yr horizon")
 noemigoff <- subset(data, other == "perm emigration")
 ultbioff <- subset(data, other == "LTBI decrement")
-inflow30 <- subset(data, other == "30 inflows")
-
-dt<- copy(off11.35)
+inflow30 <- subset(data, other == "30 inflows and horizon")
 
 sortformatfunc <- function(dt){
   dt <- as.data.table(dt)
@@ -42,8 +40,8 @@ sortformatfunc <- function(dt){
   dt[is.na(incremental.qalys), incremental.qalys := 0]
 }
 
-plot1 <- sortformatfunc(off11.35)
-plot2 <- sortformatfunc(off11.35_80yrs)
+plot1 <- sortformatfunc(lifetime)
+plot2 <- sortformatfunc(thirtyyrs)
 plot3 <- sortformatfunc(noemigoff)
 plot4 <- sortformatfunc(ultbioff)
 plot5 <- sortformatfunc(inflow30)
@@ -53,10 +51,13 @@ plot5 <- sortformatfunc(inflow30)
 getPalette<-brewer.pal(4, "Spectral")
 getPalette
 
-ylimmin <- -2
-ylimmax <- 7.5
-xlimmin <- -4
-xlimmax <- 64
+ylimmin <- -1
+ylimmax <- 9
+xlimmin <- -10
+xlimmax <- 40
+
+textx <- 20
+texty <- 8
 
 pointsize <- 2.5
 textsize <- 4
@@ -77,8 +78,8 @@ myplot1 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  annotate("text", x = 20, y = 6.5, 
-           label = "30 year time horizon") +
+  annotate("text", x = textx, y = texty, 
+           label = "Lifetime time horizon") +
   scale_shape_manual(values = c(19,
                                 24, 24, 24, 24,
                                 21, 21, 21, 21,
@@ -109,8 +110,8 @@ myplot2 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  annotate("text", x = 20, y = 6.5, 
-           label = "80 year time horizon") +
+  annotate("text", x = textx, y = texty, 
+           label = "30 year time horizon") +
   scale_shape_manual(values = c(19,
                                 24, 24, 24, 24,
                                 21, 21, 21, 21,
@@ -149,7 +150,7 @@ myplot3 <-
                                getPalette, 
                                getPalette,
                                getPalette)) +
-  annotate("text", x = 25, y = 6.5, 
+  annotate("text", x = textx, y = texty, 
            label = "Screening migrants applying for\npermanent visas only") +
   scale_y_continuous(breaks = seq(-10, 250, 1)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
@@ -185,7 +186,7 @@ myplot4 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #         hjust = 1, vjust = -0.2, size = textsize,
   #         colour = "black") +
-  annotate("text", x = -250, y = 6.5,
+  annotate("text", x = -250, y = texty,
            label = "Applying health utility values for those on\nLTBI treatment from Bauer et al 2015") +
   scale_shape_manual(values = c(19,
                                 24, 24, 24, 24,
@@ -196,7 +197,7 @@ myplot4 <-
                                getPalette,
                                getPalette)) +
 scale_y_continuous(breaks = seq(-10, 250, 1)) +
-  scale_x_continuous(breaks = seq(-500, 1000, 100)) +
+  scale_x_continuous(breaks = seq(-1000, 1000, 100)) +
   theme_bw() +
   coord_cartesian(xlim = c(-600, 100), ylim = c(ylimmin, ylimmax)) +
   theme(text = element_text(size = textsize2),
@@ -226,7 +227,7 @@ myplot5 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  annotate("text", x = -250, y = 6.5, 
+  annotate("text", x = -250, y = 8, 
            label = "Applying health utility values for those on\nLTBI treatment from Bauer et al 2015") +
   scale_shape_manual(values = c(19,
                                 24, 24, 24, 24,
@@ -261,8 +262,8 @@ myplot5 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  annotate("text", x = 300, y = 100, 
-           label = "30 year migrant inflow") +
+  annotate("text", x = 150, y = 180, 
+           label = "30 year migrant inflow\nand horizon") +
   scale_shape_manual(values = c(19,
                                 24, 24, 24, 24,
                                 21, 21, 21, 21,
@@ -271,10 +272,10 @@ myplot5 <-
                                getPalette, 
                                getPalette,
                                getPalette)) +
-  scale_y_continuous(breaks = seq(-20, 250, 20)) +
-  scale_x_continuous(breaks = seq(0, 1000, 100)) +
+  scale_y_continuous(breaks = seq(-40, 500, 20)) +
+  scale_x_continuous(breaks = seq(-300, 1000, 100)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, 580), ylim = c(ylimmin, 130)) +
+  coord_cartesian(xlim = c(-200, 300), ylim = c(ylimmin, 200)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),
@@ -300,10 +301,10 @@ grid_arrange_shared_legend <- function(...) {
 
 plot_grid(myplot1, myplot2, myplot3, myplot4, myplot5, legend,
           nrow = 1, 
-          rel_widths = c(1, 1, 1, 1, 1, 0.3),
+          rel_widths = c(1, 1, 1, 1, 1, 0.3), 
           labels = c("a)", "b)", "c)", "d)", "e)", ""))
 
-tiff('Figures/ceaplane2.tiff', units = "in", width = 18, height = 4,
+tiff('Figures/ceaplane2.tiff', units = "in", width = 20, height = 4,
      res = 200)
 plot_grid(myplot1, myplot2, myplot3, myplot4, myplot5, legend,
           nrow = 1, 

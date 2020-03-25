@@ -117,5 +117,4 @@ if (onshore == 1) {
   saveRDS(results.dt, file = "Data/offshore_results.rds")
 }
 
-# Write the table to clipboard so I can paste it into Excel
-write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+                                                       
