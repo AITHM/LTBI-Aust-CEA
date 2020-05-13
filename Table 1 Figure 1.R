@@ -140,7 +140,7 @@ check <- rbindlist(check)
 check$ISO3 <- ordered(check$ISO3, levels = c('0-39', '40-99', 
                                     '100-149', '150-199','200+'))
 
-dev.off()
+# dev.off()
 plot1 <- 
   ggplot(check, aes(x = AAAG, colour = ISO3, y = NUMP, group = ISO3))+
   geom_line(size = 2) +
@@ -153,9 +153,9 @@ plot1 <-
   # coord_cartesian(ylim = c(0,120)) +
   guides(colour = guide_legend(
     keywidth = 0.2,
-    keyheight = 0.4,
+    keyheight = 0.2,
     default.unit = "inch"))+
-  theme(text = element_text(size = 23),
+  theme(text = element_text(size = 15),
         legend.position = c(0.75, 0.57),
         axis.text.x = element_blank(),
         axis.title.x = element_blank(),
@@ -164,7 +164,7 @@ plot2 <-
   ggplot(check, aes(x = AAAG, colour = ISO3, y = percent, group = ISO3))+
   geom_line(size = 2) +
   labs(x = "Age group at migration (years)", 
-       y = "Percent",
+       y = "Percent of each group",
        colour = "TB incidence in country of birth\n at migration, per 100,000") +
   scale_y_continuous(labels = comma) +
   theme_bw() +
@@ -172,21 +172,15 @@ plot2 <-
   # coord_cartesian(ylim = c(0,120)) +
   guides(colour = guide_legend(
     keywidth = 0.2,
-    keyheight = 0.4,
+    keyheight = 0.2,
     default.unit = "inch"))+
-  theme(text = element_text(size = 23),
+  theme(text = element_text(size = 15),
         legend.position = "none",
         axis.text.x = element_text(angle = 45, hjust = 1),
         strip.text = element_blank())
 
-
-
-
-# setwd("H:/Katie/PhD/CEA/R/Figures")
-# setEPS()
-# postscript("figure1.eps",onefile = FALSE, 
-#            paper = "special",
-#            width=11.69, height=8.27)
+tiff('Figures/Fig1.tiff', units = "in", width = 10, height = 5,
+     res = 200)
 egg::ggarrange(plot1, plot2, nrow = 2)
-
 dev.off()
+

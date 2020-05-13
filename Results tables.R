@@ -16,8 +16,8 @@ parameters.already.set <- 1
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 #setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-params <- readRDS("params offshore.rds")
+params <- readRDS("params onshore.rds")
+# params <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -34,6 +34,8 @@ target.dt <- as.data.table(target.dt)
 setnames(target.dt, "Var1", "age.low")
 setnames(target.dt, "Var2", "age.high")
 setnames(target.dt, "Var3", "tbincid")
+target.dt[age.low == 35 & age.high == 36, kick := 1]
+target.dt <- subset(target.dt, is.na(kick))
 
 # The following loops down the rows of the table
 # and runs the model with each specified target
@@ -117,4 +119,6 @@ if (onshore == 1) {
   saveRDS(results.dt, file = "Data/offshore_results.rds")
 }
 
-                                                       
+# Write the table to clipboard so I can paste it into Excel
+write.table(results.dt, file = "clipboard-16384", 
+            sep = "\t", row.names = FALSE)  

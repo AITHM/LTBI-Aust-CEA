@@ -26,7 +26,7 @@ xlimlower <- 30
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
-data <- readRDS("Data/agetarget.rds")
+data <- readRDS("Data/agetargetoffshore.rds")
 data <- as.data.table(data)
 
 data <- subset(data, strategy != "0_12...rds")
@@ -63,6 +63,12 @@ myplot1 <-
   geom_abline(intercept = 0, slope = (50000)/1000,
               colour = "grey",
               size = 1.5) +
+  geom_abline(intercept = 0, slope = (50000/1000000)/1,
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
+              size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$thousands)",
        fill = "Target by:\nage group\n(years)",
@@ -150,6 +156,12 @@ myplot2 <-
   geom_abline(intercept = 0, slope = (50000)/1000,
               colour = "grey",
               size = 1.5) +
+  geom_abline(intercept = 0, slope = (50000/1000000)/1,
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
+              size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (in thousands, AUD$)",
        fill = "Target by:\nage group\n(years)",
@@ -201,9 +213,12 @@ myplot2 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000)/1000,
-              colour = "grey",
-              size = 1.5) +
+  geom_abline(intercept = 0, slope = (50000/1000000)/1,
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
+              size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (in thousands, AUD$)",
        fill = "Target by:\nage group\n(years)",

@@ -68,7 +68,7 @@ getPalette
 ylimmin <- -2
 ylimmax <- 10
 xlimmin <- -4
-xlimmax <- 92
+xlimmax <- 85
 
 titleposxaxis <- 45 
 titleposyaxis <- 9 
@@ -87,7 +87,10 @@ myplot1 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -96,13 +99,13 @@ myplot1 <-
   scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
                                 22, 22, 22, 22,
-                                19)) +
+                                4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize, 
-           label = "Offshore LTBI screening\ntargeting 11-35 year olds from 100+/100,000") +
+           label = "Offshore LTBI screening\ntargeting 11-35 year olds from 100+/100,000ppy") +
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette,
-                               19)) +
+                               4)) +
   scale_y_continuous(breaks = seq(-10, 250, 2)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
@@ -120,7 +123,10 @@ myplot2 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -129,13 +135,13 @@ myplot2 <-
   scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
                                 22, 22, 22, 22,
-                                19)) +
+                                4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize, 
-           label = "Offshore LTBI screening\ntargeting 11-65 year olds from 100+/100,000") +
+           label = "Offshore LTBI screening\ntargeting 11-65 year olds from 100+/100,000ppy") +
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette,
-                               19)) +
+                               4)) +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -164,7 +170,10 @@ myplot3 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -173,13 +182,13 @@ myplot3 <-
   scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
                                 22, 22, 22, 22,
-                                19)) +
+                                4)) +
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette,
-                               19)) +
+                               4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Offshore LTBI screening\ntargeting 11-65 year olds from 200+/100,000") +
+           label = "Offshore LTBI screening\ntargeting 11-65 year olds from 200+/100,000ppy") +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -207,22 +216,25 @@ myplot4 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Onshore LTBI screening\ntargeting 11-35 year olds from 100+/100,000") +
+           label = "Onshore LTBI screening\ntargeting 11-35 year olds from 100+/100,000ppy") +
   scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
                                 22, 22, 22, 22,
-                                19)) +
+                                4)) +
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette,
-                               19)) +
+                               4)) +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -253,7 +265,10 @@ myplot5 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -262,13 +277,13 @@ myplot5 <-
   scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
                                 22, 22, 22, 22,
-                                19)) +
+                                4)) +
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette,
-                               19)) +
+                               4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Onshore LTBI screening\ntargeting 11-65 year olds from 100+/100,000") +
+           label = "Onshore LTBI screening\ntargeting 11-65 year olds from 100+/100,000ppy") +
   scale_y_continuous(breaks = seq(-10, 250, 2)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
@@ -285,22 +300,25 @@ myplot6 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize,  
-           label = "Onshore LTBI screening\ntargeting 11-65 year olds from 200+/100,000") +
+           label = "Onshore LTBI screening\ntargeting 11-65 year olds from 200+/100,000ppy") +
   scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
                                 22, 22, 22, 22,
-                                19)) +
+                                4)) +
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette,
-                               19)) +
+                               4)) +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -338,16 +356,16 @@ grid_arrange_shared_legend <- function(...) {
 }
 
 # dev.off()
-grid_arrange_shared_legend(myplot1, myplot4,
-                           myplot2, myplot5,
-                           myplot3, myplot6,
+grid_arrange_shared_legend(myplot4, myplot1,
+                           myplot5, myplot2,
+                           myplot6, myplot3,
                            nrow = 3)
 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
 tiff('ceaplane1.tiff', units = "in", width = 8, height = 8,
      res = 200)
-grid_arrange_shared_legend(myplot1, myplot4,
-                           myplot2, myplot5,
-                           myplot3, myplot6,
+grid_arrange_shared_legend(myplot4, myplot1,
+                           myplot5, myplot2,
+                           myplot6, myplot3,
                            nrow = 3)
 dev.off()

@@ -50,7 +50,7 @@ source("Distribution parameter calculations.R") # for determining distribution p
 ################## PSA #####################################
 
 # Defining the number of simulations we want
-Num_SIm <- 5
+Num_SIm <- 100
 
 # Generating a random set of numbers, one for each simulation
 # that will be used as a seed number for "set.seed" functions
@@ -76,7 +76,7 @@ final.year <- start.year + totalcycles
 kill.off.above <- 120 # age above which all enter death state
 
 # The tests and treatments I want to consider in this analysis
-testlist <- c("TST10") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+testlist <- c("TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # The number of migrants I want to include in each inflow
@@ -89,11 +89,11 @@ finalinflow <- 0
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
   # 40+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
@@ -109,11 +109,15 @@ Get.POP <- function(DT, strategy) {
 # is defined in the relevant params.rds file and needs to be read in:
 # read in parameter list and values, which is defined in the "Parameter creation" scripts
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-dt <- readRDS("params onshore.rds")
-onshore <- 1
+# dt <- readRDS("params onshore.rds")
+# onshore <- 1
 
-# dt <- readRDS("params offshore.rds")
-# onshore <- 0
+# LTBI treatment decrement?
+# ultbidec <- 1 # Yes
+ultbidec <- 0 # No
+
+dt <- readRDS("params offshore.rds")
+onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 
 # Read in the migrant population data, showing how many have LTBI in each population group.
@@ -1062,7 +1066,12 @@ for(i in 1:Num_SIm) {
   uactivetbr <- simdata[simnumber, uactivetbr]
   uhealthy <- simdata[simnumber, uhealthy]
   ultbi3HP <- simdata[simnumber, ultbi3HP]
-  ultbi4R <- simdata[simnumber, ultbi4R]
+  # ultbi4R <- simdata[simnumber, ultbi4R]
+  if (ultbidec == 1) {
+    ultbi4R <- dt[abbreviation == "ultbi4R", low]
+  } else if (ultbidec == 0) {
+    ultbi4R <- uhealthy
+  }
   ultbi6H <- simdata[simnumber, ultbi6H]
   ultbi9H <- simdata[simnumber, ultbi9H]
   ultbipart3HP <- simdata[simnumber, ultbipart3HP]

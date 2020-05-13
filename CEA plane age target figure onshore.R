@@ -26,7 +26,7 @@ xlimlower <- 20
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 #setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
-data <- readRDS("Data/agetarget.rds")
+# data <- readRDS("Data/agetarget.rds")
 data <- readRDS("Data/agetargetonshore.rds")
 data <- as.data.table(data)
 
@@ -105,13 +105,13 @@ scale_y_continuous(breaks = seq(-600000/1000, 20000000/1000, 500000/1000),
 #legend.position = c(0.80, 0.8),
 #axis.text.x = element_text(angle=45, hjust=1),
 
-tiff('Figures/ceaplaneagetalk.tiff', units = "in", width = 15, height = 7,
-     res = 200)
-myplot1
-dev.off()
+# tiff('Figures/ceaplaneage.tiff', units = "in", width = 15, height = 7,
+#      res = 200)
+# myplot1
+# dev.off()
 
 # Reading in the data without emigration
-data <- readRDS("Data/agetargetnoemig.rds")
+# data <- readRDS("Data/agetargetnoemig.rds")
 data <- readRDS("Data/agetargetonshorenoemig.rds")
 data <- as.data.table(data)
 

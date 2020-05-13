@@ -21,9 +21,10 @@ parameters.already.set <- 1
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-#params <- readRDS("params offshore.rds")
+# params <- readRDS("params onshore.rds")
+params <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -71,8 +72,8 @@ newparams[, icer := 0]
 newparams[, value := 0]
 newparams[p == "disc" & variable == "low", value := 0]
 newparams[p == "disc" & variable == "high", value := 0.05]
-newparams[p == "totalcycles" & variable == "low", value := 10]
-newparams[p == "totalcycles" & variable == "high", value := 80]
+newparams[p == "totalcycles" & variable == "low", value := 30]
+newparams[p == "totalcycles" & variable == "high", value := 91]
 tornado.dt <- rbind(tornado.dt, newparams)
 tornado.dt[, p := as.character(p)]
 
@@ -83,7 +84,6 @@ tornado.dt[, p := as.character(p)]
 # into the tornado.dt data table.
 for(tornado.x in 1:nrow(tornado.dt)) {
   
-  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
   source("CB-TLTBI Functions.R")
   source("Parameter values.R")
   paraname <- tornado.dt[tornado.x, p]
@@ -103,7 +103,7 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
       DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
       
-      vic.tb.mortality[DT[, .(AGEP, SEXP)], lowerProb, on = .(age = AGEP, sex = SEXP)]
+      vic.tb.mortality[DT[, .(AGEP, SEXP)], lower, on = .(age = AGEP, sex = SEXP)]
     }
       
   } else if (paraname == "tbmr" & highlow == "high") {
@@ -117,7 +117,7 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
       DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
       
-      vic.tb.mortality[DT[, .(AGEP, SEXP)], upperProb, on = .(age = AGEP, sex = SEXP)]
+      vic.tb.mortality[DT[, .(AGEP, SEXP)], upper, on = .(age = AGEP, sex = SEXP)]
     }
       
   } else if (paraname == "saemr" & highlow == "low") {
@@ -209,67 +209,63 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       }
       
     } else if (paraname == "ltbi.react" & highlow == "low") {
-      setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-      aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
-      aust <- as.data.table(aust)
-      # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
-    aust[, LTBP := NULL]
-    setnames(aust, "tfnum", "LTBP")
-    
-    # Reactivation rates
-    Get.RR <- function(xDT, year) {
+      # # Assuming a lower prevalence of LTBI and a upper reactivation rate
+      aust[, LTBP := NULL]
+      setnames(aust, "twentyrisk", "LTBP")
+      RRates <- readRDS("Data/RRates.for.psa.rds")
+      RRates <- as.data.table(RRates)
+      colupper <- which(colnames(RRates) == 'upper20%')
+      setnames(RRates, colupper, "UUI")
       
-      DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
-      
-      DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
-      
-      DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]  
-      
-      DT[AGERP > 110, AGERP := 110]
-      
-      # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
-      
-      ifelse(DT[, AGEP] > kill.off.above, 0,
-             
-            # assuming a lower LTBI prevalence and a higher rate of reactivation
-            RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                              ysa = ST, cobi = COBI)]
-
-      )
-
-    }
+      Get.RR <- function(xDT, year) {
+        
+        DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
+        
+        DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]
+        
+        DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]
+        
+        DT[AGERP > 110, AGERP := 110]
+        
+        # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
+        
+        ifelse(DT[, AGEP] > kill.off.above, 0,
+               
+               # assuming a lower LTBI prevalence and a higher rate of reactivation
+               RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                                ysa = ST, cobi = COBI)]
+        )
+      }
 
     } else if (paraname == "ltbi.react" & highlow == "high") {
-      setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-      aust <- readRDS("Data/Aust16byTBincid.rds") # baseline
-      aust <- as.data.table(aust)
-    
-    # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
-    aust[, LTBP := NULL]
-    setnames(aust, "sfnum", "LTBP")
-    
-    # Reactivation rates
-    Get.RR <- function(xDT, year) {
+      # # Assuming a higher prevalence of LTBI and a lower reactivation rate
+      aust[, LTBP := NULL]
+      setnames(aust, "eightyrisk", "LTBP")
+      RRates <- readRDS("Data/RRates.for.psa.rds")
+      RRates <- as.data.table(RRates)
+      collower <- which(colnames(RRates) == 'lower75%')
+      setnames(RRates, collower, "LUI")
+
+      Get.RR <- function(xDT, year) {
+
+        DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
+
+        DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]
+
+        DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]
+
+        DT[AGERP > 110, AGERP := 110]
+
+        # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
+
+        ifelse(DT[, AGEP] > kill.off.above, 0,
+
+               # assuming a higher LTBI prevalence and a lower rate of reactivation
+               RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
+                                                                                              ysa = ST, cobi = COBI)]
+        )
+      }
       
-      DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
-      
-      DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
-      
-      DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]  
-      
-      DT[AGERP > 110, AGERP := 110]
-    
-      # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
-      
-      ifelse(DT[, AGEP] > kill.off.above, 0,
-             
-             # assuming a higher prevalence of LTBI and a lower rate of reactivation
-             RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-                                                                              ysa = ST, cobi = COBI)]
-      )
-      
-    }
-    
     } else if (paraname == "base") {
  
     } else {
@@ -288,7 +284,6 @@ for(tornado.x in 1:nrow(tornado.dt)) {
   ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
   
   # Sourcing the medical costs
-  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
   source("Medical costs.R")
   
   # These specify how much of the appointment and medicine
@@ -365,12 +360,12 @@ for(tornado.x in 1:nrow(tornado.dt)) {
   library(data.table)
 
   # Read in the output files
-  filenames <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", 
+  filenames <- list.files("Data/Output", 
                           pattern = "*.rds", full.names = TRUE)
   files <- lapply(filenames, readRDS)
   
   # Create a list of the names of the output files
-  namelist <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", 
+  namelist <- list.files("Data/Output", 
                          pattern = "*.rds")
   namelist <- gsub("\\b.rds\\b", "", namelist)
   namelist <- gsub("\\bS2\\b", "", namelist)

@@ -11,7 +11,7 @@ source("Medical costs.R")
 # Create table of parameters
 p <- c("attscreen", "att", "cscreenqft", "cscreentst",
        "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
-       "begintrt", "prop.spec", "saemr",
+       "begintrt", "prop.spec",
        "snqftgit", "spqftgit",
        "sntst15", "sptst15", "sntst10", "sptst10",
        "treat.complete.3HP", "treat.complete.4R", "treat.complete.6H", "treat.complete.9H",
@@ -334,7 +334,6 @@ params[p == "cparttreatspec9H",
 params[p == "ctb", mid := 19212.89] 
 params[p == "ctb", low := 12405.78] 
 params[p == "ctb", high := 30649.78] #18491.84
-#params[p == "ctb", shape := 40]
 
 # Cost of sae
 params[p == "csae", mid := 1222.64] 
@@ -492,13 +491,13 @@ ultbi.6mths <- 0.06833333
 ultbi.9mths <- 0.06833333
 ultbi.12mths <- 0.07000000
 
-utb.base <- 0.06000000
-utb.1mth <- 0.06666667
-utb.2mths <- 0.07083333
-utb.4mths <- 0.07083333
-utb.6mths <- 0.07083333
-utb.9mths <- 0.07583333
-utb.12mths <- 0.07583333
+utb.base <- 0.72/12
+utb.1mth <- 0.80/12
+utb.2mths <- 0.85/12
+utb.4mths <- 0.85/12
+utb.6mths <- 0.85/12
+utb.9mths <- 0.91/12
+utb.12mths <- 0.91/12
 
 # Active TB utility calculations
 sae.decrement <- 0.25
@@ -538,9 +537,9 @@ uactivetbfunct <- function(symptom.mths, sae.mths, chance.of.sae) {
 # # 0.0708244
 
 
-params[p == "uactivetb", mid := uactivetbfunct(6, 1, 0.007)]
+params[p == "uactivetb", mid := uactivetbfunct(3, 1, 0.007)]
 params[p == "uactivetb", low := 0.7068]
-params[p == "uactivetb", high := uactivetbfunct(3, 1, 0.003)]
+params[p == "uactivetb", high := uactivetbfunct(1, 0.5, 0.003)]
 
 # LTBI treatment utility calculations
 
@@ -622,10 +621,6 @@ params[p == "uactivetbr", high := 0.873333333]
 params[p == "ultbitreatsae", mid := 0.8525000]
 params[p == "ultbitreatsae", low := 0.8420833]
 params[p == "ultbitreatsae", high := 0.8629167]
-
-params[p == "saemr", mid := 0.066666667]
-params[p == "saemr", low := 0]
-params[p == "saemr", high := 0.105]
 
 # Write the table to clipboard so I can 
 # paste it into my Excel spreadsheet

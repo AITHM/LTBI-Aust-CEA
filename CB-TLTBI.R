@@ -42,9 +42,6 @@ vic.mortality <- as.data.table(vic.mortality)
     # https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3222.02017%20(base)%20-%202066?OpenDocument
     # Results then aggregated by gender assuming a gender weighting by age equivalent to the Australian population
     # in September 2018. Source: https://www.abs.gov.au/AUSSTATS/abs@.nsf/DetailsPage/3101.0Sep%202018?OpenDocument
-RRates <- readRDS("Data/RRatescobincidnosex.rds")
-    # TB reactivation rate data from: Dale K, Trauer J, et al. Estimating long-term tuberculosis 
-    # reactivation rates in Australian migrants. Clinical Infectious Diseases 2019 (in press)
 vic.tb.mortality <- readRDS("Data/tb.mortality.rds")
 vic.tb.mortality <- as.data.table(vic.tb.mortality)
 vic.tb.mortality[, age := as.integer(age)]
@@ -325,8 +322,8 @@ pop.master <- CreatePopulationMaster()
 
 
 
-# factor <-  1051.86815545353 #      71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
-
+# factor <-  896.394819490552 #      71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
+# 
 # pop.master[, NUMP := NUMP/factor]
 # pop.master[, LTBP := LTBP/factor]
 # pop.master[, p.sus := p.sus/factor]

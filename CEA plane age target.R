@@ -33,7 +33,7 @@ target.dt<- expand.grid(lower.age.targets, tbincid.targets)
 target.dt <- as.data.table(target.dt)
 setnames(target.dt, "Var1", "age.low")
 setnames(target.dt, "Var2", "tbincid")
-target.dt[, age.high := age.low + 12]
+target.dt[, age.high := age.low + 11]
 target.dt[age.low == 10, age.high := 20]
 
 
@@ -114,10 +114,14 @@ for(target.x in 1:nrow(target.dt)) {
 
 # Save the output to file
 
-saveRDS(results.dt, file = "Data/agetargetnoemig.rds")
+saveRDS(results.dt, file = "Data/agetargetoffshore.rds")
 # saveRDS(results.dt, file = "Data/agetargetonshore.rds")
 # saveRDS(results.dt, file = "Data/agetargetonshorenoemig.rds")
 
-
-# Write the table to clipboard so I can paste it into Excel
-write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# results.dt <- readRDS("Data/agetargetonshorenoemig.rds")
+# # Write the table to clipboard so I can paste it into Excel
+# write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# 
+# results.dt <- readRDS("Data/agetargetonshore.rds")
+# # Write the table to clipboard so I can paste it into Excel
+# write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)

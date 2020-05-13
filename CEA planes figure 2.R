@@ -72,7 +72,10 @@ myplot1 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -104,7 +107,10 @@ myplot2 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -136,7 +142,10 @@ myplot3 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -168,7 +177,10 @@ myplot4 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -221,7 +233,10 @@ myplot5 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -256,7 +271,10 @@ myplot5 <-
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "grey",
+              colour = "gray65",
+              size = 1, lty = 2) +
+  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
@@ -299,17 +317,17 @@ grid_arrange_shared_legend <- function(...) {
 }
 
 
-plot_grid(myplot1, myplot2, myplot3, myplot4, myplot5, legend,
+plot_grid(myplot1, myplot2, myplot3, myplot5, myplot4, myplot6, legend,
           nrow = 1, 
-          rel_widths = c(1, 1, 1, 1, 1, 0.3), 
-          labels = c("a)", "b)", "c)", "d)", "e)", ""))
+          rel_widths = c(1, 1, 1, 1, 1, 1, 0.3), 
+          labels = c("a)", "b)", "c)", "d)", "e)", "f", ""))
 
 tiff('Figures/ceaplane2.tiff', units = "in", width = 20, height = 4,
      res = 200)
-plot_grid(myplot1, myplot2, myplot3, myplot4, myplot5, legend,
+plot_grid(myplot1, myplot2, myplot3, myplot5, myplot4, myplot6, legend,
           nrow = 1, 
-          rel_widths = c(1, 1, 1, 1, 1, 0.3),
-          labels = c("a)", "b)", "c)", "d)", "e)", ""))
+          rel_widths = c(1, 1, 1, 1, 1, 1, 0.3),
+          labels = c("a)", "b)", "c)", "d)", "e)", "f", ""))
 dev.off()
 
 # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),

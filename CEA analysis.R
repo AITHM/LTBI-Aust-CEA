@@ -11,7 +11,7 @@ library(data.table)
 
 # Model setup located within this file.
 # It defines all the states, transition matrices, strategies, costs and parameters.
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("H:/Katie/PhD/ CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 # source("CB-TLTBI Parameter values.R")
 

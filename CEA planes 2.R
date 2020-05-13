@@ -42,7 +42,7 @@ age.high <- c(rep(66, 5))
 tbincid <- c(rep("100+",5))
 other <- c("lifetime horizon", "30yr horizon", 
            "perm emigration", "LTBI decrement",
-           "30 inflows and horizon")
+           "30 inflows and horizon", "Perfect cascade")
 target.dt <- data.table(age.low, age.high, tbincid, other)
 
 
@@ -147,7 +147,18 @@ for(target.x in 1:nrow(target.dt)) {
       finalinflow <- 29
       finalyear <- startyear + totalcycles
       final.year <- finalyear
+      
+    } else if (other.cat == "Perfect cascade") {
+      
+      # the perfect cascade
+      params[p == "attscreen", mid := 1]
+      params[p == "treat.complete.4R", mid := 1]
+      params[p == "att", mid := 1]
+      params[p == "begintrt", mid := 1]
+      
     }
+  
+
   
   setwd("H:/Katie/PhD/CEA/MH---CB-LTBI") 
   # Run the data prep
