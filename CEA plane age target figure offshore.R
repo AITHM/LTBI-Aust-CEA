@@ -1,9 +1,7 @@
 # This script creates a cost-effectivenes plane, showing incremental cost and effectiveness (in QALYs) of
 # different intervention strategies.
 # To be used in the cost-effectivness model for latent TB screening and treatment program.
-# The files CB-TLTBI.R and CEA analyses need to be run to create the output, which was then added into
-# an excel spreadsheet ("Model paramenter") into the sheet names "Table 3"
-# and then these results are transferred into the sheet called "CEA plane", which is read by this script.
+
 
 library(xlsx)
 library(data.table)
@@ -21,13 +19,17 @@ library(gridExtra)
 ylimupper <- 600000/1000
 ylimlower <- -600000/1000
 xlimupper <- -5
-xlimlower <- 30
+xlimlower <- 56
 
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 data <- readRDS("Data/agetargetoffshore.rds")
 data <- as.data.table(data)
+
+
+# Write the table to clipboard so I can paste it into Excel
+write.table(data, "clipboard", sep = "\t", row.names = FALSE)
 
 data <- subset(data, strategy != "0_12...rds")
 data <- data[, c("age.low", "age.high", "Percentage.of.all.TB.cases.prevented",
@@ -44,9 +46,14 @@ percent <- function(x, digits = 1, format = "f", ...) {
 
 data$tb.prev.percent <- percent(data$tb.prev.percent)
 
+data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
+                                                 "40-49", "50-59", "60-69", "36-65"))
+
 # Get the colour palatte
 # I need 4 fill colours
-getPalette<-brewer.pal(8, "Spectral")
+getPalette <- brewer.pal(6, "Spectral")
+getPalette 
+getPalette <- c(getPalette, "gray50")
 getPalette
 
 textsize <- 17
@@ -60,13 +67,10 @@ myplot1 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000)/1000,
-              colour = "grey",
-              size = 1.5) +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
+  geom_abline(intercept = 0, slope = (50000/1000)/1,
               colour = "gray65",
               size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+  geom_abline(intercept = 0, slope = (100000/1000)/1,
               colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
@@ -77,26 +81,14 @@ myplot1 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 21,
-                                21, 21,
-                                21, 21)) +
+  scale_shape_manual(values = c(21, 24,
+                                22, 25,
+                                23, 1, 16)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.5, size = geomtextsize,
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.5, size = geomtextsize,
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.7, size = geomtextsize,
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.7, size = geomtextsize,
-  #           colour = "black") +
   scale_y_continuous(breaks = seq(-600000/1000, 1000000/1000, 200000/1000),
                      label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
@@ -121,8 +113,11 @@ dev.off()
 
 
 # Reading in the data without emigration
-data <- readRDS("Data/agetargetnoemig.rds")
+data <- readRDS("Data/agetargetoffshorenoemig.rds")
 data <- as.data.table(data)
+
+# Write the table to clipboard so I can paste it into Excel
+write.table(data, "clipboard", sep = "\t", row.names = FALSE)
 
 data <- subset(data, strategy != "0_12...rds")
 data <- data[, c("age.low", "age.high", "Percentage.of.all.TB.cases.prevented",
@@ -139,9 +134,12 @@ percent <- function(x, digits = 1, format = "f", ...) {
 
 data$tb.prev.percent <- percent(data$tb.prev.percent)
 
+data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
+                                                 "40-49", "50-59", "60-69", "36-65"))
+
 # Get the colour palatte
 # I need 4 fill colours
-getPalette<-brewer.pal(8, "Spectral")
+getPalette<-brewer.pal(6, "Spectral")
 getPalette
 
 options(scipen = 5)
@@ -156,10 +154,10 @@ myplot2 <-
   geom_abline(intercept = 0, slope = (50000)/1000,
               colour = "grey",
               size = 1.5) +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
+  geom_abline(intercept = 0, slope = (50000/1000)/1,
               colour = "gray65",
               size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+  geom_abline(intercept = 0, slope = (100000/1000)/1,
               colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
@@ -170,9 +168,9 @@ myplot2 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 21,
-                                21, 21,
-                                21, 21)) +
+  scale_shape_manual(values = c(21, 24,
+                                22, 25,
+                                23, 1, 16)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
@@ -213,10 +211,10 @@ myplot2 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
+  geom_abline(intercept = 0, slope = (50000/1000)/1,
               colour = "gray65",
               size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+  geom_abline(intercept = 0, slope = (100000/1000)/1,
               colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
@@ -227,9 +225,9 @@ myplot2 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 21,
-                                21, 21,
-                                21, 21)) +
+  scale_shape_manual(values = c(21, 24,
+                                22, 25,
+                                23, 1, 16)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
@@ -265,7 +263,7 @@ plotty <- plot_grid(myplot1, myplot2, legend, ncol = 3,
           rel_widths = c(1, 1, .3),
           labels = c("a)", "b)", " "))
 
-tiff('Figures/ceaplaneage.tiff', units = "in", width = 15, height = 5,
+tiff('Figures/ceaplaneageoffshore.tiff', units = "in", width = 15, height = 5,
      res = 200)
 plotty
 dev.off()

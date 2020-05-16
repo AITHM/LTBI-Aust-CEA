@@ -243,7 +243,7 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       setnames(aust, "eightyrisk", "LTBP")
       RRates <- readRDS("Data/RRates.for.psa.rds")
       RRates <- as.data.table(RRates)
-      collower <- which(colnames(RRates) == 'lower75%')
+      collower <- which(colnames(RRates) == 'lower80%')
       setnames(RRates, collower, "LUI")
 
       Get.RR <- function(xDT, year) {

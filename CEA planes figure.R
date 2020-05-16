@@ -2,8 +2,8 @@
 # showing incremental cost and effectiveness (in QALYs) of
 # different intervention strategies.
 # To create the rds files that this script can import
-# Run  the "CEA planes.R" script twice, once onshore and once offshore, 
-# being sure to save them as different names.
+# You need to run to gene the "Results table.R" first
+# to generate the results.
 
 
 library(xlsx)
@@ -19,9 +19,10 @@ library(grid)
 
 # Save the output to file
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
-data <- readRDS("cea.plane.offshore.rds")
+
+data <- readRDS("offshore_results.rds")
 data <- as.data.table(data)
-data2 <- readRDS("cea.plane.onshore.rds")
+data2 <- readRDS("onshore_results.rds")
 data2 <- as.data.table(data2)
   
 off11.35 <- subset(data, age.low == 11 & age.high == 35 & tbincid == "100+")
@@ -30,7 +31,6 @@ off11.65.200  <- subset(data, age.low == 11 & age.high == 65 & tbincid == "200+"
 on11.35 <- subset(data2, age.low == 11 & age.high == 35 & tbincid == "100+")
 on11.65 <- subset(data2, age.low == 11 & age.high == 65 & tbincid == "100+")
 on11.65.200  <- subset(data2, age.low == 11 & age.high == 65 & tbincid == "200+")
-
 
 # on11.65 <- subset(data2, age.low == 11 & age.high == 65 & tbincid == "100+")
 # dt <- copy(on11.65)
@@ -66,13 +66,14 @@ getPalette <- brewer.pal(4, "Spectral")
 getPalette
 
 ylimmin <- -2
-ylimmax <- 10
+ylimmax <- 9
 xlimmin <- -4
-xlimmax <- 85
+xlimmax <- 80
+linewidth <- 0.5
 
 titleposxaxis <- 45 
-titleposyaxis <- 9 
-pointsize <- 2
+titleposyaxis <- 8 
+pointsize <- 1
 textsize <- 3
 textsize2 <- 10
 
@@ -88,10 +89,10 @@ myplot1 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
               colour = "gray65",
-              size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000000)/1,
               colour = "gray65", 
-              size = 1) +
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
@@ -124,10 +125,10 @@ myplot2 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
               colour = "gray65",
-              size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000000)/1,
               colour = "gray65", 
-              size = 1) +
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
@@ -171,10 +172,10 @@ myplot3 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
               colour = "gray65",
-              size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000000)/1,
               colour = "gray65", 
-              size = 1) +
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
@@ -217,10 +218,10 @@ myplot4 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
               colour = "gray65",
-              size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000000)/1,
               colour = "gray65", 
-              size = 1) +
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
@@ -266,10 +267,10 @@ myplot5 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
               colour = "gray65",
-              size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000000)/1,
               colour = "gray65", 
-              size = 1) +
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
@@ -301,10 +302,10 @@ myplot6 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (50000/1000000)/1,
               colour = "gray65",
-              size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (200000/1000000)/1,
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000000)/1,
               colour = "gray65", 
-              size = 1) +
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",

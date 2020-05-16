@@ -37,14 +37,20 @@ params <- as.data.table(params)
 # of targets, i.e. by age and TB incidence in country of birth
 
 # Define the three targets I want to present
-age.low <- c(rep(10, 5)) 
-age.high <- c(rep(66, 5))
-tbincid <- c(rep("100+",5))
-other <- c("lifetime horizon", "30yr horizon", 
-           "perm emigration", "LTBI decrement",
-           "30 inflows and horizon", "Perfect cascade")
+age.low <- c(rep(10, 7)) 
+age.high <- c(rep(66, 7))
+tbincid <- c(rep("200+", 7))
+other <- c("lifetime horizon",
+           "All specialist",
+           "LTBI decrement",
+           "Perfect cascade",
+           "30yr horizon", 
+           "30 inflows and horizon",
+           "perm emigration")
 target.dt <- data.table(age.low, age.high, tbincid, other)
 
+
+target.dt <- target.dt[6:7, ]
 
 # The following loops down the rows of the table
 # and runs the model with each specified target
@@ -52,7 +58,7 @@ target.dt <- data.table(age.low, age.high, tbincid, other)
 # into a new enormous data table.
 
 # Testing:
-# target.x <- 3
+target.x <- 2
 # target.dt <- target.dt[c(1,3),]
 
 for(target.x in 1:nrow(target.dt)) {
@@ -103,6 +109,62 @@ for(target.x in 1:nrow(target.dt)) {
     finalyear <- startyear + totalcycles
     final.year <- finalyear
     
+  } else if (other.cat == "All specialist") {
+    
+    prop.spec <- 1
+    
+    if (onshore == 0) {
+      
+      cscreentst <- 0
+      
+      cscreenqft <- 0
+      
+      cattend <- c.spec.first + (c.mcs * chance.of.needing.mcs) + c.cxr
+      
+      c.spec.first <- c.spec.review
+      
+    } else if (onshore == 1) {
+      
+      cscreentst <- 244.70
+      
+      cscreenqft <- 210.57
+      
+      cattend <- c.spec.review + (c.mcs * chance.of.needing.mcs) + c.cxr
+      
+      c.spec.first <- c.spec.review
+      
+    }
+    
+    # 3HP sort
+    appt <- num.appt3HP * c.gp.review + c.liver
+    spec.appt <- c.spec.first + (num.appt3HP - 1) * c.spec.review + c.liver
+    ctreat3HP <- appt + cmed3HP
+    cparttreat3HP <-  appt / part.appt + cmed3HP / part.med      
+    ctreatspec3HP <-  spec.appt + cmed3HP 
+    cparttreatspec3HP <-  spec.appt / part.appt + cmed3HP / part.med
+    # 4r sort
+    appt <- num.appt4R * c.gp.review
+    spec.appt <- c.spec.first + (num.appt4R - 1) * c.spec.review
+    ctreat4R <- appt + cmed4R
+    cparttreat4R <-  appt / part.appt + cmed4R / part.med      
+    ctreatspec4R <-  spec.appt + cmed4R 
+    cparttreatspec4R <-  spec.appt / part.appt + cmed4R / part.med
+    # 6H sort
+    appt <- num.appt6H * c.gp.review + c.liver
+    spec.appt <- c.spec.first + (num.appt6H - 1) * c.spec.review + c.liver
+    ctreat6H <- appt + cmed6H
+    cparttreat6H <-  appt / part.appt + cmed6H / part.med      
+    ctreatspec6H <-  spec.appt + cmed6H 
+    cparttreatspec6H <-  spec.appt / part.appt + cmed6H / part.med
+    # 9H sort
+    appt <- num.appt9H * c.gp.review + c.liver
+    spec.appt <- c.spec.first + (num.appt9H - 1) * c.spec.review + c.liver
+    ctreat9H <- appt + cmed9H
+    cparttreat9H <-  appt / part.appt + cmed9H / part.med      
+    ctreatspec9H <-  spec.appt + cmed9H 
+    cparttreatspec9H <-  spec.appt / part.appt + cmed9H / part.med 
+    
+    
   } else if (other.cat == "perm emigration") {
     
     migrant.inflow.size <- 103740 # baseline 434340, permanent 103740
@@ -151,10 +213,13 @@ for(target.x in 1:nrow(target.dt)) {
     } else if (other.cat == "Perfect cascade") {
       
       # the perfect cascade
-      params[p == "attscreen", mid := 1]
-      params[p == "treat.complete.4R", mid := 1]
-      params[p == "att", mid := 1]
-      params[p == "begintrt", mid := 1]
+      att <- 1 
+      attscreen <- 1
+      begintrt <- 1
+      treat.complete.3HP <- 1
+      treat.complete.4R <- 1
+      treat.complete.6H <- 1
+      treat.complete.9H <- 1
       
     }
   
@@ -189,8 +254,8 @@ for(target.x in 1:nrow(target.dt)) {
   
 }
 
-# Save the output to file
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# # Save the output to file
+# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 saveRDS(results.dt, file = "Data/cea.plane.2.rds")
 
 # Write the table to clipboard so I can paste it into Excel

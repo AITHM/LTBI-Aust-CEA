@@ -18,11 +18,12 @@ library(gridExtra)
 # Need to obtain chance of having sae with different treatment regimens.
 # I have researched this and it is in an excel file in "Model parameters"
 
-ylimupper <- 2620000/1000
+ylimupper <- 2680000/1000
 ylimlower <- -50000/1000
 xlimupper <- -5
-xlimlower <- 20
-  
+xlimlower <- 26 
+linewidth <- 1  
+
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 #setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
@@ -30,7 +31,12 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 data <- readRDS("Data/agetargetonshore.rds")
 data <- as.data.table(data)
 
+
+# Write the table to clipboard so I can paste it into Excel
+write.table(data, "clipboard", sep = "\t", row.names = FALSE)
+
 data <- subset(data, strategy != "0_12...rds")
+
 data <- data[, c("age.low", "age.high", "Percentage.of.all.TB.cases.prevented",
                  "Incremental.QALYS", "total.additional.cost")]
 setnames(data, "Incremental.QALYS", "incremental.qalys")
@@ -45,9 +51,19 @@ percent <- function(x, digits = 1, format = "f", ...) {
 
 data$tb.prev.percent <- percent(data$tb.prev.percent)
 
+
+
+data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
+                                               "40-49", "50-59", "60-69", "36-65"))
+
+
+
+
 # Get the colour palatte
 # I need 4 fill colours
-getPalette<-brewer.pal(8, "Spectral")
+getPalette <- brewer.pal(6, "Spectral")
+getPalette 
+getPalette <- c(getPalette, "gray50")
 getPalette
 
 textsize <- 17
@@ -61,9 +77,12 @@ myplot1 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000)/1000,
-              colour = "grey",
-              size = 1.5) +
+  geom_abline(intercept = 0, slope = (50000/1000)/1,
+              colour = "gray65",
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000)/1,
+              colour = "gray65", 
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$thousands)",
        fill = "Target by:\nage group\n(years)",
@@ -72,9 +91,9 @@ myplot1 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 21,
-                                21, 21,
-                                21, 21)) +
+  scale_shape_manual(values = c(21, 24,
+                                22, 25,
+                                23, 1, 16)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
@@ -115,6 +134,9 @@ scale_y_continuous(breaks = seq(-600000/1000, 20000000/1000, 500000/1000),
 data <- readRDS("Data/agetargetonshorenoemig.rds")
 data <- as.data.table(data)
 
+# Write the table to clipboard so I can paste it into Excel
+write.table(data, "clipboard", sep = "\t", row.names = FALSE)
+
 data <- subset(data, strategy != "0_12...rds")
 data <- data[, c("age.low", "age.high", "Percentage.of.all.TB.cases.prevented",
                  "Incremental.QALYS", "total.additional.cost")]
@@ -130,9 +152,14 @@ percent <- function(x, digits = 1, format = "f", ...) {
 
 data$tb.prev.percent <- percent(data$tb.prev.percent)
 
+data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
+                                                 "40-49", "50-59", "60-69", "36-65"))
+
 # Get the colour palatte
 # I need 4 fill colours
-getPalette<-brewer.pal(8, "Spectral")
+getPalette <- brewer.pal(6, "Spectral")
+getPalette 
+getPalette <- c(getPalette, "gray50")
 getPalette
 
 options(scipen = 5)
@@ -144,9 +171,12 @@ myplot2 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000)/1000,
-              colour = "grey",
-              size = 1.5) +
+  geom_abline(intercept = 0, slope = (50000/1000)/1,
+              colour = "gray65",
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000)/1,
+              colour = "gray65", 
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (in thousands, AUD$)",
        fill = "Target by:\nage group\n(years)",
@@ -155,9 +185,9 @@ myplot2 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 21,
-                                21, 21,
-                                21, 21)) +
+  scale_shape_manual(values = c(21, 24,
+                                22, 25,
+                                23, 1, 16)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
@@ -198,9 +228,12 @@ myplot2 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000)/1000,
-              colour = "grey",
-              size = 1.5) +
+  geom_abline(intercept = 0, slope = (50000/1000)/1,
+              colour = "gray65",
+              size = linewidth, lty = 2) +
+  geom_abline(intercept = 0, slope = (100000/1000)/1,
+              colour = "gray65", 
+              size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (in thousands, AUD$)",
        fill = "Target by:\nage group\n(years)",
@@ -209,9 +242,9 @@ myplot2 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 21,
-                                21, 21,
-                                21, 21)) +
+  scale_shape_manual(values = c(21, 24,
+                                22, 25,
+                                23, 1, 16)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,

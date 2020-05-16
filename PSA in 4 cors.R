@@ -47,8 +47,8 @@ library(tidyr)
 
 
 # Sourcing required functions from other scripts
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 source("CB-TLTBI Functions.R") # contains many functions necessary to run the model
 source("CB-TLTBI_DataPreparation.R") # for sorting the population data
 source("Distribution parameter calculations.R") # for determining distribution parameter values
@@ -716,11 +716,11 @@ Get.RRADJ <- function(xDT, year) {
 }
 
 # Get.EMIGRATE
-emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
-# emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
-emigrate.rate <- as.data.table(emigrate.rate)
 
 Get.EMIGRATE <- function(xDT, year) {
+  emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
+  # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
+  emigrate.rate <- as.data.table(emigrate.rate)
   
   DT <- copy(xDT[, .(year, AGEP, YARP)])
   
@@ -1029,7 +1029,7 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
   # Sort out the LTBI prevalence and reacitvation rate data to use
   # Sample the percentile from the LTBI prevalence data:
   set.seed(set.seed.number[simnumber])
-  sampled.percentile <- round(rpert(1, min = 25, mode = 50, max = 75))
+  sampled.percentile <- round(rpert(1, min = 20, mode = 50, max = 80))
   sampled.percentile <- paste0(sampled.percentile, "%")
   columns <- c("YARP", "ISO3", "CNSY",
                "SEXP", "AGEP", "NUMP",

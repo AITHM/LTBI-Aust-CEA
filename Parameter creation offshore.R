@@ -359,31 +359,31 @@ params[p == "att", high := 0.721]
 
 params[p == "begintrt", mid := 0.596]
 params[p == "begintrt", low := 0.262]
-params[p == "begintrt", high := 0.762]
+params[p == "begintrt§", high := 0.762]
 
 params[p == "snqftgit", mid := 0.6538] # 0.6104
 params[p == "snqftgit", low := 0.4438] # 0.4925
 params[p == "snqftgit", high := 0.8279] # 0.7195
 
 params[p == "spqftgit", mid := 0.96942] # 0.95820
-params[p == "spqftgit", low := 0.9680] # 0.95700
-params[p == "spqftgit", high := 0.9708] # 0.95948
+params[p == "spqftgit", low := 0.953365] # 0.95700
+params[p == "spqftgit", high := 0.984865] # 0.95948
 
 params[p == "sntst15", mid := 0.6923] # 0.6753
 params[p == "sntst15", low := 0.4821] # 0.5590
 params[p == "sntst15", high := 0.8567] # 0.7777
 
 params[p == "sptst15", mid := 0.99910] # 0.95117
-params[p == "sptst15", low := 0.99910] # 0.94978
-params[p == "sptst15", high := 0.99910] # 0.95255
+params[p == "sptst15", low := 0.983685] # 0.94978
+params[p == "sptst15", high := 1] # 0.95255
 
 params[p == "sntst10", mid := 0.7692] # 0.7532
 params[p == "sntst10", low := 0.5635] # 0.6418
 params[p == "sntst10", high := 0.9103] # 0.8444
 
 params[p == "sptst10", mid := 0.89119] # 0.82227
-params[p == "sptst10", low := 0.8868] # 0.81780
-params[p == "sptst10", high := 0.8957] # 0.82686
+params[p == "sptst10", low := 0.873993] # 0.81780
+params[p == "sptst10", high := 0.907993] # 0.82686
 
 params[p == "treat.effic.3HP", mid := 0.69] # IUAT
 params[p == "treat.effic.3HP", low := 0.28] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update

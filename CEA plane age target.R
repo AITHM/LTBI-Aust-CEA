@@ -23,11 +23,18 @@ params <- readRDS("params offshore.rds")
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
 
+# WITH EMIGRATION
+withemig <- 1
+# WITHOUT EMIGRATION
+# withemig <- 0
+
+
+
 # Create a datatable that contains all of the combinations
 # of targets, i.e. by age and TB incidence in country of birth
 
 # Define age target
-lower.age.targets <- c(10, 19, 29, 39, 49, 59)
+lower.age.targets <- c(10, 19, 29, 39, 49, 59, 35)
 tbincid.targets <- c("100+")
 target.dt<- expand.grid(lower.age.targets, tbincid.targets)
 target.dt <- as.data.table(target.dt)
@@ -35,7 +42,7 @@ setnames(target.dt, "Var1", "age.low")
 setnames(target.dt, "Var2", "tbincid")
 target.dt[, age.high := age.low + 11]
 target.dt[age.low == 10, age.high := 20]
-
+target.dt[age.low == 35, age.high := 66]
 
 # The following loops down the rows of the table
 # and runs the model with each specified target
@@ -112,16 +119,21 @@ for(target.x in 1:nrow(target.dt)) {
   
 }
 
-# Save the output to file
+# Save the output to fil
 
-saveRDS(results.dt, file = "Data/agetargetoffshore.rds")
-# saveRDS(results.dt, file = "Data/agetargetonshore.rds")
-# saveRDS(results.dt, file = "Data/agetargetonshorenoemig.rds")
+if (onshore == 1 & withemig == 1) {
+  saveRDS(results.dt, file = "Data/agetargetonshore.rds")
+} else if (onshore == 1 & withemig == 0) {
+  saveRDS(results.dt, file = "Data/agetargetonshorenoemig.rds")
+} else if (onshore == 0 & withemig == 1) {
+  saveRDS(results.dt, file = "Data/agetargetoffshore.rds")
+} else if (onshore == 0 & withemig == 0) {
+  saveRDS(results.dt, file = "Data/agetargetoffshorenoemig.rds")
+}
 
-# results.dt <- readRDS("Data/agetargetonshorenoemig.rds")
 # # Write the table to clipboard so I can paste it into Excel
 # write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
-# 
-# results.dt <- readRDS("Data/agetargetonshore.rds")
+
+
 # # Write the table to clipboard so I can paste it into Excel
 # write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
