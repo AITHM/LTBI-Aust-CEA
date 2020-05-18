@@ -27,8 +27,8 @@ parameters.already.set <- 1
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-# params <- readRDS("params offshore.rds")
+# params <- readRDS("params onshore.rds")
+params <- readRDS("params offshore.rds")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -39,7 +39,11 @@ params <- as.data.table(params)
 # Define the three targets I want to present
 age.low <- c(rep(10, 7)) 
 age.high <- c(rep(66, 7))
-tbincid <- c(rep("200+", 7))
+######################################################################################################
+######################################################################################################
+tbincid <- c(rep("100+", 7))
+######################################################################################################
+######################################################################################################
 other <- c("lifetime horizon",
            "All specialist",
            "LTBI decrement",
@@ -50,15 +54,13 @@ other <- c("lifetime horizon",
 target.dt <- data.table(age.low, age.high, tbincid, other)
 
 
-target.dt <- target.dt[6:7, ]
-
 # The following loops down the rows of the table
 # and runs the model with each specified target
 # Then the output is analysed and entered
 # into a new enormous data table.
 
 # Testing:
-target.x <- 2
+# target.x <- 2
 # target.dt <- target.dt[c(1,3),]
 
 for(target.x in 1:nrow(target.dt)) {
@@ -256,7 +258,7 @@ for(target.x in 1:nrow(target.dt)) {
 
 # # Save the output to file
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-saveRDS(results.dt, file = "Data/cea.plane.2.rds")
+saveRDS(results.dt, file = "Data/cea.plane.2.offshore.rds")
 
 # Write the table to clipboard so I can paste it into Excel
 write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)

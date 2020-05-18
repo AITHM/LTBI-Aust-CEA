@@ -56,7 +56,7 @@ source("Distribution parameter calculations.R") # for determining distribution p
 ################## PSA #####################################
 
 # Defining the number of simulations we want
-Num_SIm <- 4
+Num_SIm <- 100
 
 # Generating a random set of numbers, one for each simulation
 # that will be used as a seed number for "set.seed" functions
@@ -95,11 +95,11 @@ finalinflow <- 0
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
     # 150+
     # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
     # 100+
-    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+    (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
     # 40+
     # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age
@@ -122,8 +122,8 @@ onshore <- 1
 ultbidec <- 1 # Yes
 # ultbidec <- 0 # No
 
-# dt <- readRDS("params offshore.rds")
-# onshore <- 0
+dt <- readRDS("params offshore.rds")
+onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 
 # Read in the migrant population data, showing how many have LTBI in each population group.

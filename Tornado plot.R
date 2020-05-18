@@ -31,7 +31,7 @@ library(scales)
 #                 sheetName = "Tornado plot input",
 #                 startRow = 3)
 
-onshore <- 0
+onshore <- 1
 
 # Reading in the data from excel using XLSX, which has some sort of glitch
 setwd("H:/Katie/PhD/CEA/Data")
@@ -113,9 +113,9 @@ if (onshore == 1) {
                   xmax = xmax, xmin = xmin, fill = type)) +
     theme_bw() + 
     geom_text(aes(x = 0, y = base.value),
-              size = 3.5, label = "Base case ICER: $155,587") +
+              size = 3.5, label = "Base case ICER: $161,976") +
     labs(y = "Cost per QALY (AUD$)") +
-    scale_fill_manual(values = c("steelblue2", "darksalmon")) +
+    scale_fill_manual(values = c("steelblue2", "darksalmon" )) +
     theme(legend.position = 'bottom',
           legend.title = element_blank(),
           legend.direction = "vertical",
@@ -145,7 +145,7 @@ if (onshore == 1) {
               aes(ymax = ymax, ymin = ymin, 
                   xmax = xmax, xmin = xmin, fill = type)) +
     geom_text(aes(x = 0, y = base.value),
-              size = 3.5, label = "Base case ICER: $10,059") +
+              size = 3.5, label = "Base case ICER: $10,599") +
     theme_bw() + 
     labs(y = "Cost per QALY (AUD$)") +
     scale_fill_manual(values = c("steelblue2", "darksalmon")) +

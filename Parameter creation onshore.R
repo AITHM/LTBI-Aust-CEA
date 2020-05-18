@@ -359,8 +359,8 @@ params[p == "csae", low := 500]
 params[p == "csae", high := 10000] 
 
 params[p == "attscreen", mid := 0.325]
-params[p == "attscreen", low := 0.3227817]
-params[p == "attscreen", high := 0.3272284]
+params[p == "attscreen", low := 0.2]
+params[p == "attscreen", high := 0.6]
 
 params[p == "att", mid := 0.8748806]
 params[p == "att", low := 0.8191342]

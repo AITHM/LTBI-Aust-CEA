@@ -19,7 +19,13 @@ library(gridExtra)
 # Load data
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
-data <- readRDS("Data/cea.plane.2.rds")
+
+# data <- readRDS("Data/cea.plane.2.rds")
+
+data <- readRDS("Data/cea.plane.2.offshore.rds")
+
+
+
 data <- as.data.table(data)
 
 lifetime <- subset(data, other == "lifetime horizon")
