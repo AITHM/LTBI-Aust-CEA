@@ -14,13 +14,11 @@
 # are defined in the RDS file called "params offshore" and "params onshore" 
 # in the main folder. These files are created using the "Parameter creation..." scripts
 
-# Some parameters in this file do have to be altered, depending on the values
-# of other parameters.
+# Some parameters have to be recalculated based on updated values of other parameters,
+# so this explains some of the extra script below.
 
 # Start the clock!
 ptm <- proc.time()
-
-#7487 for 100 runs
 
 # Coding style
 # https://google.github.io/styleguide/Rguide.xml
@@ -71,16 +69,6 @@ simrun <- c(seq(1, Num_SIm))
 simdata <- as.data.frame(simrun)
 simdata <- as.data.table(simdata)
 
-# # Define all the parameters which we aren't varying:
-# discount <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
-# start.year <- 2020 # start.year
-# totalcycles <- 98  # cycles ... The mortality data continues until 2100 and migrant 
-# cycles <- totalcycles 
-# # inflows are possible until 2050
-# final.year <- start.year + totalcycles
-# 
-# kill.off.above <- 120 # age above which all enter death state
-
 # The tests and treatments I want to consider in this analysis
 testlist <- c("TST15") # baseline c("QTFGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
@@ -114,9 +102,10 @@ Get.POP <- function(DT, strategy) {
 # the upper and lower limits for each
 # is defined in the relevant params.rds file and needs to be read in:
 # read in parameter list and values, which is defined in the "Parameter creation" scripts
-################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-dt <- readRDS("params onshore.rds")
-onshore <- 1 
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##############################
+################################## AND WHETHER THERE IS A LTBI TREATMENT DECREMENT OR NOT ##################
+# dt <- readRDS("params onshore.rds")
+# onshore <- 1 
 
 # LTBI treatment decrement?
 ultbidec <- 1 # Yes
@@ -124,7 +113,8 @@ ultbidec <- 1 # Yes
 
 dt <- readRDS("params offshore.rds")
 onshore <- 0
-################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
+################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##############################
+################################## AND WHETHER THERE IS A LTBI TREATMENT DECREMENT OR NOT ##################
 
 # Read in the migrant population data, showing how many have LTBI in each population group.
 austbase <- readRDS("Data/Aust16.psa.rds") # baseline
@@ -140,11 +130,11 @@ dt[, high := as.numeric(as.character(high))]
 dt[, distribution := as.character(distribution)]
 
 # The loop below adds one column to the simdata table for each parameter value
-# defined in the rows of the params....rds file (these are parameters that aren't dependent
-# on other variables, i.e. they are fixed for each run). 
+# defined in the rows of the params....rds file (these are the parameters that aren't 
+# dependent on other variables, i.e. they are fixed for each run). 
 # The loop below uses the upper and lower limits in the
 # file, together with the distribution defined in the "distribution" column, 
-# to calculate a distribution and then take 10,000 samples from it
+# to calculate a distribution and then takes Num_SIm samples from it
 # that represents the parameter uncertainty
 
 for(i in 1:nrow(dt)) {
@@ -182,13 +172,13 @@ for(i in 1:nrow(dt)) {
 
 
 # Plotting the parameter table and distributions used for all of the different
+# parameters
 
 # Write the table to clipboard so I can paste it into Excel
 write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
 
-
 # parameters
-#plotting transitions
+# plotting transitions
 dtcopy <- copy(dt)
 dtcopy <- as.data.table(dtcopy)
 dtcopy <- subset(dtcopy, abbreviation != "cscreenqft")
@@ -457,7 +447,7 @@ for(i in 1:nrow(plot.dt)) {
          main = abbreviation)
   }
 }
-# Restore margins...could also do it with dev.off()  ?
+# Restore margins...could also do it with dev.off()?
 par(mfrow = c(1,1))
 
 # Adjusting the partial LTBI treatment utilities so 
@@ -475,7 +465,6 @@ simdata[, ultbipart9H := uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)]
 # Sourcing the medical costs
 source("Medical costs.R")
 
-
 # These specify how much of the appointment and medicine
 # costs are applied for the partial costs and treatment
 part.appt <- 2
@@ -488,7 +477,6 @@ c.gp.first <- c.gp.c.vr * (1 - proportion.nonvr) + c.gp.c.nonvr * proportion.non
 c.gp.review <- c.gp.b.vr * (1 - proportion.nonvr) + c.gp.b.nonvr * proportion.nonvr
 
 chance.of.needing.mcs <- 0.1
-
 
 # Cost of initial appointment after positive screen
 # is fixed for the offshore scenario
@@ -515,7 +503,6 @@ if (onshore == 0) {
 if (onshore == 1) {
   c.spec.first <- c.spec.review
 } 
-
 
 # 3HP sort
 simdata[, appt := num.appt3HP * c.gp.review + c.liver]
@@ -633,6 +620,12 @@ simdata[, treatr3HP :=  treatrcalc3HP(treat.complete.3HP, treat.effic.3HP)]
 simdata[, treatr4R :=  treatrcalc4R(treat.complete.3HP, treat.effic.3HP)] 
 simdata[, treatr6H :=  treatrcalc6H(treat.complete.6H, treat.effic.6H)] 
 simdata[, treatr9H :=  treatrcalc9H(treat.complete.9H, treat.effic.9H)] 
+
+
+# The functions below calculate the parameter values that are dependent
+# on age, time and/or treatment etc, and so they vary
+# within each simulation and there are many or them so these sets 
+# are sampled within each simulation during the run, rather than predetermined.
 
 # Get.RR
 # Reactivation rates
@@ -840,10 +833,7 @@ Get.SAEMR <- function(xDT, treat) {
   
 }
 
-# To run the model each of the parameters needs
-# to be in the environment, i.e. not defined within
-# another function so the following loop takes each row of 
-# parameter values from the simdata table and runs the model
+# MODEL RUN
 
 # I need to place the results from the 
 # model runs into a table... here it is:
@@ -851,11 +841,16 @@ simrun.output <- c(seq(1, Num_SIm))
 simrun.output <- as.data.frame(simrun.output)
 simrun.output <- as.data.table(simrun.output)
 
-# this loops over the number of simulations
-# and runs the model
-# doing the parallel trick. This requires the doParallel and foreach package
-# and makes the loop below run simulaneoulsy in the 4 cores of the 
+
+# To run the model each of the parameters needs
+# to be in the environment, i.e. not defined within
+# another function so the following loops takes each row of 
+# parameter values from the simdata table and
+# and runs the model.
+# There is also code below that
+# makes the loop below run simulaneoulsy in the 4 cores of the 
 # computer, and so run four times as quickly!
+# This "parallel" trick requires the doParallel and foreach package
 
 my.cl <- makeCluster(4)
 registerDoParallel(my.cl)
@@ -1209,13 +1204,17 @@ stopCluster(my.cl)
 check <- rbindlist(simrun.output.cluster)
 simrun.output <- subset(check, !is.na(basecost))
 
+# For some reason likely to do with the 4 cors things
+# (and an oversight on my part, I'm sure)
+# rows of the simrun.output are duplicated in the
+# output (i.e. 250 for the first sim, 249 for the second etc)
+# so these need to be de-duplicated
+simrun.output.o <- copy(simrun.output) 
+simrun.output <- simrun.output %>% distinct()
 
 # Plot of PSA results on cost effectiveness plane.
-# The code below will plot the 10,000 model run outputs on a
+# The code below will plot the NumSIm model run outputs on a
 # cost effectiveness plane.
-# A blue willingness to pay line is drawn on the plane too
-# and the colour of the simulations will be either green or red
-# depending on whether the ICER value is under or over the WTP.
 
 WTP = 50000 # willingness to pay threshold
 
@@ -1348,7 +1347,7 @@ if (onshore == 1) {
 }
 
 # Plot of acceptability curve
-# work out the proportion cost-effective
+# works out the proportion cost-effective
 plotdata[, cheaper.and.worse := ifelse(incremental.qaly < 0 & incremental.cost < 0, 1, NA)]
 cheaper.and.worse.list <- plotdata$icer[plotdata$cheaper.and.worse == 1]
 plotdata[, better.and.costly := ifelse(incremental.qaly > 0 & incremental.cost > 0, 1, NA)]
