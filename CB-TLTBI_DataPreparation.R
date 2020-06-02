@@ -105,7 +105,7 @@ CreatePopulationMaster <- function(Modify = FALSE) {
   pop.master <- pop.master[, (state.names) := .(NUMP - LTBP, 0, 0, 0, 0, 0,
                                                 0, 0,
                                                 0,
-                                                LTBP, 0, 0, 0, 0, 0, 
+                                                LTBP, 0, 0, 0, 0, 0,
                                                 0, 0, 
                                                 0, 0,
                                                 0, 0, 0, 0, 0)]

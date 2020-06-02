@@ -135,7 +135,12 @@ Get.TREAT <- function(S, treat) {
   
 }
 
-
+# Look up treatment completion rate
+Get.EFFIC <- function(E, treat) {
+  
+  as.numeric(treatment.dt[treatment == treat, ..E])
+  
+}
 
 # Look up the reactivation rate from RRates and then reduce the rate by a
 # certain proprtion to reflect that some people will reactivate with TB in their treatment year
@@ -271,6 +276,8 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
   parameters$TESTSP$env <- environment()
   parameters$TESTC$env <- environment()
   parameters$TREATCOMPLETE$env <- environment()
+  parameters$FULL.TREAT.EFFICACY$env <- environment()
+  parameters$PART.TREAT.EFFICACY$env <- environment()
   parameters$TREATR$env <- environment()
   parameters$TREATC$env <- environment()
   parameters$RRADJUST$env <- environment()

@@ -41,8 +41,8 @@ sensfunc <- function(paramname, loworhigh) {
 # sensfunc(treatr4R, high.treat.eff)
 
 # # apply realistic LTBI utilities
-# sensfunc(ultbi4R, low)
-# sensfunc(ultbipart4R, low)
+sensfunc(ultbi4R, low)
+sensfunc(ultbipart4R, low)
 # sensfunc(ultbi3HP, low)
 # sensfunc(ultbipart3HP, low)
 # sensfunc(ultbi6H, low)
@@ -50,9 +50,11 @@ sensfunc <- function(paramname, loworhigh) {
 # sensfunc(ultbi9H, low)
 # sensfunc(ultbipart9H, low)
 
-# # the perfect cascade - figure 8
+# # # the perfect cascade - figure 8
 # params[p == "attscreen", mid := 1]
 # params[p == "treat.complete.4R", mid := 1]
+# params[p == "treat.complete.3HP", mid := 1]
+# params[p == "treat.complete.6H", mid := 1]
 # params[p == "att", mid := 1]
 # params[p == "begintrt", mid := 1]
 
@@ -117,8 +119,8 @@ kill.off.above <- 120 # age above which all enter death state
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
-testlist <- c("QFTGIT", "TST10", "TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
 # the migrant inflow will stop after the following Markov cycle
@@ -433,16 +435,80 @@ Get.EMIGRATE <- function(xDT, year) {
 }
 
 
-# Get.EMIGRATE <- function(xDT, year) {
-# 
-#  0
-# }
+Get.EMIGRATE <- function(xDT, year) {
+
+ 0
+}
 
 # Look up treatment costs (it's treatment dependent)
 Get.TREATC <- function(S, treat) {
   
   as.numeric(treatmentcost.dt[treatment == treat & practitioner == "spec", ..S]) * prop.spec +
     as.numeric(treatmentcost.dt[treatment == treat & practitioner == "gp", ..S]) * (1 - prop.spec)
+  
+}
+
+# Calculating the partial treatment efficacy
+Get.PART.EFFIC <- function(C, E, treat) {
+  
+  treat.complete <- as.numeric(treatment.dt[treatment == treat, ..C])
+  
+  treat.effic <- as.numeric(treatment.dt[treatment == treat, ..E])
+  
+  treatment <- as.character(treat)
+  
+  if (treat == '3HP') {
+    
+    treat.effic.1 <- 0
+    treat.effic.2 <- 0.368 # Gao et al 2018
+    treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+    
+    ratio.1 <- 0.6993362 # Page and Menzies
+    ratio.2 <- 0.3006638 # Page and Menzies
+
+    EFFIC <- treat.effic.2 * ratio.2
+    
+  } else if (treat == '4R') {
+    
+    treat.effic.1 <- 0
+    treat.effic.2 <- 0.368 # Gao et al 2018
+    treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+    
+    ratio.1 <- 0.6993362 # Page and Menzies
+    ratio.2 <- 0.3006638 # Page and Menzies
+    
+    EFFIC <- treat.effic.2 * ratio.2
+    
+  } else if (treat == '6H') {
+    
+    treat.effic.1 <- 0
+    treat.effic.2 <- 0.310 # IUAT
+    treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+    
+    ratio.1 <- 0.7273 # IUAT
+    ratio.2 <- 0.2727 # IUAT
+    
+    EFFIC <- treat.effic.2 * ratio.2 
+    
+  } else if (treat == '9H') {
+    
+    treat.effic.1 <- 0
+    treat.effic.2 <- 0.310 # IUAT
+    treat.effic.3 <- 0.69 # IUAT
+    treat.effic.3 <- ifelse(treat.effic.3 >= treat.effic, treat.effic, treat.effic.3)
+    
+    ratio.1 <- 0.59259 # IUAT
+    ratio.2 <- 0.18519 # IUAT
+    ratio.3 <- 0.22222 # IUAT
+    
+    EFFIC <- treat.effic.1 * ratio.1 +
+      treat.effic.2 * ratio.2 +
+      treat.effic.3 * ratio.3
+    
+  } else {
+    
+    TREATR <- NA
+  }
   
 }
 

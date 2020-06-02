@@ -134,10 +134,17 @@ tabfunc <- function(dt) {
   numberstarttreat <- cdt[, sum(p.sus.nct) + sum(p.sus.sae) + sum(p.sus.tc) +
                               sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] 
   
+  # total number that completed treatment during the whole time period
+  cdt <- copy(dt)
+  cdt <- as.data.table(cdt)
+  numbercomptreated <- (cdt[, sum(p.sus.nct) + sum(p.sus.sae) + sum(p.sus.tc) +
+                            sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]) *
+    as.numeric(treatment.dt[treatment == treatmentlist, treat.complete])
+  
   # total number treated (effective) during the whole time period
   cdt <- copy(dt)
   cdt <- as.data.table(cdt)
-  numbertreated <- cdt[, sum(p.sus.tc) + sum(p.ltbi.tc)] 
+  numberefftreated <- cdt[, sum(p.sus.tc) + sum(p.ltbi.tc)] 
   
   # total base cost
   totbasecost
@@ -187,11 +194,14 @@ tabfunc <- function(dt) {
   # number needed to screen (to prevent a tb case)
   nns <- totscreen/tbprev
   
-  # number needed to effectively treat (to prevent a tb case)
-  nnt <- numbertreated/tbprev
-  
   # number needed to at least start treat (to prevent a tb case)
   nnbt <- numberstarttreat/tbprev
+  
+  # number needed to complete treatment (to prevent a tb case)
+  nnct <- numbercomptreated/tbprev
+  
+  # number needed to effectively treat (to prevent a tb case)
+  nnet <- numberefftreated/tbprev
   
   # number of SAEs among those with ltbi
   saeltbi <- dt[YEAR == YARP + 1, sum(p.ltbi.sae)]
@@ -204,6 +214,12 @@ tabfunc <- function(dt) {
   
   # number of SAE deaths among those without ltbi
   saedeathusus <- dt[YEAR == YARP + 2, sum(p.sus.sae.death)]
+  
+  # lifetime risk of TB for someone who has a TST10mm
+  cdt <- copy(dt)
+  cdt <- as.data.table(cdt)
+  pos.screen <- cdt[, (sum(p.sus) * attscreen * (1 - sptst10)) +
+                  (sum(p.ltbi) * attscreen * (sntst10))]
   
   # total baseline QALYS
   qalybase
@@ -224,15 +240,23 @@ tabfunc <- function(dt) {
   
   if (totaddcost < 0 & incremqaly > 0) {
     
-    costperqaly <- "cost saving"
+    description <- "cost saving"
+    costperqaly <- totaddcost/incremqaly
     
-  } else if(totaddcost > 0 & incremqaly < 0) {
+  } else if (totaddcost > 0 & incremqaly < 0) {
     
-    costperqaly <- "dominated"
+    description <- "dominated"
+    costperqaly <- totaddcost/incremqaly
+    
+  } else if (totaddcost < 0 & incremqaly < 0) {
+    
+    costperqaly <- totaddcost/incremqaly
+    description <- "lower cost and QALY"
     
   } else {
     
     costperqaly <- totaddcost/incremqaly
+    description <- totaddcost/incremqaly
     
   }
   
@@ -248,7 +272,8 @@ tabfunc <- function(dt) {
                 totscreen,
                 totatt,
                 numberstarttreat,
-                numbertreated,
+                numbercomptreated,
+                numberefftreated,
                 totbasecost,
                 totcost,
                 totaddcost,
@@ -260,17 +285,20 @@ tabfunc <- function(dt) {
                 costpertbdeath,
                 costpertb,
                 nns,
-                nnt,
                 nnbt,
+                nnct,
+                nnet,
                 saeltbi,
                 saesus,
                 saedeathltbi,
                 saedeathusus,
+                pos.screen,
                 qalybase,
                 qalytot,
                 incremqaly1000,
                 incremqaly,
-                costperqaly)
+                costperqaly,
+                description)
   
   tablist[is.na(tablist)] <- 0
   
@@ -286,7 +314,8 @@ tabfunc <- function(dt) {
               "total number screened",
               "total number attended",
               "total number beginning treatment",
-              "total number treated effectively",
+              "total number completing treatment",
+              "total number effectively treated",
               "total base cost",
               "total cost",
               "total additional cost",
@@ -298,17 +327,20 @@ tabfunc <- function(dt) {
               "cost per TB death prevented",
               "cost per TB case prevented",
               "Number needed to screen",
-              "Number needed to treat",
               "Number needed to begin treatment",
+              "Number needed to complete treatment",
+              "Number needed to be effectively treated",
               "number of SAEs in those with ltbi",
               "number of SAEs in those without ltbi",
               "number of SAE deaths among those with ltbi",
               "number of SAE deaths among those without ltbi",
+              "number who screened positive",
               "Baseline QALY total",
               "Strategy QALYS total",
               "Incremental QALYS per 1000",
               "Incremental QALYS",
-              "ICER, i.e. Cost per QALY")
+              "ICER, i.e. Cost per QALY",
+              "Outcome")
   names(tablist) <- namelist
   pop <- as.data.frame(tablist)
   pop

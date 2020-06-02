@@ -115,6 +115,22 @@ timetotreat.dt <- data.table(treatment = c("3HP", "4R", "6H", "9H"),
 utility.dt <- data.table(treatment = c("", "3HP", "4R", "6H", "9H"))
 utility.dt[, c(state.names) := as.numeric(NA)]
 
+# treat.effic.1 <- 0
+# treat.effic.2 <- 0.368 # Gao et al 2018
+# treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic.4R, treat.effic.4R, treat.effic.2)
+# 
+# ratio.1 <- 0.6993362 # Page and Menzies
+# ratio.2 <- 0.3006638 # Page and Menzies
+# 
+# treat.complete.1 <- (1 - treat.complete.4R) * ratio.1
+# treat.complete.2 <- (1 - treat.complete.4R) * ratio.2
+# 
+# SAE4R <- 0.000305
+# 
+# TREATR4R <- treat.effic.1 * treat.complete.1 +
+#   treat.effic.2 * treat.complete.2 +
+#   treat.effic.4R * treat.complete.4R
+  
 utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
                                                    ultbitreatsae, 0,
                                                    uhealthy,
@@ -124,9 +140,13 @@ utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy,
                                                    uactivetb, uactivetbr, 0, 0, 0)]
 
 utility.dt[treatment == "4R", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart4R, ultbi4R,
+                                                 # (ultbipart4R/(1 - TREATR4R - SAE4R)) * (treat.complete.1 + treat.complete.2), 
+                                                 # (ultbi4R/TREATR4R) * treat.complete.4R,
                                                   ultbitreatsae, 0,
                                                   uhealthy,
                                                   uhealthy, uhealthy, uhealthy, uhealthy, ultbipart4R, ultbi4R,
+                                                 # (ultbipart4R/(1 - TREATR4R - SAE4R)) * (treat.complete.1 + treat.complete.2), 
+                                                 # (ultbi4R/TREATR4R) * treat.complete.4R,
                                                   ultbitreatsae, 0,
                                                   uhealthy, uhealthy,
                                                   uactivetb, uactivetbr, 0, 0, 0)]
@@ -155,10 +175,17 @@ utility.dt[treatment == "", c(state.names) := .(uhealthy, uhealthy, NA, NA, NA, 
                                                 uhealthy, NA,
                                                 uactivetb, uactivetbr, 0, 0, 0)]
 
-unevaluated.flow.cost <- lazy(c(0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, param$TESTC + param$ATTENDCOST + param$TREATC + (((param$TREATCOMPLETE - param$TREATR) * (1/param$TREATR)) * (param$TREATC - param$PARTIALTREATCOST) ),
+
+unevaluated.flow.cost <- lazy(c(0, 0, param$TESTC, 
+                                param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, 
+                                param$TESTC + param$ATTENDCOST + param$TREATC,
+                                #param$TESTC + param$ATTENDCOST + param$TREATC + (((param$TREATCOMPLETE - param$TREATR) * (1/param$TREATR)) * (param$TREATC - param$PARTIALTREATCOST) ),
                                 param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 0,
                                 0,
-                                0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, param$TESTC + param$ATTENDCOST + param$TREATC + (((param$TREATCOMPLETE - param$TREATR) * (1/param$TREATR)) * (param$TREATC - param$PARTIALTREATCOST) ),
+                                0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, 
+                                param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, 
+                                #param$TESTC + param$ATTENDCOST + param$TREATC + (((param$TREATCOMPLETE - param$TREATR) * (1/param$TREATR)) * (param$TREATC - param$PARTIALTREATCOST) ),
+                                param$TESTC + param$ATTENDCOST + param$TREATC,
                                 param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 0,
                                 0, 0,
                                 0, 0, 0, 0, 0))
@@ -215,10 +242,10 @@ arglist <- CreateArgumentList(state.names, state.number)
 # # saveRDS(S1.TMKD,file = "Data/BASELINE.S1.TM.rds")
 # arglist$save.list("BASELINE.S1.TMKD")
 
-# 
-# S1.TM
+
+# # S1.TM
 # # manually create list of values ()
-# list.values <- c(0,	quote(1 - (param$POP * param$ATTENDSCREEN)),	quote((param$POP * param$ATTENDSCREEN) * (1 - (1-param$TESTSP) * param$ATTEND)),	quote((param$POP * param$ATTENDSCREEN) * (1 - param$TESTSP) * param$ATTEND * (1 - param$BEGINTREAT)),	quote((param$POP * param$ATTENDSCREEN) * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * (1 - param$TREATR - param$SAE)),	quote((param$POP * param$ATTENDSCREEN) * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote((param$POP * param$ATTENDSCREEN) * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+# list.values <- c(0,	quote(1 - (param$POP * param$ATTENDSCREEN)),	quote((param$POP * param$ATTENDSCREEN) * (1 - (1-param$TESTSP) * param$ATTEND)),	quote((param$POP * param$ATTENDSCREEN) * (1 - param$TESTSP) * param$ATTEND * (1 - param$BEGINTREAT)),	quote((param$POP * param$ATTENDSCREEN) * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * (1 - param$TREATCOMPLETE - param$SAE)),	quote((param$POP * param$ATTENDSCREEN) * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * param$TREATCOMPLETE),	quote((param$POP * param$ATTENDSCREEN) * (1 - param$TESTSP) * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
@@ -227,12 +254,12 @@ arglist <- CreateArgumentList(state.names, state.number)
 #                  0,	0,	0,	0,	0,	0,	0,	quote(param$SAEMR),	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote((1 - (param$POP * param$ATTENDSCREEN)) * (1 - (param$RR * param$RRADJUST))),	quote((param$POP * param$ATTENDSCREEN) * (1 - (param$TESTSN * param$ATTEND) - (param$RR * param$RRADJUST * (1 - ((param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT)))))),	quote((param$POP * param$ATTENDSCREEN) * param$TESTSN * param$ATTEND * (1 - param$BEGINTREAT)),	quote((param$POP * param$ATTENDSCREEN) * param$TESTSN * param$ATTEND * param$BEGINTREAT * (1 - param$TREATR - param$SAE)),	quote((param$POP * param$ATTENDSCREEN) * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR),	quote((param$POP * param$ATTENDSCREEN) * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	quote(((1 - (param$POP * param$ATTENDSCREEN)) * param$RR * param$RRADJUST) + ((param$POP * param$ATTENDSCREEN) * param$RR * param$RRADJUST * (1 - ((param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT))))),	0,	0,	0,	0,
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote((1 - (param$POP * param$ATTENDSCREEN)) * (1 - (param$RR * param$RRADJUST))),	quote((param$POP * param$ATTENDSCREEN) * (1 - (param$TESTSN * param$ATTEND) - (param$RR * param$RRADJUST * (1 - ((param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT)))))),	quote(param$POP * param$ATTENDSCREEN * param$TESTSN * param$ATTEND * (1 - param$BEGINTREAT)),	quote(param$POP * param$ATTENDSCREEN * param$TESTSN * param$ATTEND * param$BEGINTREAT * (1 - param$TREATCOMPLETE - param$SAE)),	quote(param$POP * param$ATTENDSCREEN * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATCOMPLETE),	quote((param$POP * param$ATTENDSCREEN) * param$TESTSN * param$ATTEND * param$BEGINTREAT * param$SAE),	0,	0,	0,	quote(((1 - (param$POP * param$ATTENDSCREEN)) * param$RR * param$RRADJUST) + ((param$POP * param$ATTENDSCREEN) * param$RR * param$RRADJUST * (1 - ((param$TESTSN * param$ATTEND * param$BEGINTREAT * param$TREATR) * (1 - param$TIMETOTREAT))))),	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
-#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$PART.TREAT.EFFICACY),	quote((1-param$PART.TREAT.EFFICACY)*param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
+#                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	quote(param$FULL.TREAT.EFFICACY),	quote((1-param$FULL.TREAT.EFFICACY)*param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(param$SAEMR),	quote(CMP),	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	1,	0,	0,	0,	0,	0,	0,	0,
 #                  0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	quote(CMP),	0,	quote(param$RR*param$RRADJUST),	0,	0,	quote(param$MR),	quote(param$EMIGRATE),
@@ -305,6 +332,8 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                TESTC = Get.TEST(S = "cost.primary", testing),
                                TREATR = Get.TREATR(C = "treat.complete", E = "treat.effic", treatment),
                                TREATCOMPLETE = Get.TREAT(S = "treat.complete", treatment),
+                               PART.TREAT.EFFICACY = Get.PART.EFFIC(C = "treat.complete", E = "treat.effic", treatment),
+                               FULL.TREAT.EFFICACY = Get.TREAT(S = "treat.effic", treatment),
                                TREATC = Get.TREATC(S = "cost.primary", treatment),
                                POP = Get.POP(DT, strategy),
                                UTILITY = Get.UTILITY(treatment),
@@ -317,7 +346,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
  
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-# pop.master <- subset(pop.master, AGERP == 95 | AGERP == 91)
+pop.master <- subset(pop.master, AGERP < 80)
 # pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
 
@@ -332,6 +361,28 @@ pop.master <- CreatePopulationMaster()
 #set.seed(10)
 #pop.master <- pop.master[sample(.N, 200)]
 
+# age.limit.older.than <- 19
+# age.limit.younger.than <- 30
+# target.tbincid <- "100+"
+
+# POP.SUBSET.FUNCTION <- function(DT, strategy) {
+# 
+#   if (target.tbincid == "100+") {
+#     DT <- subset(DT, ISO3 == "100-149")
+#     DT <- subset(DT, AGERP > age.limit.older.than & AGERP < age.limit.younger.than)
+#   } else if (target.tbincid == "<100") {
+#     DT <- subset(DT, ISO3 == "40-99")
+#     DT <- subset(DT, AGERP > age.limit.older.than & AGERP < age.limit.younger.than)
+#   }
+#   DT
+# }
+# 
+# pop.master <- POP.SUBSET.FUNCTION(pop.master)
+# 
+# pop.master[, LTBP := (LTBP/NUMP) * 10]
+# pop.master[, NUMP := 10]
+# pop.master[, p.ltbi := LTBP]
+# pop.master[, p.sus := NUMP - LTBP]
 
 
 
