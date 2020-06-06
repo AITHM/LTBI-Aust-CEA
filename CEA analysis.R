@@ -66,7 +66,6 @@ basetbcount <- base[, sum(p.tb)]
 # total baseline tb cases
 basetbdeath <- base[YEAR == final.year, sum(p.tb.death)]
 
-
 tabfunc <- function(dt) { 
   dt <- as.data.table(dt)
   
@@ -343,7 +342,7 @@ tabfunc <- function(dt) {
 }
 
 # Create the table
-table1 <- bind_rows(lapply(files, tabfunc))
+table1 <- rbindlist(lapply(files, tabfunc))
 
 
 # Write the table to clipboard so I can paste it into Excel
@@ -457,12 +456,12 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # 
 # 
 # # Write the table to clipboard so I can paste it into Excel
-write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
 # options(scipen = 999)
 
 
 
-# # year when 99.9% dead
+# # # year when 99.9% dead
 # cyclecount <- 120
 # for (i in 2:cyclecount) {
 #   total <- dt[YEAR == start.year + i & YARP == start.year, sum(NUMP),]

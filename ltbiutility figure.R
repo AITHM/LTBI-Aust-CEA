@@ -36,7 +36,7 @@ params <- as.data.table(params)
 # Create a datatable that will contain 
 # different utility decrements we want 
 # to apply
-utility.dec <- c(seq(0, 0.013, by = 0.001))
+utility.dec <- c(seq(0, 0.1, by = 0.1))
 ultbi.dt <- as.data.frame(utility.dec)
 ultbi.dt <- as.data.table(ultbi.dt)
 ultbi.dt[, utility.dec := as.numeric(utility.dec)]
@@ -155,7 +155,7 @@ myplot1 <-
   theme_bw() +
   geom_text(aes(x = f2(0), y = 0),
                    hjust = 0.5, vjust = -1,
-                   size = 10, label = "0.00757") +
+                   size = 10, label = "0.00679") +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   labs(y = "Incremental QALYS",

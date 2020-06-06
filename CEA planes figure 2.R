@@ -24,9 +24,11 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 
 data <- readRDS("Data/cea.plane.2.offshore.rds")
 
-
-
 data <- as.data.table(data)
+
+# Write the table to clipboard so I can paste it into Excel
+write.table(data, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+
 
 lifetime <- subset(data, other == "lifetime horizon")
 thirtyyrs <- subset(data, other == "30yr horizon")
@@ -65,12 +67,12 @@ getPalette<-brewer.pal(4, "Spectral")
 getPalette
 
 ylimmin <- -0.5
-ylimmax <- 12
+ylimmax <- 8
 xlimmin <- -5
-xlimmax <- 27
+xlimmax <- 35
 
-textx <- 14
-texty <- 11.5
+textx <- 18
+texty <- 7.5
 
 linewidth <- 0.5
 
@@ -205,7 +207,7 @@ myplot4 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #         hjust = 1, vjust = -0.2, size = textsize,
   #         colour = "black") +
-  annotate("text", x = -70, y = texty,
+  annotate("text", x = -100, y = texty,
            label = "Applying health utility values for those on\nLTBI treatment from Bauer et al 2015") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
@@ -282,12 +284,12 @@ myplot6 <-
        shape = "Strategy") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
-  annotate("text", x = textx, y = texty, 
+  annotate("text", x = textx, y = 17, 
            label = "Care provided by specialists") +
-  scale_y_continuous(breaks = seq(-10, 250, 1)) +
+  scale_y_continuous(breaks = seq(-10, 250, 2)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, 12)) +
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(-1.5, 18)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),
@@ -313,12 +315,12 @@ myplot7 <-
        shape = "Strategy") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
-  annotate("text", x = 60, y = 14, 
+  annotate("text", x = 100, y = 21, 
            label = "Perfect cascade of care") +
-  scale_y_continuous(breaks = seq(-100, 250, 1)) +
+  scale_y_continuous(breaks = seq(-100, 250, 2)) +
   scale_x_continuous(breaks = seq(-100, 1000, 25)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, 175), ylim = c(ylimmin, 15)) +
+  coord_cartesian(xlim = c(xlimmin, 225), ylim = c(-1.5, 22)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),
@@ -343,14 +345,14 @@ myplot5 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  annotate("text", x = 75, y = 140, 
+  annotate("text", x = 100, y = 175, 
            label = "30 year migrant inflow\nand horizon") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
   scale_y_continuous(breaks = seq(-40, 500, 20)) +
   scale_x_continuous(breaks = seq(-300, 1000, 25)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, 160), ylim = c(ylimmin, 150)) +
+  coord_cartesian(xlim = c(xlimmin, 200), ylim = c(-10, 185)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),

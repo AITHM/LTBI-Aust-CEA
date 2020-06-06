@@ -117,6 +117,9 @@ for(target.x in 1:nrow(target.dt)) {
     results.dt <- rbind(results.dt, table1)
   }
   
+  # remove the files in the output folder
+  file.remove(filenames)
+  
 }
 
 # Save the output to fil

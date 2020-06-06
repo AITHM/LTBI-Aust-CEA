@@ -36,6 +36,8 @@ setnames(target.dt, "Var2", "age.high")
 setnames(target.dt, "Var3", "tbincid")
 target.dt[age.low == 35 & age.high == 36, kick := 1]
 target.dt <- subset(target.dt, is.na(kick))
+target.dt[, tbincid := as.character(tbincid)]
+target.dt[, kick := NULL]
 
 # The following loops down the rows of the table
 # and runs the model with each specified target
@@ -44,7 +46,7 @@ target.dt <- subset(target.dt, is.na(kick))
 
 # Testing:
 # target.x <- 3
-# target.dt <- target.dt[1:2,]
+# target.dt <- target.dt[1:3,]
 
 for(target.x in 1:nrow(target.dt)) {
   
@@ -110,6 +112,9 @@ for(target.x in 1:nrow(target.dt)) {
     results.dt <- rbind(results.dt, table1)
   }
   
+  # remove the files in the output folder
+  file.remove(filenames)
+
 }
 
 # Save the output to file
@@ -119,6 +124,13 @@ if (onshore == 1) {
   saveRDS(results.dt, file = "Data/offshore_results.rds")
 }
 
+check <- unique( results.dt )
+
+check <- results.dt[!duplicated(results.dt)]
+
+
 # Write the table to clipboard so I can paste it into Excel
 write.table(results.dt, file = "clipboard-16384", 
             sep = "\t", row.names = FALSE)  
+
+check <- readRDS("Data/offshore_results.rds")

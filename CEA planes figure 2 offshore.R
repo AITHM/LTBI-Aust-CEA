@@ -65,10 +65,10 @@ plot7 <- sortformatfunc(cascade)
 getPalette<-brewer.pal(4, "Spectral")
 getPalette
 
-ylimmin <- -1
+ylimmin <- -2
 ylimmax <- 10
 xlimmin <- -5
-xlimmax <- 80
+xlimmax <- 82
 
 textx <- 40
 texty <- 9
@@ -206,14 +206,14 @@ myplot4 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #         hjust = 1, vjust = -0.2, size = textsize,
   #         colour = "black") +
-  annotate("text", x = -220, y = texty,
+  annotate("text", x = -350, y = texty,
            label = "Applying health utility values for those on\nLTBI treatment from Bauer et al 2015") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
 scale_y_continuous(breaks = seq(-10, 250, 1)) +
   scale_x_continuous(breaks = seq(-1000, 1000, 50)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-460, 50), ylim = c(ylimmin, ylimmax)) +
+  coord_cartesian(xlim = c(-650, 50), ylim = c(ylimmin, ylimmax)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         legend.position = "none",
@@ -351,7 +351,7 @@ myplot5 <-
   scale_y_continuous(breaks = seq(-40, 500, 20)) +
   scale_x_continuous(breaks = seq(-300, 1000, 50)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, 470), ylim = c(-10, 140)) +
+  coord_cartesian(xlim = c(xlimmin, 470), ylim = c(-30, 140)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),

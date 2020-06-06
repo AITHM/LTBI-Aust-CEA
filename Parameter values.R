@@ -34,7 +34,7 @@ sensfunc <- function(paramname, loworhigh) {
 
 # params[p == "saemr", mid := 0]
 
-sensfunc(treat.effic.4R, hi gh)
+# sensfunc(treat.effic.4R, high)
 
 # # apply realistic LTBI utilities
 # sensfunc(ultbi4R, low)
@@ -107,9 +107,9 @@ targetfunc <- function(DT) {
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # Rstart.year
 start.year <- startyear
-totalcycles <- 70 #  cycles ... The mortality data continues until 2150 and migrant 
+totalcycles <- 110 #  cycles ... The mortality data continues until 2150 and migrant 
 
-kill.off.above <- 120 # age above which all enter death state
+kill.off.above <- 119 # age above which all enter death state
 
 # inflows are possible until 2050
 finalyear <- startyear + totalcycles
@@ -347,11 +347,10 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
   
   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
-  vic.mortality[Age > kill.off.above, Prob := 0.3]
+  vic.mortality[Age > kill.off.above, Prob := 1]
   
   vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
-  #######################SOMETHING TO DO WITH THIS IN STRATEGY RUN#############################################
-  #######Adjusting it to 0.4 doesn't work, but to 0.3, it does ##################################
+
 }
 
 # Look up TB mortality rate
@@ -459,75 +458,81 @@ Get.TREATC <- function(S, treat) {
 # Calculating the partial treatment efficacy
 Get.PART.EFFIC <- function(xDT, C, E, treat) {
   
+  DT <- copy(xDT[, .(year, AGEP)])
+  
+  treatment <- as.character(treat)
+  
   treat.complete <- as.numeric(treatment.dt[treatment == treat, ..C])
   
   treat.effic <- as.numeric(treatment.dt[treatment == treat, ..E])
   
-  treatment <- as.character(treat)
-  
-  if (treat == '3HP') {
-    
-    treat.effic.1 <- 0
-    treat.effic.2 <- 0.368 # Gao et al 2018
-    treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
-    
-    ratio.1 <- 0.6993362 # Page and Menzies
-    ratio.2 <- 0.3006638 # Page and Menzies
-
-    PART.EFFIC <- treat.effic.2 * ratio.2
-    
-  } else if (treat == '4R') {
-    
-    treat.effic.1 <- 0
-    treat.effic.2 <- 0.368 # Gao et al 2018
-    treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
-    
-    ratio.1 <- 0.6993362 # Page and Menzies
-    ratio.2 <- 0.3006638 # Page and Menzies
-    
-    PART.EFFIC <- treat.effic.2 * ratio.2
-    
-  } else if (treat == '6H') {
-    
-    treat.effic.1 <- 0
-    treat.effic.2 <- 0.310 # IUAT
-    treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
-    
-    ratio.1 <- 0.7273 # IUAT
-    ratio.2 <- 0.2727 # IUAT
-    
-    PART.EFFIC <- treat.effic.2 * ratio.2 
-    
-  } else if (treat == '9H') {
-    
-    treat.effic.1 <- 0
-    treat.effic.2 <- 0.310 # IUAT
-    treat.effic.3 <- 0.69 # IUAT
-    treat.effic.3 <- ifelse(treat.effic.3 >= treat.effic, treat.effic, treat.effic.3)
-    
-    ratio.1 <- 0.59259 # IUAT
-    ratio.2 <- 0.18519 # IUAT
-    ratio.3 <- 0.22222 # IUAT
-    
-    PART.EFFIC <- treat.effic.1 * ratio.1 +
-      treat.effic.2 * ratio.2 +
-      treat.effic.3 * ratio.3
-    
-  } else {
-    
-    PART.EFFIC <- 0
-  }
+  ifelse(DT[, AGEP] > kill.off.above, 0,
+         
+         if (treat == '3HP') {
+           
+           treat.effic.1 <- 0
+           treat.effic.2 <- 0.368 # Gao et al 2018
+           treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+           
+           ratio.1 <- 0.6993362 # Page and Menzies
+           ratio.2 <- 0.3006638 # Page and Menzies
+           
+           PART.EFFIC <- treat.effic.2 * ratio.2
+           
+         } else if (treat == '4R') {
+           
+           treat.effic.1 <- 0
+           treat.effic.2 <- 0.368 # Gao et al 2018
+           treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+           
+           ratio.1 <- 0.6993362 # Page and Menzies
+           ratio.2 <- 0.3006638 # Page and Menzies
+           
+           PART.EFFIC <- treat.effic.2 * ratio.2
+           
+         } else if (treat == '6H') {
+           
+           treat.effic.1 <- 0
+           treat.effic.2 <- 0.310 # IUAT
+           treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+           
+           ratio.1 <- 0.7273 # IUAT
+           ratio.2 <- 0.2727 # IUAT
+           
+           PART.EFFIC <- treat.effic.2 * ratio.2 
+           
+         } else if (treat == '9H') {
+           
+           treat.effic.1 <- 0
+           treat.effic.2 <- 0.310 # IUAT
+           treat.effic.3 <- 0.69 # IUAT
+           treat.effic.3 <- ifelse(treat.effic.3 >= treat.effic, treat.effic, treat.effic.3)
+           
+           ratio.1 <- 0.59259 # IUAT
+           ratio.2 <- 0.18519 # IUAT
+           ratio.3 <- 0.22222 # IUAT
+           
+           PART.EFFIC <- treat.effic.1 * ratio.1 +
+             treat.effic.2 * ratio.2 +
+             treat.effic.3 * ratio.3
+           
+         } else {
+           
+           PART.EFFIC <- 0
+         }
+  )
   
 }
 
-Get.FULL.EFFIC <- function(xDT, S, treat) {
+Get.FULL.EFFIC <- function(xDT, E, treat) {
   
-  DT <- copy(xDT[, .(year, AGEP, YARP)])
+  DT <- copy(xDT[, .(year, AGEP)])
   
-  # To lookup all ages beyond the killing off age
-  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  treatment <- as.character(treat)
   
-  as.numeric(treatment.dt[treatment == treat, ..S])
+  treat.effic <- as.numeric(treatment.dt[treatment == treat, ..E])
+  
+  ifelse(DT[, AGEP] > kill.off.above, 0, treat.effic)
 
 }
 
