@@ -62,7 +62,7 @@ tornado.dt <- melt(tornado.dt, id = c("p", "icer"))
 tornado.dt <- subset(tornado.dt, !is.na(value))
 # Adding some other variables
 p <- c("rradj", "ltbi.react", "sae", "saemr", "tbmr",
-       "disc", "totalcycles", "base")
+       "disc", "totalcycles", "emig", "base")
 variable <- c("low", "high")
 newparams <- expand.grid(p, variable)
 setnames(newparams, "Var1", "p")
@@ -120,6 +120,40 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       vic.tb.mortality[DT[, .(AGEP, SEXP)], upper, on = .(age = AGEP, sex = SEXP)]
     }
       
+  } else if (paraname == "emig" & highlow == "low") {
+    
+    # Look up emigration
+    Get.EMIGRATE <- function(xDT, year) {
+      
+      DT <- copy(xDT[, .(year, AGEP, YARP)])
+      
+      # To lookup all ages beyond the killing off age
+      DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+      
+      # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+      emigrate.rate[Age > kill.off.above, Rate := 0]
+      
+      emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]
+      
+    }
+    
+  } else if (paraname == "emig" & highlow == "high") {
+    
+    # Look up emigration
+    Get.EMIGRATE <- function(xDT, year) {
+      
+      DT <- copy(xDT[, .(year, AGEP, YARP)])
+      
+      # To lookup all ages beyond the killing off age
+      DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+      
+      # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+      emigrate.rate[Age > kill.off.above, Rate := 0]
+      
+      emigrate.rate[DT[, .(AGEP)], upper, on = .(Age = AGEP)]
+      
+    }
+    
   } else if (paraname == "saemr" & highlow == "low") {
     # Look up TB mortality rate
     Get.SAEMR <- function(xDT, treat) {
