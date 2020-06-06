@@ -49,18 +49,23 @@ a <- which( colnames(base) == "FC.p.sus" )
 b <- which( colnames(base) == "FC.p.emigrate" )
 base$FCsum <- rowSums(base[, a:b], na.rm = TRUE)
 totbasecost <- sum(base$SCsum) + sum(base$FCsum)
+base[, SCsum:= NULL]
+base[, FCsum:= NULL]
+
 
 # total baseline QALYS
 a <- which( colnames(base) == "SQ.p.sus" )
 b <- which( colnames(base) == "SQ.p.emigrate" )
 base$SQsum <- rowSums(base[, a:b], na.rm = TRUE)
 qalybase <- sum(base$SQsum)
+base[, SQsum:= NULL]
 
 # total baseline tb cases
 basetbcount <- base[, sum(p.tb)]
 
 # total baseline tb cases
 basetbdeath <- base[YEAR == final.year, sum(p.tb.death)]
+
 
 tabfunc <- function(dt) { 
   dt <- as.data.table(dt)
@@ -141,11 +146,6 @@ tabfunc <- function(dt) {
                             sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]) *
     as.numeric(treatment.dt[treatment == treatmentlist, treat.complete])
   
-  # total number treated (effective) during the whole time period
-  cdt <- copy(dt)
-  cdt <- as.data.table(cdt)
-  numberefftreated <- cdt[, sum(p.sus.tc) + sum(p.ltbi.tc)] 
-  
   # total base cost
   totbasecost
   
@@ -199,9 +199,6 @@ tabfunc <- function(dt) {
   
   # number needed to complete treatment (to prevent a tb case)
   nnct <- numbercomptreated/tbprev
-  
-  # number needed to effectively treat (to prevent a tb case)
-  nnet <- numberefftreated/tbprev
   
   # number of SAEs among those with ltbi
   saeltbi <- dt[YEAR == YARP + 1, sum(p.ltbi.sae)]
@@ -273,7 +270,6 @@ tabfunc <- function(dt) {
                 totatt,
                 numberstarttreat,
                 numbercomptreated,
-                numberefftreated,
                 totbasecost,
                 totcost,
                 totaddcost,
@@ -287,7 +283,6 @@ tabfunc <- function(dt) {
                 nns,
                 nnbt,
                 nnct,
-                nnet,
                 saeltbi,
                 saesus,
                 saedeathltbi,
@@ -315,7 +310,6 @@ tabfunc <- function(dt) {
               "total number attended",
               "total number beginning treatment",
               "total number completing treatment",
-              "total number effectively treated",
               "total base cost",
               "total cost",
               "total additional cost",
@@ -329,7 +323,6 @@ tabfunc <- function(dt) {
               "Number needed to screen",
               "Number needed to begin treatment",
               "Number needed to complete treatment",
-              "Number needed to be effectively treated",
               "number of SAEs in those with ltbi",
               "number of SAEs in those without ltbi",
               "number of SAE deaths among those with ltbi",
@@ -342,12 +335,16 @@ tabfunc <- function(dt) {
               "ICER, i.e. Cost per QALY",
               "Outcome")
   names(tablist) <- namelist
-  pop <- as.data.frame(tablist)
-  pop
+  pop <- data.frame(tablist)
+  pop$cost.per.TB.death.prevented <- as.character(pop$cost.per.TB.death.prevented)
+  pop$cost.per.TB.case.prevented <- as.character(pop$cost.per.TB.case.prevented)
+  pop$Outcome <- as.character(pop$Outcome)
+  pop <- pop[1,]
 }
 
 # Create the table
-table1 <- rbindlist(lapply(files, tabfunc))
+table1 <- bind_rows(lapply(files, tabfunc))
+
 
 # Write the table to clipboard so I can paste it into Excel
 write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
@@ -441,7 +438,7 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # base[, sum(p.sum), by = cycle]
 # base[, sum(p.tb), by = cycle]
 # base[, sum(NUMP), by = cycle]
-# 
+# []
 # 
 # dt[YARP == 2020, sum(NUMP), by = cycle]
 # dt[YEAR == 2020 & YARP == 2020, sum(NUMP), by = cycle]
@@ -460,7 +457,7 @@ write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
 # 
 # 
 # # Write the table to clipboard so I can paste it into Excel
-# write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+write.table(dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
 # options(scipen = 999)
 
 

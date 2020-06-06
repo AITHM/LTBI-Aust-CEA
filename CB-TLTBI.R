@@ -300,7 +300,7 @@ S0_12 <- DefineStrategy(p.sus,	p.sus.notest, p.sus.nf,	p.sus.nbt,	p.sus.nct,	p.s
                        transition.matrix = do.call(DefineTransition, arglist.BASELINE.S1.TM))
 
 # Creates an unevaluated set of parameters
-parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
+parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "Med"),
                                RR = Get.RR(DT, year),
                                TBMR = Get.TBMR(DT, year),
                                # TBMR = 0.001,
@@ -332,8 +332,8 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
                                TESTC = Get.TEST(S = "cost.primary", testing),
                                TREATR = Get.TREATR(C = "treat.complete", E = "treat.effic", treatment),
                                TREATCOMPLETE = Get.TREAT(S = "treat.complete", treatment),
-                               PART.TREAT.EFFICACY = Get.PART.EFFIC(C = "treat.complete", E = "treat.effic", treatment),
-                               FULL.TREAT.EFFICACY = Get.TREAT(S = "treat.effic", treatment),
+                               PART.TREAT.EFFICACY = Get.PART.EFFIC(DT, C = "treat.complete", E = "treat.effic", treatment),
+                               FULL.TREAT.EFFICACY = Get.FULL.EFFIC(DT, S = "treat.effic", treatment),
                                TREATC = Get.TREATC(S = "cost.primary", treatment),
                                POP = Get.POP(DT, strategy),
                                UTILITY = Get.UTILITY(treatment),
@@ -346,7 +346,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
  
 # Uses aust.rds file to create a sample input
 pop.master <- CreatePopulationMaster()
-pop.master <- subset(pop.master, AGERP < 80)
+pop.master <- subset(pop.master, AGERP == 60 & ISO3 == "40-99")
 # pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
 
 

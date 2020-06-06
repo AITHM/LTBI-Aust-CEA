@@ -335,6 +335,7 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
   }
   
   # Manipulates the tM to calculate the CMP
+  # browser()
   tM <- CalculateCMP(tM, l, z)
   
   # Select the numeric state value columns in preparation for multiplication.

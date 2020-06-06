@@ -6,11 +6,11 @@ library(data.table)
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################# CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-# onshore <- 1
+params <- readRDS("params onshore.rds")
+onshore <- 1
 
-params <- readRDS("params offshore.rds")
-onshore <- 0
+# params <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 options(scipen = 999)
 params <- as.data.table(params)
@@ -34,15 +34,11 @@ sensfunc <- function(paramname, loworhigh) {
 
 # params[p == "saemr", mid := 0]
 
-# # alter treatr values, i.e. treatment completion and treatment efficacy separately
-# sensfunc(treatr4R, low.treat.complete)
-# sensfunc(treatr4R, high.treat.complete)
-# sensfunc(treatr4R, low.treat.eff)
-# sensfunc(treatr4R, high.treat.eff)
+sensfunc(treat.effic.4R, hi gh)
 
 # # apply realistic LTBI utilities
-sensfunc(ultbi4R, low)
-sensfunc(ultbipart4R, low)
+# sensfunc(ultbi4R, low)
+# sensfunc(ultbipart4R, low)
 # sensfunc(ultbi3HP, low)
 # sensfunc(ultbipart3HP, low)
 # sensfunc(ultbi6H, low)
@@ -50,7 +46,7 @@ sensfunc(ultbipart4R, low)
 # sensfunc(ultbi9H, low)
 # sensfunc(ultbipart9H, low)
 
-# # # the perfect cascade - figure 8
+# # the perfect cascade - figure 8
 # params[p == "attscreen", mid := 1]
 # params[p == "treat.complete.4R", mid := 1]
 # params[p == "treat.complete.3HP", mid := 1]
@@ -78,11 +74,11 @@ sensfunc(ultbipart4R, low)
 Get.POP <- function(DT, strategy) {
   
   # 200+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+  (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
   # 150+
   # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
   # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
     # 40+
     # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
     # Adjust age at arrival
@@ -94,11 +90,11 @@ Get.POP <- function(DT, strategy) {
 targetfunc <- function(DT) {
   
   # 200+
-  # DT <- subset(DT, ISO3 == "200+")
+  DT <- subset(DT, ISO3 == "200+")
   # 150+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
   # 100+
-  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
   # 40+
   # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
   # Adjust age at arrival
@@ -109,9 +105,9 @@ targetfunc <- function(DT) {
 
 # Assigning other parameter values
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
-startyear <- 2020 # start.year
+startyear <- 2020 # Rstart.year
 start.year <- startyear
-totalcycles <- 91 # cycles ... The mortality data continues until 2150 and migrant 
+totalcycles <- 70 #  cycles ... The mortality data continues until 2150 and migrant 
 
 kill.off.above <- 120 # age above which all enter death state
 
@@ -119,7 +115,7 @@ kill.off.above <- 120 # age above which all enter death state
 finalyear <- startyear + totalcycles
 final.year <- finalyear
 # The tests and treatments I want to consider in the run
-testlist <- c("TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+testlist <- c("TST10") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 # MIGRANT INFLOWS
@@ -241,9 +237,7 @@ Get.RR <- function(xDT, year) {
 
   DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]
 
-  DT[AGERP > 110, AGERP := 110]
-
-  # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
 
   ifelse(DT[, AGEP] > kill.off.above, 0,
 
@@ -326,8 +320,6 @@ Get.RRADJ <- function(xDT, year) {
   
   DT <- copy(xDT[, .(year, AGERP, YARP, AGEP)])
   
-  DT[AGERP > 110, AGERP := 110]
-  
   rradjrates[DT[, .(AGERP, ST = year - YARP)], rate, on = .(aaa = AGERP, ysa = ST)]
   
   # rradjrates[DT[, .(AGERP, ST = year - YARP)], lower, on = .(aaa = AGERP, ysa = ST)]
@@ -351,14 +343,15 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   
   DT <- copy(xDT[, .(AGEP, SEXP)])
   
-  # To lookup all ages beyond 110
-  DT[AGEP > 110, AGEP := 110]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
   
-  # Knocking everyone off at 100 years of age
-  vic.mortality[Age > kill.off.above, Prob := 1]
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+  vic.mortality[Age > kill.off.above, Prob := 0.3]
   
   vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
-  
+  #######################SOMETHING TO DO WITH THIS IN STRATEGY RUN#############################################
+  #######Adjusting it to 0.4 doesn't work, but to 0.3, it does ##################################
 }
 
 # Look up TB mortality rate
@@ -366,10 +359,16 @@ Get.TBMR <- function(xDT, year) {
   
   DT <- copy(xDT[, .(AGEP, SEXP)])
   
-  # To lookup all ages beyond 95 & 97
-  DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
-  DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
-  DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  
+  # # To lookup all ages beyond 95 & 97
+  # DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
+  # DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
+  # DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
+  
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+  vic.tb.mortality[age > kill.off.above, Prob := 0]
   
   vic.tb.mortality[DT[, .(AGEP, SEXP)], Prob, on = .(age = AGEP, sex = SEXP)]
   # vic.tb.mortality[DT[, .(AGEP, SEXP)], lower, on = .(age = AGEP, sex = SEXP)]
@@ -383,14 +382,18 @@ Get.SAE <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGEP)])
   
-  DT[AGEP > 110, AGEP := 110]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+  sae.rate[Age > kill.off.above, Rate := 0]
   
   DT$treatment <- as.character(treat)
   
   sae.rate[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
   # sae.rate[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
   # sae.rate[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
-  
+
 }
 
 # Look up SAE rate from sae.rate (age and treatment dependent)
@@ -398,12 +401,16 @@ Get.SAEMR <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGEP)])
   
-  DT[AGEP > 110, AGEP := 110]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+  sae.mortality[Age > kill.off.above, Rate := 0]
   
   DT$treatment <- as.character(treat)
   
   # Knocking everyone off at 100 years of age
-  sae.mortality[Age > kill.off.above, Rate := 0]
+  # sae.mortality[Age > kill.off.above, Rate := 0]
   
   sae.mortality[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
   # sae.mortality[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
@@ -423,9 +430,10 @@ Get.EMIGRATE <- function(xDT, year) {
 
   DT <- copy(xDT[, .(year, AGEP, YARP)])
 
-  DT[AGEP > 110, AGEP := 110]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
   
-  # Knocking everyone off at 80 years of age
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   emigrate.rate[Age > kill.off.above, Rate := 0]
 
   emigrate.rate[DT[, .(AGEP)], Rate, on = .(Age = AGEP)] # use this one for a 11.72% perm rates
@@ -435,10 +443,10 @@ Get.EMIGRATE <- function(xDT, year) {
 }
 
 
-Get.EMIGRATE <- function(xDT, year) {
-
- 0
-}
+# Get.EMIGRATE <- function(xDT, year) {
+# 
+#  0
+# }
 
 # Look up treatment costs (it's treatment dependent)
 Get.TREATC <- function(S, treat) {
@@ -449,7 +457,7 @@ Get.TREATC <- function(S, treat) {
 }
 
 # Calculating the partial treatment efficacy
-Get.PART.EFFIC <- function(C, E, treat) {
+Get.PART.EFFIC <- function(xDT, C, E, treat) {
   
   treat.complete <- as.numeric(treatment.dt[treatment == treat, ..C])
   
@@ -466,7 +474,7 @@ Get.PART.EFFIC <- function(C, E, treat) {
     ratio.1 <- 0.6993362 # Page and Menzies
     ratio.2 <- 0.3006638 # Page and Menzies
 
-    EFFIC <- treat.effic.2 * ratio.2
+    PART.EFFIC <- treat.effic.2 * ratio.2
     
   } else if (treat == '4R') {
     
@@ -477,7 +485,7 @@ Get.PART.EFFIC <- function(C, E, treat) {
     ratio.1 <- 0.6993362 # Page and Menzies
     ratio.2 <- 0.3006638 # Page and Menzies
     
-    EFFIC <- treat.effic.2 * ratio.2
+    PART.EFFIC <- treat.effic.2 * ratio.2
     
   } else if (treat == '6H') {
     
@@ -488,7 +496,7 @@ Get.PART.EFFIC <- function(C, E, treat) {
     ratio.1 <- 0.7273 # IUAT
     ratio.2 <- 0.2727 # IUAT
     
-    EFFIC <- treat.effic.2 * ratio.2 
+    PART.EFFIC <- treat.effic.2 * ratio.2 
     
   } else if (treat == '9H') {
     
@@ -501,15 +509,26 @@ Get.PART.EFFIC <- function(C, E, treat) {
     ratio.2 <- 0.18519 # IUAT
     ratio.3 <- 0.22222 # IUAT
     
-    EFFIC <- treat.effic.1 * ratio.1 +
+    PART.EFFIC <- treat.effic.1 * ratio.1 +
       treat.effic.2 * ratio.2 +
       treat.effic.3 * ratio.3
     
   } else {
     
-    TREATR <- NA
+    PART.EFFIC <- 0
   }
   
+}
+
+Get.FULL.EFFIC <- function(xDT, S, treat) {
+  
+  DT <- copy(xDT[, .(year, AGEP, YARP)])
+  
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  
+  as.numeric(treatment.dt[treatment == treat, ..S])
+
 }
 
 
@@ -591,8 +610,8 @@ Get.TREATR <- function(C, E, treat) {
 
   } else {
     
-    TREATR <- NA
+    TREATR <- 0
   }
-  
+
 }
 
