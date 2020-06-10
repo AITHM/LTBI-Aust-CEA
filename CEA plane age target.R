@@ -17,8 +17,11 @@ parameters.already.set <- 1
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 #setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds")
-params <- readRDS("params offshore.rds")
+params <- readRDS("params onshore.rds")
+onshore <- 1
+
+# params <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -35,6 +38,11 @@ withemig <- 1
 
 # Define age target
 lower.age.targets <- c(10, 19, 29, 39, 49, 59, 35)
+if (onshore == 1) {
+  tbincid.targets <- c("200+")
+} else if (onshore == 0) {
+  tbincid.targets <- c("100+")
+}
 tbincid.targets <- c("100+")
 target.dt<- expand.grid(lower.age.targets, tbincid.targets)
 target.dt <- as.data.table(target.dt)

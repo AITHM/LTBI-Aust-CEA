@@ -17,10 +17,10 @@ library(gridExtra)
 # I have researched this and it is in an excel file in "Model parameters"
 
 ylimupper <- 600000/1000
-ylimlower <- -600000/1000
+ylimlower <- -950000/1000
 xlimupper <- -5
 xlimlower <- 56
-
+ 
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
@@ -89,7 +89,7 @@ myplot1 <-
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-  scale_y_continuous(breaks = seq(-600000/1000, 1000000/1000, 200000/1000),
+  scale_y_continuous(breaks = seq(-1000000/1000, 1000000/1000, 200000/1000),
                      label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
@@ -188,7 +188,7 @@ myplot2 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #           hjust = 1, vjust = -0.7, size = textsize, 
   #           colour = "black") +
-  scale_y_continuous(breaks = seq(-600000/1000, 600000/1000, 200000/1000),
+  scale_y_continuous(breaks = seq(-1000000/1000, 600000/1000, 200000/1000),
                      label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
@@ -245,7 +245,7 @@ myplot2 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #           hjust = 1, vjust = -0.7, size = textsize, 
 #           colour = "black") +
-scale_y_continuous(breaks = seq(-600000/1000, 600000/1000, 200000/1000),
+scale_y_continuous(breaks = seq(-1000000/1000, 600000/1000, 200000/1000),
                    label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +

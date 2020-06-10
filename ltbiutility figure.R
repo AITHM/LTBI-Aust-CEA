@@ -155,7 +155,7 @@ myplot1 <-
   theme_bw() +
   geom_text(aes(x = f2(0), y = 0),
                    hjust = 0.5, vjust = -1,
-                   size = 10, label = "0.00679") +
+                   size = 10, label = "0.0045") +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   labs(y = "Incremental QALYS",
@@ -163,15 +163,15 @@ myplot1 <-
   # scale_fill_manual(values = c("steelblue2", "darksalmon")) +
   scale_y_continuous(breaks = seq(-60, 100, 5),
                      labels = comma) +
-  scale_x_continuous(breaks = seq(0, 0.1, 0.002)) +
-  coord_cartesian(xlim = c(0, 0.02), ylim = c(-20, 20)) +
+  scale_x_continuous(breaks = seq(0, 0.1, 0.001)) +
+  coord_cartesian(xlim = c(0, 0.01), ylim = c(-20, 20)) +
   theme(text = element_text(size = 20),
         panel.border = element_blank(),
         legend.position = "none",
         panel.grid.major = element_line(colour = "grey"))
 
 
-tiff('Figures/ltbiutility.tiff', units = "in", width = 14, height = 6,
+tiff('Figures/ltbiutility.tiff', units = "in", width = 16, height = 6,
      res = 200)
 myplot1
 dev.off()

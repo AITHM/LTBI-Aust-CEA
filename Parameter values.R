@@ -14,20 +14,21 @@ onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 options(scipen = 999)
 params <- as.data.table(params)
- 
+
+##########################Manual Sensitivity analyses##########################################
+
+
 # This function can be used to choose which parameters to change
 # for sensitivity analysis.
 # It replaces the "mid" value in the dataframe with a 
 # low or high value depending on what is specified.
+# sensfunc <- function(paramname, loworhigh) {
+#   paramname <- deparse(substitute(paramname))
+#   colname <- deparse(substitute(loworhigh))
+#   newvalue <- params[p == paramname, ..colname]
+#   params[p == paramname, mid:= newvalue]
+# }
 
-sensfunc <- function(paramname, loworhigh) {
-  paramname <- deparse(substitute(paramname))
-  colname <- deparse(substitute(loworhigh))
-  newvalue <- params[p == paramname, ..colname]
-  params[p == paramname, mid:= newvalue]
-}
-#################################################################################################
- 
 # sensfunc(attscreen, low)
 # params[p == "ctb", mid := 17783.28] # 22298.82
 # params[p == "attscreen", mid := 1]
@@ -71,36 +72,72 @@ sensfunc <- function(paramname, loworhigh) {
 
 # Target population
 
-Get.POP <- function(DT, strategy) {
+if (onshore == 1) {
+  Get.POP <- function(DT, strategy) {
+    
+    # 200+
+    (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+      # 150+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
+      # 100+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+      # 40+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+      # Adjust age at arrival
+      (ifelse(DT[, AGERP] > 10, 1, 0) &
+         ifelse(DT[, AGERP] < 66, 1, 0))
+    
+  }
   
-  # 200+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
-  # 150+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
-  # 100+
-  (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+  targetfunc <- function(DT) {
+    
+    # 200+
+    DT <- subset(DT, ISO3 == "200+")
+    # 150+
+    # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
+    # 100+
+    # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
     # 40+
-    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+    # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
     # Adjust age at arrival
-    (ifelse(DT[, AGERP] > 10, 1, 0) &
-       ifelse(DT[, AGERP] < 66, 1, 0))
+    DT <- subset(DT, AGERP > 10 &
+                   AGERP < 66)
+    DT
+  }
   
-}
-
-targetfunc <- function(DT) {
+} else if (onshore == 0) {
   
-  # 200+
-  # DT <- subset(DT, ISO3 == "200+")
-  # 150+
-  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
-  # 100+
-  DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
-  # 40+
-  # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
-  # Adjust age at arrival
-  DT <- subset(DT, AGERP > 10 &
-                 AGERP < 66)
-  DT
+  Get.POP <- function(DT, strategy) {
+    
+    # 200+
+    #(ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+      # 150+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
+      # 100+
+      (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+      # 40+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+      # Adjust age at arrival
+      (ifelse(DT[, AGERP] > 10, 1, 0) &
+         ifelse(DT[, AGERP] < 36, 1, 0))
+    
+  }
+  
+  targetfunc <- function(DT) {
+    
+    # 200+
+    # DT <- subset(DT, ISO3 == "200+")
+    # 150+
+    # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" )
+    # 100+
+    DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149")
+    # 40+
+    # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
+    # Adjust age at arrival
+    DT <- subset(DT, AGERP > 10 &
+                   AGERP < 36)
+    DT
+  }
 }
 
 # Assigning other parameter values
@@ -256,64 +293,7 @@ Get.RR <- function(xDT, year) {
   )
 
 }
-
-
-# # # Assuming a lower prevalence of LTBI and a upper reactivation rate
-# aust[, LTBP := NULL]
-# setnames(aust, "twentyrisk", "LTBP")
-# RRates <- readRDS("Data/RRates.for.psa.rds")
-# RRates <- as.data.table(RRates)
-# colupper <- which(colnames(RRates) == 'upper20%')
-# setnames(RRates, colupper, "UUI")
-# 
-# Get.RR <- function(xDT, year) {
-# 
-#   DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
-# 
-#   DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]
-# 
-#   DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]
-# 
-#   DT[AGERP > 110, AGERP := 110]
-# 
-#   # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
-# 
-#   ifelse(DT[, AGEP] > kill.off.above, 0,
-# 
-#          # assuming a lower LTBI prevalence and a higher rate of reactivation
-#          RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], UUI, on = .(aaa = AGERP, Sex = SEXP,
-#                                                                                         ysa = ST, cobi = COBI)]
-#   )
-# }
-
-# # # Assuming a higher prevalence of LTBI and a lower reactivation rate
-# aust[, LTBP := NULL]
-# setnames(aust, "eightyrisk", "LTBP")
-# RRates <- readRDS("Data/RRates.for.psa.rds")
-# RRates <- as.data.table(RRates)
-# collower <- which(colnames(RRates) == 'lower75%')
-# setnames(RRates, collower, "LUI")
-# 
-# Get.RR <- function(xDT, year) {
-# 
-#   DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
-# 
-#   DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]
-# 
-#   DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]
-# 
-#   DT[AGERP > 110, AGERP := 110]
-# 
-#   # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
-# 
-#   ifelse(DT[, AGEP] > kill.off.above, 0,
-# 
-#          # assuming a higher LTBI prevalence and a lower rate of reactivation
-#          RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], LUI, on = .(aaa = AGERP, Sex = SEXP,
-#                                                                                         ysa = ST, cobi = COBI)]
-#   )
-# }
-
+ 
 
 # Reactivation rate adjustment for existing TB control
 Get.RRADJ <- function(xDT, year) {
@@ -368,6 +348,8 @@ Get.TBMR <- function(xDT, year) {
   
   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   vic.tb.mortality[age > kill.off.above, Prob := 0]
+  vic.tb.mortality[age > kill.off.above, lower := 0]
+  vic.tb.mortality[age > kill.off.above, upper := 0]
   
   vic.tb.mortality[DT[, .(AGEP, SEXP)], Prob, on = .(age = AGEP, sex = SEXP)]
   # vic.tb.mortality[DT[, .(AGEP, SEXP)], lower, on = .(age = AGEP, sex = SEXP)]
@@ -386,6 +368,8 @@ Get.SAE <- function(xDT, treat) {
   
   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   sae.rate[Age > kill.off.above, Rate := 0]
+  sae.rate[Age > kill.off.above, low := 0]
+  sae.rate[Age > kill.off.above, high := 0]
   
   DT$treatment <- as.character(treat)
   
@@ -405,11 +389,10 @@ Get.SAEMR <- function(xDT, treat) {
   
   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   sae.mortality[Age > kill.off.above, Rate := 0]
+  sae.mortality[Age > kill.off.above, low := 0]
+  sae.mortality[Age > kill.off.above, high := 0]
   
   DT$treatment <- as.character(treat)
-  
-  # Knocking everyone off at 100 years of age
-  # sae.mortality[Age > kill.off.above, Rate := 0]
   
   sae.mortality[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
   # sae.mortality[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
@@ -434,6 +417,8 @@ Get.EMIGRATE <- function(xDT, year) {
   
   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   emigrate.rate[Age > kill.off.above, Rate := 0]
+  emigrate.rate[Age > kill.off.above, lower := 0]
+  emigrate.rate[Age > kill.off.above, upper := 0]
 
   emigrate.rate[DT[, .(AGEP)], Rate, on = .(Age = AGEP)] 
   # emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]

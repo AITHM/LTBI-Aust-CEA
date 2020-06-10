@@ -68,7 +68,7 @@ getPalette
 ylimmin <- -2
 ylimmax <- 9
 xlimmin <- -4
-xlimmax <- 80
+xlimmax <- 84
 linewidth <- 0.5
 
 titleposxaxis <- 45 

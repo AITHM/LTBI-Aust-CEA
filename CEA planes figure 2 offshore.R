@@ -65,13 +65,13 @@ plot7 <- sortformatfunc(cascade)
 getPalette<-brewer.pal(4, "Spectral")
 getPalette
 
-ylimmin <- -2
-ylimmax <- 10
+ylimmin <- -3
+ylimmax <- 7
 xlimmin <- -5
-xlimmax <- 82
+xlimmax <- 40
 
-textx <- 40
-texty <- 9
+textx <- 20
+texty <- 6.5
 
 linewidth <- 0.5
 
@@ -206,14 +206,14 @@ myplot4 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #         hjust = 1, vjust = -0.2, size = textsize,
   #         colour = "black") +
-  annotate("text", x = -350, y = texty,
+  annotate("text", x = -250, y = texty,
            label = "Applying health utility values for those on\nLTBI treatment from Bauer et al 2015") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
 scale_y_continuous(breaks = seq(-10, 250, 1)) +
   scale_x_continuous(breaks = seq(-1000, 1000, 50)) +
   theme_bw() +
-  coord_cartesian(xlim = c(-650, 50), ylim = c(ylimmin, ylimmax)) +
+  coord_cartesian(xlim = c(-550, 50), ylim = c(ylimmin, ylimmax)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         legend.position = "none",
@@ -314,12 +314,12 @@ myplot7 <-
        shape = "Strategy") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
-  annotate("text", x = 90, y = texty, 
+  annotate("text", x = 60, y = texty, 
            label = "Perfect cascade of care") +
   scale_y_continuous(breaks = seq(-100, 250, 1)) +
   scale_x_continuous(breaks = seq(-100, 1000, 25)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, 225), ylim = c(ylimmin, ylimmax)) +
+  coord_cartesian(xlim = c(xlimmin, 125), ylim = c(ylimmin, ylimmax)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),
@@ -344,14 +344,14 @@ myplot5 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  annotate("text", x = 220, y = 130, 
+  annotate("text", x = 130, y = 80, 
            label = "30 year migrant inflow\nand horizon") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
   scale_y_continuous(breaks = seq(-40, 500, 20)) +
   scale_x_continuous(breaks = seq(-300, 1000, 50)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, 470), ylim = c(-30, 140)) +
+  coord_cartesian(xlim = c(xlimmin, 260), ylim = c(-30, 90)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),

@@ -22,7 +22,7 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 
 # data <- readRDS("Data/cea.plane.2.rds")
 
-data <- readRDS("Data/cea.plane.2.offshore.rds")
+data <- readRDS("Data/cea.plane.2.onshore.rds")
 
 data <- as.data.table(data)
 
@@ -67,12 +67,12 @@ getPalette<-brewer.pal(4, "Spectral")
 getPalette
 
 ylimmin <- -0.5
-ylimmax <- 8
+ylimmax <- 6
 xlimmin <- -5
-xlimmax <- 35
+xlimmax <- 30
 
-textx <- 18
-texty <- 7.5
+textx <- 14
+texty <- 5.5
 
 linewidth <- 0.5
 
@@ -284,12 +284,12 @@ myplot6 <-
        shape = "Strategy") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
-  annotate("text", x = textx, y = 17, 
+  annotate("text", x = textx, y = 12, 
            label = "Care provided by specialists") +
   scale_y_continuous(breaks = seq(-10, 250, 2)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(-1.5, 18)) +
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(-1.5, 13)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),
@@ -315,12 +315,12 @@ myplot7 <-
        shape = "Strategy") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
-  annotate("text", x = 100, y = 21, 
+  annotate("text", x = 70, y = 12, 
            label = "Perfect cascade of care") +
   scale_y_continuous(breaks = seq(-100, 250, 2)) +
   scale_x_continuous(breaks = seq(-100, 1000, 25)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, 225), ylim = c(-1.5, 22)) +
+  coord_cartesian(xlim = c(xlimmin, 225), ylim = c(-1.5, 13)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),
@@ -345,14 +345,14 @@ myplot5 <-
        y = "Incremental cost (AUD$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  annotate("text", x = 100, y = 175, 
+  annotate("text", x = 90, y = 125, 
            label = "30 year migrant inflow\nand horizon") +
   scale_shape_manual(values = legend.shapes) +
   scale_fill_manual(values = legend.colours) +
   scale_y_continuous(breaks = seq(-40, 500, 20)) +
   scale_x_continuous(breaks = seq(-300, 1000, 25)) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, 200), ylim = c(-10, 185)) +
+  coord_cartesian(xlim = c(xlimmin, 180), ylim = c(-10, 130)) +
   theme(text = element_text(size = textsize2),
         panel.border = element_blank(),
         axis.title.y = element_blank(),

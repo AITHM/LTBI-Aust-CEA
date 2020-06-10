@@ -78,6 +78,10 @@ tornado.dt <- rbind(tornado.dt, newparams)
 tornado.dt[, p := as.character(p)]
 
 
+# '%!in%' <- function(x,y)!('%in%'(x,y))
+# tornado.dt <- tornado.dt[tornado.dt$p %!in% pselect,]
+# tornado.dt <- tornado.dt[6:18,]
+
 # The following loops down the rows of the table
 # and runs the model with each specified parameter limit.
 # Then the output is analysed and the icer is entered
@@ -98,12 +102,14 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       
       DT <- copy(xDT[, .(AGEP, SEXP)])
       
-      # To lookup all ages beyond 95 & 97
-      DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
-      DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
-      DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
+      # To lookup all ages beyond the killing off age
+      DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+      
+      # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+      vic.tb.mortality[age > kill.off.above, lower := 0]
       
       vic.tb.mortality[DT[, .(AGEP, SEXP)], lower, on = .(age = AGEP, sex = SEXP)]
+      
     }
       
   } else if (paraname == "tbmr" & highlow == "high") {
@@ -112,12 +118,15 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       
       DT <- copy(xDT[, .(AGEP, SEXP)])
       
-      # To lookup all ages beyond 95 & 97
-      DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
-      DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
-      DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
+      # To lookup all ages beyond the killing off age
+      DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+      
+      # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+
+      vic.tb.mortality[age > kill.off.above, upper := 0]
       
       vic.tb.mortality[DT[, .(AGEP, SEXP)], upper, on = .(age = AGEP, sex = SEXP)]
+      
     }
       
   } else if (paraname == "emig" & highlow == "low") {
@@ -131,7 +140,7 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
       
       # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
-      emigrate.rate[Age > kill.off.above, Rate := 0]
+      emigrate.rate[Age > kill.off.above, lower := 0]
       
       emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]
       
@@ -148,7 +157,7 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
       
       # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
-      emigrate.rate[Age > kill.off.above, Rate := 0]
+      emigrate.rate[Age > kill.off.above, upper := 0]
       
       emigrate.rate[DT[, .(AGEP)], upper, on = .(Age = AGEP)]
       
@@ -160,16 +169,15 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       
       DT <- copy(xDT[, .(AGEP)])
       
-      DT[AGEP > 110, AGEP := 110]
+      # To lookup all ages beyond the killing off age
+      DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+      
+      # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+      sae.mortality[Age > kill.off.above, low := 0]
       
       DT$treatment <- as.character(treat)
       
-      # Knocking everyone off at 100 years of age
-      sae.mortality[Age > kill.off.above, low := 0]
-      
-      # sae.mortality[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
       sae.mortality[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
-      # sae.mortality[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
       
     }
     
@@ -179,15 +187,14 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       
       DT <- copy(xDT[, .(AGEP)])
       
-      DT[AGEP > 110, AGEP := 110]
+      # To lookup all ages beyond the killing off age
+      DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
       
-      DT$treatment <- as.character(treat)
-      
-      # Knocking everyone off at 100 years of age
+      # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
       sae.mortality[Age > kill.off.above, high := 0]
       
-      # sae.mortality[DT[, .(AGEP, treatment)], Rate, on = .(Age = AGEP, treatment = treatment)]
-      # sae.mortality[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
+      DT$treatment <- as.character(treat)
+
       sae.mortality[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
       
     }
@@ -198,8 +205,6 @@ for(tornado.x in 1:nrow(tornado.dt)) {
     Get.RRADJ <- function(xDT, year) {
       
       DT <- copy(xDT[, .(year, AGERP, YARP)])
-      
-      DT[AGERP > 110, AGERP := 110]
 
       rradjrates[DT[, .(AGERP, ST = year - YARP)], lower, on = .(aaa = AGERP, ysa = ST)]
     }
@@ -211,8 +216,6 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       
       DT <- copy(xDT[, .(year, AGERP, YARP)])
       
-      DT[AGERP > 110, AGERP := 110]
-      
       rradjrates[DT[, .(AGERP, ST = year - YARP)], upper, on = .(aaa = AGERP, ysa = ST)]
     }
     
@@ -220,26 +223,36 @@ for(tornado.x in 1:nrow(tornado.dt)) {
       # Look up SAE rate from sae.rate (age and treatment dependent)
       Get.SAE <- function(xDT, treat) {
         
-        DT <- copy(xDT[, .(AGERP)])
+        DT <- copy(xDT[, .(AGEP)])
         
-        DT[AGERP > 110, AGERP := 110]
+        # To lookup all ages beyond the killing off age
+        DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+        
+        # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+        sae.rate[Age > kill.off.above, low := 0]
         
         DT$treatment <- as.character(treat)
         
-        sae.rate[DT[, .(AGERP, treatment)], low, on = .(Age = AGERP, treatment = treatment)]
+        sae.rate[DT[, .(AGEP, treatment)], low, on = .(Age = AGEP, treatment = treatment)]
+
       }
       
     } else if (paraname == "sae" & highlow == "high") {
       # Look up SAE rate from sae.rate (age and treatment dependent)
       Get.SAE <- function(xDT, treat) {
         
-        DT <- copy(xDT[, .(AGERP)])
+        DT <- copy(xDT[, .(AGEP)]
+                   )
+        # To lookup all ages beyond the killing off age
+        DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
         
-        DT[AGERP > 110, AGERP := 110]
+        # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+        sae.rate[Age > kill.off.above, high := 0]
         
         DT$treatment <- as.character(treat)
         
-        sae.rate[DT[, .(AGERP, treatment)], high, on = .(Age = AGERP, treatment = treatment)]
+        sae.rate[DT[, .(AGEP, treatment)], high, on = .(Age = AGEP, treatment = treatment)]
+        
       }
       
     } else if (paraname == "ltbi.react" & highlow == "low") {
@@ -258,8 +271,6 @@ for(tornado.x in 1:nrow(tornado.dt)) {
         DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]
         
         DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]
-        
-        DT[AGERP > 110, AGERP := 110]
         
         # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
         
@@ -287,8 +298,6 @@ for(tornado.x in 1:nrow(tornado.dt)) {
         DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]
 
         DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]
-
-        DT[AGERP > 110, AGERP := 110]
 
         # Knocking everyone off at 100 years of age, so I need to adjust RR to zero at 100
 
@@ -489,6 +498,9 @@ for(tornado.x in 1:nrow(tornado.dt)) {
   check <- unlist(lapply(files, tabfunc))
 
   tornado.dt[tornado.x, icer := as.numeric(check[[2]])]
+  
+  # remove the files in the output folder
+  file.remove(filenames)
 
 }
 

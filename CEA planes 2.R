@@ -21,14 +21,18 @@ parameters.already.set <- 1
 ################### ###################################################################################
 # MAKE SURE THE DATA OUTPUTS FOLDER IS EMPTY BEFORE RUNNING THIS
 ######################################################################################################
-######################################################################################################
+############################  ##########################################################################
 
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
 params <- readRDS("params onshore.rds")
-# params <- readRDS("params offshore.rds")
+onshore <- 1
+
+
+#  params <- readRDS("params offshore.rds")
+# onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -37,12 +41,21 @@ params <- as.data.table(params)
 # of targets, i.e. by age and TB incidence in country of birth
 
 # Define the three targets I want to present
-age.low <- c(rep(10, 7)) 
-age.high <- c(rep(66, 7))
-######################################################################################################
-######################################################################################################
-tbincid <- c(rep("100+", 7))
-######################################################################################################
+
+if (onshore == 1) {
+  
+  tbincid <- c(rep("200+", 7))
+  age.low <- c(rep(10, 7)) 
+  age.high <- c(rep(66, 7))
+  
+} else if (onshore == 0) {
+  
+  tbincid <- c(rep("100+", 7))
+  age.low <- c(rep(10, 7)) 
+  age.high <- c(rep(36, 7))
+  
+}
+
 ######################################################################################################
 other <- c("lifetime horizon",
            "All specialist",
@@ -179,14 +192,16 @@ for(target.x in 1:nrow(target.dt)) {
     emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds")
     Get.EMIGRATE <- function(xDT, year) {
       
-      DT <- copy(xDT[, .(year, AGERP, YARP)])
+      DT <- copy(xDT[, .(year, AGEP, YARP)])
       
-      DT[AGERP > 110, AGERP := 110]
+      # To lookup all ages beyond the killing off age
+      DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
       
-      # Knocking everyone off at 80 years of age
-      emigrate.rate[Age > kill.off.above, Rate := 0]
+      # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+      emigrate.rate[Age > kill.off.above, upper := 0]
       
-      emigrate.rate[DT[, .(AGERP)], upper, on = .(Age = AGERP)] # use this one for a 14.76% perm rates
+      emigrate.rate[DT[, .(AGEP)], upper, on = .(age = AGEP)] # use this one for a 14.76% perm rates
+      
     }
     
     } else if (other.cat == "LTBI decrement") {
@@ -258,7 +273,17 @@ for(target.x in 1:nrow(target.dt)) {
 
 # # Save the output to file
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-saveRDS(results.dt, file = "Data/cea.plane.2.offshore.rds")
+if (onshore == 1) {
+  
+  saveRDS(results.dt, file = "Data/cea.plane.2.onshore.rds")
+  
+} else if (onshore == 0) {
+  
+  saveRDS(results.dt, file = "Data/cea.plane.2.offshore.rds")
+  
+}
+
+
 
 # Write the table to clipboard so I can paste it into Excel
 write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)

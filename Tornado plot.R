@@ -39,7 +39,7 @@ setwd("H:/Katie/PhD/CEA/Data")
 df <- read.csv("tornado plot.csv")
 # original value of output
 base.value <- (as.character(df[1,3]))
-base.value <-  as.numeric(gsub('\\D+','', base.value))
+base.value <- as.numeric(gsub("[^0-9\\-]", "", base.value))
 
 # Reading in the rest of the sensitivity analysis data from excel
 setwd("H:/Katie/PhD/CEA/Data")
@@ -113,7 +113,7 @@ if (onshore == 1) {
                   xmax = xmax, xmin = xmin, fill = type)) +
     theme_bw() + 
     geom_text(aes(x = 0, y = base.value),
-              size = 3.5, label = "Base case ICER: $153,970") +
+              size = 3.5, label = "Base case ICER: $140,186") +
     labs(y = "Cost per QALY (AUD$)") +
     scale_fill_manual(values = c("steelblue2", "darksalmon" )) +
     theme(legend.position = 'bottom',
@@ -125,9 +125,9 @@ if (onshore == 1) {
     scale_x_continuous(breaks = c(1:length(order.parameters)), 
                        labels = order.parameters) +
     scale_y_continuous(position = "bottom", 
-                       breaks = seq(0, 5000000, 100000),
+                       breaks = seq(0, 5000000, 50000),
                        labels = comma) +
-    coord_flip(ylim = c(0, 800000))+
+    coord_flip(ylim = c(0, 400000))+
     theme(text = element_text(size = 12),
           legend.position = c(0.75, 0.2))
   
@@ -145,7 +145,7 @@ if (onshore == 1) {
               aes(ymax = ymax, ymin = ymin, 
                   xmax = xmax, xmin = xmin, fill = type)) +
     geom_text(aes(x = 0, y = base.value),
-              size = 3.5, label = "Base case ICER: $8,061") +
+              size = 3.5, label = "Base case ICER: -$4,081") +
     theme_bw() + 
     labs(y = "Cost per QALY (AUD$)") +
     scale_fill_manual(values = c("steelblue2", "darksalmon")) +
@@ -158,14 +158,14 @@ if (onshore == 1) {
     scale_x_continuous(breaks = c(1:length(order.parameters)), 
                        labels = order.parameters) +
     scale_y_continuous(position = "bottom", 
-                       breaks = seq(-25000, 500000, 25000),
+                       breaks = seq(-60000, 500000, 20000),
                        labels = comma) +
-    coord_flip(ylim = c(-22000, 110000))+
+    coord_flip(ylim = c(-60000, 60000))+
     theme(text = element_text(size = 12),
-          legend.position = c(0.75, 0.1))
+          legend.position = c(0.75, 0.2))
   
   setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-  tiff('tornadooffshore.tiff', units = "in", width = 14, height = 6,
+  tiff('tornadooffshore.tiff', units = "in", width = 14, height = 5,
        res = 200)
   print(myplot1)
   dev.off()
