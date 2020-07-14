@@ -503,6 +503,7 @@ uactivetbfunct <- function(symptom.mths, sae.mths, chance.of.sae) {
   utbactive
 }
 
+
 # uhealthy.fix - uactivetbfunct(8, 2, 0.0051)
 # # 0.1142495
 # uhealthy.fix - uactivetbfunct(4, 0.5, 0.003)
@@ -518,18 +519,18 @@ params[p == "uactivetb", high := uactivetbfunct(1, 0.5, 0.003)]
 part.utility.dec <- 0.5
 
 
-ultbi3HPcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths +
+ultbi3HPcalc <- ultbi.base + ultbi.1mth + ultbi.2mths +
+  2 * healthy.4mths + 3 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
+
+ultbi4Rcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 
   2 * healthy.4mths + 2 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
 
-ultbi4Rcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + ultbi.4mths +
-  healthy.4mths + 2 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
-
-ultbi6Hcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 
-  2 * ultbi.4mths + ultbi.6mths +
-  healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
+ultbi6Hcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 2 * ultbi.4mths +
+  2 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
 
 ultbi9Hcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 
   2 * ultbi.4mths + 2 * ultbi.6mths + 2 * ultbi.9mths + 2 * ultbi.12mths
+
 
 params[p == "ultbi3HP", mid := uhealthy.fix]
 params[p == "ultbi3HP", low := ultbi3HPcalc]

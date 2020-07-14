@@ -5,37 +5,66 @@ library(data.table)
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
-################################# CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
+################################# Assign main parameter values ##################################
+
 # params <- readRDS("params onshore.rds")
 # onshore <- 1
 
 params <- readRDS("params offshore.rds")
 onshore <- 0
-################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
-options(scipen = 999)
-params <- as.data.table(params)
+payerperspect <- 1
 
-##########################Manual Sensitivity analyses##########################################
+emigration <- 1
 
+# The tests and treatments I want to consider in the run
+testlist <- c("TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+
+disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
+startyear <- 2020 # Rstart.year
+start.year <- startyear
+totalcycles <- 91 #  cycles ... The mortality data continues until 2150 and migrant 
+finalyear <- startyear + totalcycles
+final.year <- finalyear
+kill.off.above <- 119 # age above which all enter death state
+
+# MIGRANT INFLOWS
+migrant.inflow.size <- 434340 # baseline 434340, permanent 103740
+# the migrant inflow will stop after the following Markov cycles. Inflows possible until 2050
+finalinflow <- 0
+
+if (payerperspect == 1) {
+  
+  # params[p == "cscreentst", mid := 7.33]
+  params[p == "cscreentst", mid := 20.10 ] # 162.68
+  
+}
+
+########################## Manual Sensitivity analyses##########################################
 
 # This function can be used to choose which parameters to change
 # for sensitivity analysis.
 # It replaces the "mid" value in the dataframe with a 
 # low or high value depending on what is specified.
-# sensfunc <- function(paramname, loworhigh) {
-#   paramname <- deparse(substitute(paramname))
-#   colname <- deparse(substitute(loworhigh))
-#   newvalue <- params[p == paramname, ..colname]
-#   params[p == paramname, mid:= newvalue]
-# }
+sensfunc <- function(paramname, loworhigh) {
+  paramname <- deparse(substitute(paramname))
+  colname <- deparse(substitute(loworhigh))
+  newvalue <- params[p == paramname, ..colname]
+  params[p == paramname, mid:= newvalue]
+}
 
 # sensfunc(attscreen, low)
 # params[p == "ctb", mid := 17783.28] # 22298.82
 # params[p == "attscreen", mid := 1]
 
-# params[p == "saemr", mid := 0]
+# params[p == "cscreentst", mid := 30]
+
+# sensfunc(cmed4R, high)
+# sensfunc(num.appt4R, high)
 
 # sensfunc(treat.effic.4R, high)
+
+# sensfunc(uactivetbr, low)
 
 # # apply realistic LTBI utilities
 # sensfunc(ultbi4R, low)
@@ -48,12 +77,12 @@ params <- as.data.table(params)
 # sensfunc(ultbipart9H, low)
 
 # # the perfect cascade - figure 8
-# params[p == "attscreen", mid := 1]
-# params[p == "treat.complete.4R", mid := 1]
-# params[p == "treat.complete.3HP", mid := 1]
-# params[p == "treat.complete.6H", mid := 1]
-# params[p == "att", mid := 1]
-# params[p == "begintrt", mid := 1]
+# params[p == "attscreen", mid := 0.9]
+# params[p == "treat.complete.4R", mid := 0.9]
+# params[p == "treat.complete.3HP", mid := 0.9]
+# params[p == "treat.complete.6H", mid := 0.9]
+# params[p == "att", mid := 0.9]
+# params[p == "begintrt", mid := 0.9]
 
 # [p == "prop.spec", mid := 1]
 
@@ -140,25 +169,8 @@ if (onshore == 1) {
   }
 }
 
-# Assigning other parameter values
-disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
-startyear <- 2020 # Rstart.year
-start.year <- startyear
-totalcycles <- 91 #  cycles ... The mortality data continues until 2150 and migrant 
-
-kill.off.above <- 119 # age above which all enter death state
-
-# inflows are possible until 2050
-finalyear <- startyear + totalcycles
-final.year <- finalyear
-# The tests and treatments I want to consider in the run
-testlist <- c("TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
-
-# MIGRANT INFLOWS
-# the migrant inflow will stop after the following Markov cycle
-migrant.inflow.size <- 434340 # baseline 434340, permanent 103740
-finalinflow <- 0
+options(scipen = 999)
+params <- as.data.table(params)
 
 # Taking the values from the params table and
 # putting them into the environment
@@ -420,17 +432,16 @@ Get.EMIGRATE <- function(xDT, year) {
   emigrate.rate[Age > kill.off.above, lower := 0]
   emigrate.rate[Age > kill.off.above, upper := 0]
 
-  emigrate.rate[DT[, .(AGEP)], Rate, on = .(Age = AGEP)] 
-  # emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]
-  # emigrate.rate[DT[, .(AGEP)], upper, on = .(Age = AGEP)] 
+  if (emigration == 1) {
+    emigrate.rate[DT[, .(AGEP)], Rate, on = .(Age = AGEP)] 
+    # emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]
+    # emigrate.rate[DT[, .(AGEP)], upper, on = .(Age = AGEP)]
+  } else if (emigration == 0) {
+    0
+  }
   
 }
 
-
-# Get.EMIGRATE <- function(xDT, year) {
-# 
-#  0
-# }
 
 # Look up treatment costs (it's treatment dependent)
 Get.TREATC <- function(S, treat) {

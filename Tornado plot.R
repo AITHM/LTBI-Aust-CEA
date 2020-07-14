@@ -31,7 +31,7 @@ library(scales)
 #                 sheetName = "Tornado plot input",
 #                 startRow = 3)
 
-onshore <- 1
+onshore <- 0
 
 # Reading in the data from excel using XLSX, which has some sort of glitch
 setwd("H:/Katie/PhD/CEA/Data")

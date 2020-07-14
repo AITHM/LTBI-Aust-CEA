@@ -211,6 +211,8 @@ for(target.x in 1:nrow(target.dt)) {
     ultbi6H <- params[p == "ultbi6H", low]
     ultbi9H <- params[p == "ultbi9H", low]
     
+    uactivetb <- uactivetb - (uhealthy - ultbi4R)
+    
     # Adjusting the partial LTBI treatment utilities so 
     # they are dependent on the value of
     # the sampled utility for full treatment
@@ -230,13 +232,19 @@ for(target.x in 1:nrow(target.dt)) {
     } else if (other.cat == "Perfect cascade") {
       
       # the perfect cascade
-      att <- 1 
-      attscreen <- 1
-      begintrt <- 1
-      treat.complete.3HP <- 1
-      treat.complete.4R <- 1
-      treat.complete.6H <- 1
-      treat.complete.9H <- 1
+      att <- 0.90 
+      attscreen <- 0.90
+      begintrt <- 0.90
+      treat.complete.3HP <- 0.9
+      treat.complete.4R <- 0.9
+      treat.complete.6H <- 0.9
+      treat.complete.9H <- 0.9
+      
+      if (onshore == 0) {
+        
+        attscreen <- 1
+        
+      }
       
     }
   

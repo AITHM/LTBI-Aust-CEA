@@ -72,12 +72,14 @@ tabfunc <- function(dt) {
   # Add the name of the strategy
   nameofdt <- dt$STRAT[1]
   
-  # annual migrant inflow
+  # annual of target group with LTBI
   migflow <- dt[YEAR == start.year & YARP == start.year, sum(NUMP),] * (finalinflow + 1)
   
   # percentage with LTBI
-  percentltbi <- (dt[YEAR == start.year & YARP == start.year,
-                      sum(LTBP),]/dt[YEAR == start.year & YARP == start.year, sum(NUMP),]) * 100
+  cdt <- targetfunc(dt)
+  cdt <- as.data.table(cdt)
+  percentltbi <- (cdt[YEAR == start.year & YARP == start.year,
+                      sum(LTBP),]/cdt[YEAR == start.year & YARP == start.year, sum(NUMP),]) * 100
   
   # annual average number emigrating
   emigflow <- dt[YEAR == final.year, sum(p.emigrate)]/totalcycles
@@ -141,9 +143,7 @@ tabfunc <- function(dt) {
   # total number that completed treatment during the whole time period
   cdt <- copy(dt)
   cdt <- as.data.table(cdt)
-  numbercomptreated <- (cdt[, sum(p.sus.nct) + sum(p.sus.sae) + sum(p.sus.tc) +
-                            sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]) *
-    as.numeric(treatment.dt[treatment == treatmentlist, treat.complete])
+  numbercomptreated <- cdt[, sum(p.sus.tc) + sum(p.ltbi.tc)]
   
   # total base cost
   totbasecost

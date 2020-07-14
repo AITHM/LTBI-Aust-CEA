@@ -17,11 +17,11 @@ parameters.already.set <- 1
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 #setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-onshore <- 1
+# params <- readRDS("params onshore.rds")
+# onshore <- 1
 
-# params <- readRDS("params offshore.rds")
-# onshore <- 0
+params <- readRDS("params offshore.rds")
+onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
@@ -38,6 +38,7 @@ withemig <- 1
 
 # Define age target
 lower.age.targets <- c(10, 19, 29, 39, 49, 59, 35)
+# lower.age.targets <- c(10, 18, 24, 29, 35, 45, 55, 35)
 if (onshore == 1) {
   tbincid.targets <- c("200+")
 } else if (onshore == 0) {
@@ -49,8 +50,13 @@ target.dt <- as.data.table(target.dt)
 setnames(target.dt, "Var1", "age.low")
 setnames(target.dt, "Var2", "tbincid")
 target.dt[, age.high := age.low + 11]
-target.dt[age.low == 10, age.high := 20]
+# target.dt[age.low == 10, age.high := 19]
+# target.dt[age.low == 18, age.high := 25]
+# target.dt[age.low == 24, age.high := 31]
+# target.dt[age.low == 29, age.high := 36]
+# target.dt[8, age.high := 66]
 target.dt[age.low == 35, age.high := 66]
+target.dt[age.low == 10, age.high := 20]
 
 # The following loops down the rows of the table
 # and runs the model with each specified target
@@ -97,6 +103,8 @@ for(target.x in 1:nrow(target.dt)) {
     }
   }
   
+  
+  
   # Run the data prep
   source("CB-TLTBI_DataPreparation.R")
   
@@ -142,8 +150,8 @@ if (onshore == 1 & withemig == 1) {
   saveRDS(results.dt, file = "Data/agetargetoffshorenoemig.rds")
 }
 
-# # Write the table to clipboard so I can paste it into Excel
-# write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
+# Write the table to clipboard so I can paste it into Excel
+write.table(results.dt, file = "clipboard-16384", sep = "\t", row.names = FALSE)
 
 
 # # Write the table to clipboard so I can paste it into Excel

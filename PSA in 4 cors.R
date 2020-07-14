@@ -1098,6 +1098,7 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
   ultbi3HP <- simdata[simnumber, ultbi3HP]
   if (ultbidec == 1) {
     ultbi4R <- dt[abbreviation == "ultbi4R", low]
+    uactivetb <- uactivetb - (uhealthy - ultbi4R)
   } else if (ultbidec == 0) {
     ultbi4R <- uhealthy
   }

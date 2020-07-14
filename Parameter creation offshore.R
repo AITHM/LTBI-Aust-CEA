@@ -561,15 +561,14 @@ ultbi.6mths <- 0.06833333
 ultbi.9mths <- 0.06833333
 ultbi.12mths <- 0.07000000
 
-ultbi3HPcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths +
+ultbi3HPcalc <- ultbi.base + ultbi.1mth + ultbi.2mths +
+  2 * healthy.4mths + 3 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
+
+ultbi4Rcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 
   2 * healthy.4mths + 2 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
 
-ultbi4Rcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + ultbi.4mths +
-  healthy.4mths + 2 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
-
-ultbi6Hcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 
-  2 * ultbi.4mths + ultbi.6mths +
-  healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
+ultbi6Hcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 2 * ultbi.4mths +
+  2 * healthy.6mths + 2 * healthy.9mths + 2 * healthy.12mths
 
 ultbi9Hcalc <- ultbi.base + ultbi.1mth + 2 * ultbi.2mths + 
   2 * ultbi.4mths + 2 * ultbi.6mths + 2 * ultbi.9mths + 2 * ultbi.12mths

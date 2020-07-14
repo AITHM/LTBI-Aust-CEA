@@ -376,14 +376,16 @@ pop.master <- CreatePopulationMaster()
 #   }
 #   DT
 # }
-# 
-# pop.master <- POP.SUBSET.FUNCTION(pop.master)
-# 
+#
 # pop.master[, LTBP := (LTBP/NUMP) * 10]
 # pop.master[, NUMP := 10]
 # pop.master[, p.ltbi := LTBP]
 # pop.master[, p.sus := NUMP - LTBP]
 
+# pop.master[, LTBP := (LTBP/NUMP) * 1000]
+# pop.master[, NUMP := 1000]
+# pop.master[, p.ltbi := LTBP]
+# pop.master[, p.sus := NUMP - LTBP]
 
 
 #---------- Model parameters for STRATEGY 0 ----------------#
