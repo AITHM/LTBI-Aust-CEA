@@ -627,6 +627,7 @@ simdata[, treatr9H :=  treatrcalc9H(treat.complete.9H, treat.effic.9H)]
 # within each simulation and there are many or them so these sets 
 # are sampled within each simulation during the run, rather than predetermined.
 
+
 # Get.RR
 # Reactivation rates
 Get.RR <- function(xDT, year) {
@@ -636,8 +637,6 @@ Get.RR <- function(xDT, year) {
   DT[ISO3 == "0-39" | ISO3 == "40-99", COBI := "<100"]  
   
   DT[ISO3 == "100-149" | ISO3 == "150-199" | ISO3 == "200+", COBI := "100+"]  
-  
-  DT[AGERP > 110, AGERP := 110]
   
   mid <- RRates[DT[, .(AGERP, SEXP, COBI, ST = year - YARP)], 
                 Rate, on = .(aaa = AGERP, Sex = SEXP,
@@ -717,10 +716,10 @@ Get.EMIGRATE <- function(xDT, year) {
   
   DT <- copy(xDT[, .(year, AGEP, YARP)])
   
-  DT[AGEP > 110, AGEP := 110]
-  
-  # Knocking everyone off at 80 years of age
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   emigrate.rate[Age > kill.off.above, Rate := 0]
+  emigrate.rate[Age > kill.off.above, lower := 0]
+  emigrate.rate[Age > kill.off.above, upper := 0]
   
   mid <- emigrate.rate[DT[, .(AGEP)], 
                        Rate, on = .(Age = AGEP)]
@@ -745,10 +744,10 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   
   DT <- copy(xDT[, .(AGEP, SEXP)])
   
-  # To lookup all ages beyond 110
-  DT[AGEP > 100, AGEP := 100]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
   
-  # Knocking everyone off at 100 years of age
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   vic.mortality[Age > kill.off.above, Prob := 1]
   
   vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
@@ -761,10 +760,13 @@ Get.TBMR <- function(xDT, year) {
   
   DT <- copy(xDT[, .(AGEP, SEXP)])
   
-  # To lookup all ages beyond 95 & 97
-  DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
-  DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
-  DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+  vic.tb.mortality[age > kill.off.above, Prob := 0]
+  vic.tb.mortality[age > kill.off.above, lower := 0]
+  vic.tb.mortality[age > kill.off.above, upper := 0]
   
   mid <- vic.tb.mortality[DT[, .(AGEP, SEXP)], 
                           Prob, on = .(age = AGEP, sex = SEXP)]
@@ -791,7 +793,15 @@ Get.SAE <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGEP)])
   
-  DT[AGEP > 110, AGEP := 110]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+  sae.rate[Age > kill.off.above, Rate := 0]
+  sae.rate[Age > kill.off.above, low := 0]
+  sae.rate[Age > kill.off.above, high := 0]
+  
+  DT$treatment <- as.character(treat)
   
   mid <- sae.rate[treatment == treat][DT, Rate, on = .(Age = AGEP)]
   low <- sae.rate[treatment == treat][DT, low, on = .(Age = AGEP)]
@@ -815,10 +825,15 @@ Get.SAEMR <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGEP)])
   
-  DT[AGEP > 110, AGEP := 110]
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
   
-  # Knocking everyone off at 100 years of age
+  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   sae.mortality[Age > kill.off.above, Rate := 0]
+  sae.mortality[Age > kill.off.above, low := 0]
+  sae.mortality[Age > kill.off.above, high := 0]
+  
+  DT$treatment <- as.character(treat)
   
   mid <- sae.mortality[treatment == treat][DT, Rate, on = .(Age = AGEP)]
   low <- sae.mortality[treatment == treat][DT, low, on = .(Age = AGEP)]
@@ -924,10 +939,14 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
                        paste("SQ.", state.names, sep = ""))
   
   
-  unevaluated.flow.cost <- lazy(c(0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, param$TESTC + param$ATTENDCOST + param$TREATC,
+  unevaluated.flow.cost <- lazy(c(0, 0, param$TESTC, 
+                                  param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 
+                                  param$TESTC + param$ATTENDCOST + param$TREATC + param$SAECOST,
                                   param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 0,
                                   0,
-                                  0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, param$TESTC + param$ATTENDCOST + param$TREATC,
+                                  0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, 
+                                  param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 
+                                  param$TESTC + param$ATTENDCOST + param$TREATC + param$SAECOST,
                                   param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 0,
                                   0, 0,
                                   0, 0, 0, 0, 0))
@@ -1017,7 +1036,7 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
                                  ATTENDCOST = cattend,
                                  PARTIALTREATCOST = Get.TREATC(S = "cost.partial", treatment),
                                  TBCOST = ctb,
-                                 SAECOST = csae
+                                 SAECOST = Get.TREATC(S = "cost.sae", treatment)
   )
   simnumber <- i
   PSA <- 1
@@ -1053,7 +1072,7 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
   att <- simdata[simnumber, att]
   attscreen <- simdata[simnumber, attscreen]
   cattend <- simdata[simnumber, cattend]
-  csae <- simdata[simnumber, csae]
+  csae4R <- simdata[simnumber, csae4R]
   cscreenqft <- simdata[simnumber, cscreenqft]
   cscreentst <- simdata[simnumber, cscreentst]
   ctb <- simdata[simnumber, ctb]
@@ -1136,7 +1155,11 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
                                  cost.partial = c(cparttreat3HP, cparttreat4R,
                                                   cparttreat6H, cparttreat9H,
                                                   cparttreatspec3HP, cparttreatspec4R,
-                                                  cparttreatspec6H, cparttreatspec9H))
+                                                  cparttreatspec6H, cparttreatspec9H),
+                                 cost.sae = c(csae3HP, csae4R,
+                                              csae6H, csae9H,
+                                              csae3HP, csae4R,
+                                              csae6H, csae9H))
   
   # This data table indicates when those who receive LTBI treatment in the first 
   # year after migration are likely to have received that treatment (as an annual proportion).

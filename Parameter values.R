@@ -358,11 +358,6 @@ Get.TBMR <- function(xDT, year) {
   # To lookup all ages beyond the killing off age
   DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
   
-  # # To lookup all ages beyond 95 & 97
-  # DT[AGEP > 95 & SEXP == "Male", AGEP := 95]
-  # DT[AGEP > 97 & SEXP == "Female", AGEP := 97]
-  # DT[AGEP > 97 & SEXP == "Both", AGEP := 97]
-  
   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   vic.tb.mortality[age > kill.off.above, Prob := 0]
   vic.tb.mortality[age > kill.off.above, lower := 0]
