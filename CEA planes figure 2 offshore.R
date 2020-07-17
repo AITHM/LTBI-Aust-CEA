@@ -36,6 +36,7 @@ ultbioff <- subset(data, other == "LTBI decrement")
 inflow30 <- subset(data, other == "30 inflows and horizon")
 spec <- subset(data, other == "All specialist")
 cascade <- subset(data, other == "Perfect cascade")
+payer <- subset(data, other == "payer perspective")
 
 sortformatfunc <- function(dt){
   dt <- as.data.table(dt)
@@ -59,6 +60,7 @@ plot4 <- sortformatfunc(ultbioff)
 plot5 <- sortformatfunc(inflow30)
 plot6 <- sortformatfunc(spec)
 plot7 <- sortformatfunc(cascade)
+plot8 <- sortformatfunc(payer)
 
 # Get the colour palatte
 # I need 4 fill colours

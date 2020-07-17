@@ -18,10 +18,10 @@ library(gridExtra)
 # Need to obtain chance of having sae with different treatment regimens.
 # I have researched this and it is in an excel file in "Model parameters"
 
-ylimupper <- 2680000/1000
+ylimupper <- 4200000/1000
 ylimlower <- -50000/1000
 xlimupper <- -5
-xlimlower <- 26 
+xlimlower <- 48 
 linewidth <- 1  
 
 # Reading in the data 
@@ -54,14 +54,15 @@ data$tb.prev.percent <- percent(data$tb.prev.percent)
 
 
 data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
-                                               "40-49", "50-59", "60-69", "36-65"))
+                                               "40-59", "60-69", 
+                                               "11-35", "11-65", "36-65"))
 
 
 
 
 # Get the colour palatte
 # I need 4 fill colours
-getPalette <- brewer.pal(6, "Spectral")
+getPalette <- brewer.pal(5, "Spectral")
 getPalette 
 getPalette <- c(getPalette, "gray50")
 getPalette
@@ -85,33 +86,22 @@ myplot1 <-
               size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$thousands)",
-       fill = "Target by:\nage group\n(years)",
-       shape = "Target by:\nage group\n(years)") +
+       fill = "Age group\n(years)",
+       shape = "Age group\n(years)") +
   # scale_size_continuous(limits = c(250, 450), 
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
   scale_shape_manual(values = c(21, 24,
                                 22, 25,
-                                23, 1, 16)) +
+                                23, 7,
+                                12, 14)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.5, size = geomtextsize,
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.5, size = geomtextsize,
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.7, size = geomtextsize,
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.7, size = geomtextsize,
-#           colour = "black") +
-scale_y_continuous(breaks = seq(-600000/1000, 20000000/1000, 500000/1000),
+scale_y_continuous(breaks = seq(-500000/1000, 20000000/1000, 500000/1000),
                    label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
@@ -123,6 +113,18 @@ scale_y_continuous(breaks = seq(-600000/1000, 20000000/1000, 500000/1000),
         panel.border = element_blank())
 #legend.position = c(0.80, 0.8),
 #axis.text.x = element_text(angle=45, hjust=1),
+# geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
+#           hjust = -0.03, vjust = 1.5, size = geomtextsize,
+#           colour = "black") +
+# geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
+#           hjust = 1, vjust = 1.5, size = geomtextsize,
+#           colour = "black") +
+# geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
+#           hjust = -0.03, vjust = -0.7, size = geomtextsize,
+#           colour = "black") +
+# geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
+#           hjust = 1, vjust = -0.7, size = geomtextsize,
+#           colour = "black") +
 
 # tiff('Figures/ceaplaneage.tiff', units = "in", width = 15, height = 7,
 #      res = 200)
@@ -153,11 +155,12 @@ percent <- function(x, digits = 1, format = "f", ...) {
 data$tb.prev.percent <- percent(data$tb.prev.percent)
 
 data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
-                                                 "40-49", "50-59", "60-69", "36-65"))
+                                                 "40-59", "60-69", 
+                                                 "11-35", "11-65", "36-65"))
 
 # Get the colour palatte
 # I need 4 fill colours
-getPalette <- brewer.pal(6, "Spectral")
+getPalette <- brewer.pal(5, "Spectral")
 getPalette 
 getPalette <- c(getPalette, "gray50")
 getPalette
@@ -179,33 +182,22 @@ myplot2 <-
               size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (in thousands, AUD$)",
-       fill = "Target by:\nage group\n(years)",
-       shape = "Target by:\nage group\n(years)") +
+       fill = "Age group\n(years)",
+       shape = "Age group\n(years)") +
   # scale_size_continuous(limits = c(250, 450), 
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
   scale_shape_manual(values = c(21, 24,
                                 22, 25,
-                                23, 1, 16)) +
+                                23, 7,
+                                12, 14)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.5, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.5, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.7, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.7, size = textsize, 
-#           colour = "black") +
-scale_y_continuous(breaks = seq(-600000/1000, 20000000/1000, 500000/1000),
+scale_y_continuous(breaks = seq(-500000/1000, 20000000/1000, 500000/1000),
                    label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
@@ -215,6 +207,19 @@ scale_y_continuous(breaks = seq(-600000/1000, 20000000/1000, 500000/1000),
         axis.title.y = element_blank(),
         #legend.position = "none",
         panel.border = element_blank())
+
+# geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
+#           hjust = -0.03, vjust = 1.5, size = textsize, 
+#           colour = "black") +
+# geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
+#           hjust = 1, vjust = 1.5, size = textsize, 
+#           colour = "black") +
+# geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
+#           hjust = -0.03, vjust = -0.7, size = textsize, 
+#           colour = "black") +
+# geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
+#           hjust = 1, vjust = -0.7, size = textsize, 
+#           colour = "black") +
 
 # Extract legend
 grobs <- ggplotGrob(myplot2)$grobs
@@ -236,15 +241,16 @@ myplot2 <-
               size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (in thousands, AUD$)",
-       fill = "Target by:\nage group\n(years)",
-       shape = "Target by:\nage group\n(years)")  +
+       fill = "Age group\n(years)",
+       shape = "Age group\n(years)")  +
   # scale_size_continuous(limits = c(250, 450), 
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
   scale_shape_manual(values = c(21, 24,
                                 22, 25,
-                                23, 1, 16)) +
+                                23, 7,
+                                12, 14)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
@@ -262,7 +268,7 @@ myplot2 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #           hjust = 1, vjust = -0.7, size = textsize, 
 #           colour = "black") +
-scale_y_continuous(breaks = seq(-600000/1000, 20000000/1000, 500000/1000),
+scale_y_continuous(breaks = seq(-500000/1000, 20000000/1000, 500000/1000),
                    label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +

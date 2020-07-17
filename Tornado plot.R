@@ -31,7 +31,7 @@ library(scales)
 #                 sheetName = "Tornado plot input",
 #                 startRow = 3)
 
-onshore <- 0
+onshore <- 1
 
 # Reading in the data from excel using XLSX, which has some sort of glitch
 setwd("H:/Katie/PhD/CEA/Data")
@@ -113,7 +113,7 @@ if (onshore == 1) {
                   xmax = xmax, xmin = xmin, fill = type)) +
     theme_bw() + 
     geom_text(aes(x = 0, y = base.value),
-              size = 3.5, label = "Base case ICER: $140,186") +
+              size = 3.5, label = "Base case ICER: $144,723") +
     labs(y = "Cost per QALY (AUD$)") +
     scale_fill_manual(values = c("steelblue2", "darksalmon" )) +
     theme(legend.position = 'bottom',
@@ -145,7 +145,7 @@ if (onshore == 1) {
               aes(ymax = ymax, ymin = ymin, 
                   xmax = xmax, xmin = xmin, fill = type)) +
     geom_text(aes(x = 0, y = base.value),
-              size = 3.5, label = "Base case ICER: -$4,081") +
+              size = 3.5, label = "Base case ICER: $1,389") +
     theme_bw() + 
     labs(y = "Cost per QALY (AUD$)") +
     scale_fill_manual(values = c("steelblue2", "darksalmon")) +
@@ -161,8 +161,8 @@ if (onshore == 1) {
                        breaks = seq(-60000, 500000, 20000),
                        labels = comma) +
     coord_flip(ylim = c(-60000, 60000))+
-    theme(text = element_text(size = 12),
-          legend.position = c(0.75, 0.2))
+    theme(text = element_text(size = 11),
+          legend.position = c(0.76, 0.2))
   
   setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
   tiff('tornadooffshore.tiff', units = "in", width = 14, height = 5,

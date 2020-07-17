@@ -7,17 +7,18 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################# Assign main parameter values ##################################
 
-# params <- readRDS("params onshore.rds")
-# onshore <- 1
+params <- readRDS("params onshore.rds")
+onshore <- 1
+payerperspect <- 0
 
-params <- readRDS("params offshore.rds")
-onshore <- 0
-payerperspect <- 1
+# params <- readRDS("params offshore.rds")
+# onshore <- 0
+# payerperspect <- 0
 
 emigration <- 1
 
 # The tests and treatments I want to consider in the run
-testlist <- c("TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+testlist <- c("TST10") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
 treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
@@ -64,7 +65,9 @@ sensfunc <- function(paramname, loworhigh) {
 
 # sensfunc(treat.effic.4R, high)
 
-# sensfunc(uactivetbr, low)
+# sensfunc(begintrt, high)
+
+# sensfunc(csae4R, low)
 
 # # apply realistic LTBI utilities
 # sensfunc(ultbi4R, low)
@@ -187,6 +190,8 @@ ultbipart4R <- uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)
 ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
 ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
 
+# uactivetb <- uactivetb - (uhealthy - ultbi4R)
+
 # Sourcing the medical costs
 source("Medical costs.R")
 
@@ -233,7 +238,7 @@ cparttreatspec3HP <-  spec.appt / part.appt + cmed3HP / part.med
 # 4r sort
 appt <- num.appt4R * c.gp.review
 spec.appt <- c.spec.first + (num.appt4R - 1) * c.spec.review
-ctreat4R <- appt + cmed4R
+ctreat4R <- appt + cmed4R 
 cparttreat4R <-  appt / part.appt + cmed4R / part.med      
 ctreatspec4R <-  spec.appt + cmed4R 
 cparttreatspec4R <-  spec.appt / part.appt + cmed4R / part.med
@@ -433,11 +438,15 @@ Get.EMIGRATE <- function(xDT, year) {
   emigrate.rate[Age > kill.off.above, upper := 0]
 
   if (emigration == 1) {
+    
     emigrate.rate[DT[, .(AGEP)], Rate, on = .(Age = AGEP)] 
     # emigrate.rate[DT[, .(AGEP)], lower, on = .(Age = AGEP)]
     # emigrate.rate[DT[, .(AGEP)], upper, on = .(Age = AGEP)]
+    
   } else if (emigration == 0) {
+    
     0
+    
   }
   
 }

@@ -17,9 +17,9 @@ library(gridExtra)
 # I have researched this and it is in an excel file in "Model parameters"
 
 ylimupper <- 600000/1000
-ylimlower <- -950000/1000
+ylimlower <- -1100000/1000
 xlimupper <- -5
-xlimlower <- 56
+xlimlower <- 130
  
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
@@ -47,11 +47,12 @@ percent <- function(x, digits = 1, format = "f", ...) {
 data$tb.prev.percent <- percent(data$tb.prev.percent)
 
 data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
-                                                 "40-49", "50-59", "60-69", "36-65"))
+                                                 "40-59", "60-69", 
+                                                 "11-35", "11-65", "36-65"))
 
 # Get the colour palatte
 # I need 4 fill colours
-getPalette <- brewer.pal(6, "Spectral")
+getPalette <- brewer.pal(5, "Spectral")
 getPalette 
 getPalette <- c(getPalette, "gray50")
 getPalette
@@ -75,23 +76,24 @@ myplot1 <-
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (AUD$thousands)",
-       fill = "Target by:\nage group\n(years)",
-       shape = "Target by:\nage group\n(years)") +
+       fill = "Age group\n(years)",
+       shape = "Age group\n(years)") +
   # scale_size_continuous(limits = c(250, 450), 
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
   scale_shape_manual(values = c(21, 24,
                                 22, 25,
-                                23, 1, 16)) +
+                                23, 7,
+                                12, 14)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-  scale_y_continuous(breaks = seq(-1000000/1000, 1000000/1000, 200000/1000),
+  scale_y_continuous(breaks = seq(-1000000/1000, 10000000/1000, 200000/1000),
                      label = comma) +
-  scale_x_continuous(breaks = seq(-10, 50, 5)) +
+  scale_x_continuous(breaks = seq(-20, 500, 20)) +
   theme_bw() +
   coord_cartesian(xlim = c(xlimlower, xlimupper), 
                   ylim = c(ylimlower, ylimupper)) +
@@ -135,11 +137,12 @@ percent <- function(x, digits = 1, format = "f", ...) {
 data$tb.prev.percent <- percent(data$tb.prev.percent)
 
 data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
-                                                 "40-49", "50-59", "60-69", "36-65"))
+                                                 "40-59", "60-69", 
+                                                 "11-35", "11-65", "36-65"))
 
 # Get the colour palatte
 # I need 4 fill colours
-getPalette<-brewer.pal(6, "Spectral")
+getPalette<-brewer.pal(5, "Spectral")
 getPalette
 
 options(scipen = 5)
@@ -162,15 +165,16 @@ myplot2 <-
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (in thousands, AUD$)",
-       fill = "Target by:\nage group\n(years)",
-       shape = "Target by:\nage group\n(years)") +
+       fill = "Age group\n(years)",
+       shape = "Age group\n(years)") +
   # scale_size_continuous(limits = c(250, 450), 
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
   scale_shape_manual(values = c(21, 24,
                                 22, 25,
-                                23, 1, 16)) +
+                                23, 7,
+                                12, 14)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
@@ -190,7 +194,7 @@ myplot2 <-
   #           colour = "black") +
   scale_y_continuous(breaks = seq(-1000000/1000, 600000/1000, 200000/1000),
                      label = comma) +
-  scale_x_continuous(breaks = seq(-10, 50, 5)) +
+  scale_x_continuous(breaks = seq(-20, 500, 20)) +
   theme_bw() +
   coord_cartesian(xlim = c(xlimlower, xlimupper), 
                   ylim = c(ylimlower, ylimupper)) +
@@ -219,15 +223,16 @@ myplot2 <-
               size = 1) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (in thousands, AUD$)",
-       fill = "Target by:\nage group\n(years)",
-       shape = "Target by:\nage group\n(years)")  +
+       fill = "Age group\n(years)",
+       shape = "Age group\n(years)")  +
   # scale_size_continuous(limits = c(250, 450), 
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
   scale_shape_manual(values = c(21, 24,
                                 22, 25,
-                                23, 1, 16)) +
+                                23, 7,
+                                12, 14)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
@@ -247,7 +252,7 @@ myplot2 <-
 #           colour = "black") +
 scale_y_continuous(breaks = seq(-1000000/1000, 600000/1000, 200000/1000),
                    label = comma) +
-  scale_x_continuous(breaks = seq(-10, 50, 5)) +
+  scale_x_continuous(breaks = seq(-20, 500, 20)) +
   theme_bw() +
   coord_cartesian(xlim = c(xlimlower, xlimupper), 
                   ylim = c(ylimlower, ylimupper)) +

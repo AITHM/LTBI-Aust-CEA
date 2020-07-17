@@ -27,9 +27,9 @@ onshore <- 0
 params <- as.data.table(params)
 
 # WITH EMIGRATION
-withemig <- 1
+# withemig <- 1
 # WITHOUT EMIGRATION
-# withemig <- 0
+withemig <- 1
 
 
 
@@ -37,14 +37,13 @@ withemig <- 1
 # of targets, i.e. by age and TB incidence in country of birth
 
 # Define age target
-lower.age.targets <- c(10, 19, 29, 39, 49, 59, 35)
+lower.age.targets <- c(10, 19, 29, 39, 59, 10, 10, 35)
 # lower.age.targets <- c(10, 18, 24, 29, 35, 45, 55, 35)
 if (onshore == 1) {
   tbincid.targets <- c("200+")
 } else if (onshore == 0) {
   tbincid.targets <- c("100+")
 }
-tbincid.targets <- c("100+")
 target.dt<- expand.grid(lower.age.targets, tbincid.targets)
 target.dt <- as.data.table(target.dt)
 setnames(target.dt, "Var1", "age.low")
@@ -57,6 +56,9 @@ target.dt[, age.high := age.low + 11]
 # target.dt[8, age.high := 66]
 target.dt[age.low == 35, age.high := 66]
 target.dt[age.low == 10, age.high := 20]
+target.dt[age.low == 39, age.high := 60]
+target.dt[6, age.high := 36]
+target.dt[7, age.high := 66]
 
 # The following loops down the rows of the table
 # and runs the model with each specified target

@@ -58,6 +58,7 @@ for(ltbi.x in 1:nrow(ultbi.dt)) {
   healthyutility <- params[p == "uhealthy", mid]
   limit <- healthyutility - ultbi.dt[ltbi.x, utility.dec]
   ultbi4R <- limit
+  uactivetb <- uactivetb - (uhealthy - ultbi4R)
 
   # Adjusting the partial LTBI treatment utilities so 
   # they are dependent on the value of
@@ -155,7 +156,7 @@ myplot1 <-
   theme_bw() +
   geom_text(aes(x = f2(0), y = 0),
                    hjust = 0.5, vjust = -1,
-                   size = 10, label = "0.0045") +
+                   size = 10, label = "0.0046") +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   labs(y = "Incremental QALYS",

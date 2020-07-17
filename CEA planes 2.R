@@ -31,39 +31,44 @@ params <- readRDS("params onshore.rds")
 onshore <- 1
 
 
-#  params <- readRDS("params offshore.rds")
+# params <- readRDS("params offshore.rds")
 # onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
 
 # Create a datatable that contains all of the combinations
-# of targets, i.e. by age and TB incidence in country of birth
+# sensitivity analyses and targets
 
-# Define the three targets I want to present
-
-if (onshore == 1) {
-  
-  tbincid <- c(rep("200+", 7))
-  age.low <- c(rep(10, 7)) 
-  age.high <- c(rep(66, 7))
-  
-} else if (onshore == 0) {
-  
-  tbincid <- c(rep("100+", 7))
-  age.low <- c(rep(10, 7)) 
-  age.high <- c(rep(36, 7))
-  
-}
-
-######################################################################################################
 other <- c("lifetime horizon",
            "All specialist",
            "LTBI decrement",
            "Perfect cascade",
            "30yr horizon", 
            "30 inflows and horizon",
-           "perm emigration")
+           "perm emigration",
+           "payer perspective")
+
+# of targets, i.e. by age and TB incidence in country of birth
+
+# Define the three targets I want to present
+
+if (onshore == 1) {
+  
+  tbincid <- c(rep("200+", length(other)))
+  age.low <- c(rep(10, length(other))) 
+  age.high <- c(rep(66, length(other)))
+  
+} else if (onshore == 0) {
+  
+  tbincid <- c(rep("200+", length(other)))
+  age.low <- c(rep(10, length(other))) 
+  age.high <- c(rep(66, length(other)))
+  
+}
+
+######################################################################################################
+
 target.dt <- data.table(age.low, age.high, tbincid, other)
 
 
@@ -245,6 +250,11 @@ for(target.x in 1:nrow(target.dt)) {
         attscreen <- 1
         
       }
+      
+    } else if (other.cat == "payer perspective") {
+      
+      cscreentst <- 20.10
+      emigration <- 0
       
     }
   

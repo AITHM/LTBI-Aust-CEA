@@ -102,7 +102,11 @@ treatmentcost.dt <- data.table(treatment = c("3HP","4R", "6H", "9H", "3HP","4R",
                                cost.partial = c(cparttreat3HP, cparttreat4R,
                                                 cparttreat6H, cparttreat9H,
                                                 cparttreatspec3HP, cparttreatspec4R,
-                                                cparttreatspec6H, cparttreatspec9H))
+                                                cparttreatspec6H, cparttreatspec9H),
+                               cost.sae = c(csae3HP, csae4R,
+                                            csae6H, csae9H,
+                                            csae3HP, csae4R,
+                                            csae6H, csae9H))
 
 # This data table indicates when those who receive LTBI treatment in the first 
 # year after migration are likely to have received that treatment (as an annual proportion).
@@ -175,17 +179,16 @@ utility.dt[treatment == "", c(state.names) := .(uhealthy, uhealthy, NA, NA, NA, 
                                                 uhealthy, NA,
                                                 uactivetb, uactivetbr, 0, 0, 0)]
 
-
 unevaluated.flow.cost <- lazy(c(0, 0, param$TESTC, 
-                                param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, 
-                                param$TESTC + param$ATTENDCOST + param$TREATC,
+                                param$TESTC + param$ATTENDCOST, param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 
+                                param$TESTC + param$ATTENDCOST + param$TREATC + param$SAECOST,
                                 #param$TESTC + param$ATTENDCOST + param$TREATC + (((param$TREATCOMPLETE - param$TREATR) * (1/param$TREATR)) * (param$TREATC - param$PARTIALTREATCOST) ),
                                 param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 0,
                                 0,
                                 0, 0, param$TESTC, param$TESTC + param$ATTENDCOST, 
-                                param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST, 
+                                param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 
                                 #param$TESTC + param$ATTENDCOST + param$TREATC + (((param$TREATCOMPLETE - param$TREATR) * (1/param$TREATR)) * (param$TREATC - param$PARTIALTREATCOST) ),
-                                param$TESTC + param$ATTENDCOST + param$TREATC,
+                                param$TESTC + param$ATTENDCOST + param$TREATC + param$SAECOST,
                                 param$TESTC + param$ATTENDCOST + param$PARTIALTREATCOST + param$SAECOST, 0,
                                 0, 0,
                                 0, 0, 0, 0, 0))
@@ -341,7 +344,7 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "Med"),
                                ATTENDCOST = cattend,
                                PARTIALTREATCOST = Get.TREATC(S = "cost.partial", treatment),
                                TBCOST = ctb,
-                               SAECOST = csae
+                               SAECOST = Get.TREATC(S = "cost.sae", treatment)
                                )
  
 # Uses aust.rds file to create a sample input

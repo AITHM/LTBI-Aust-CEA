@@ -17,7 +17,7 @@ p <- c("attscreen", "att", "cscreenqft", "cscreentst",
        "treat.complete.3HP", "treat.complete.4R", "treat.complete.6H", "treat.complete.9H",
        "treat.effic.3HP", "treat.effic.4R", "treat.effic.6H", "treat.effic.9H",
        "ttt3HP", "ttt4R", "ttt6H", "ttt9H", 
-       "cattend", "csae", "ctb",
+       "cattend", "csae3HP", "csae4R", "csae6H", "csae9H", "ctb",
        "cmed3HP", "cmed4R", "cmed6H", "cmed9H",
        "num.appt1HP",
        "cmed1HP",
@@ -336,9 +336,22 @@ params[p == "ctb", low := 12405.78]
 params[p == "ctb", high := 30649.78] #18491.84
 
 # Cost of sae
-params[p == "csae", mid := 1222.64] 
-params[p == "csae", low := 500] 
-params[p == "csae", high := 10000] 
+params[p == "csae3HP", mid := 39.4059] 
+params[p == "csae3HP", low := 0] 
+params[p == "csae3HP", high := 78.811] 
+
+params[p == "csae4R", mid := 23.141] 
+params[p == "csae4R", low := 0] 
+params[p == "csae4R", high := 46.282] 
+
+params[p == "csae6H", mid := 71.42] 
+params[p == "csae6H", low := 0] 
+params[p == "csae6H", high := 142.8464] 
+
+params[p == "csae9H", mid := 71.42] 
+params[p == "csae9H", low := 0] 
+params[p == "csae9H", high := 142.8464] 
+
 
 # Cost of screening
 params[p == "cscreenqft", mid := 0] 
@@ -359,7 +372,7 @@ params[p == "att", high := 0.721]
 
 params[p == "begintrt", mid := 0.596]
 params[p == "begintrt", low := 0.262]
-params[p == "begintrt§", high := 0.762]
+params[p == "begintrt", high := 0.762]
 
 params[p == "snqftgit", mid := 0.6538] # 0.6104
 params[p == "snqftgit", low := 0.4438] # 0.4925
