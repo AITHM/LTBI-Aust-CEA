@@ -45,16 +45,16 @@ library(tidyr)
 
 
 # Sourcing required functions from other scripts
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
+# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 source("CB-TLTBI Functions.R") # contains many functions necessary to run the model
 source("CB-TLTBI_DataPreparation.R") # for sorting the population data
-source("Distribution parameter calculations.R") # for determining distribution parameter values
+# source("Distribution parameter calculations.R") # for determining distribution parameter values
 
 ################## PSA #####################################
 
 # Defining the number of simulations we want
-Num_SIm <- 100
+Num_SIm <- 1000
 
 # Generating a random set of numbers, one for each simulation
 # that will be used as a seed number for "set.seed" functions
@@ -78,24 +78,6 @@ migrant.inflow.size <- 434340 # 440980
 # the migrant inflow will stop after the following Markov cycle
 finalinflow <- 0
 
-# Get.POP
-# This defines the target population
-Get.POP <- function(DT, strategy) {
-  
-  # 200+
-  # (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
-    # 150+
-    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
-    # 100+
-    (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
-    # 40+
-    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
-    # Adjust age
-    (ifelse(DT[, AGERP] > 10, 1, 0) &
-       ifelse(DT[, AGERP] < 66, 1, 0))
-  
-}
-
 # Define all the parameters that are uncertain, but that
 # are also fixed for each model run 
 # (i.e. they aren't dependent on age or year etc).
@@ -115,6 +97,46 @@ dt <- readRDS("params offshore.rds")
 onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##############################
 ################################## AND WHETHER THERE IS A LTBI TREATMENT DECREMENT OR NOT ##################
+
+# Get.POP
+# This defines the target population
+if (onshore == 1) {
+  Get.POP <- function(DT, strategy) {
+    
+    # 200+
+    (ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+      # 150+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
+      # 100+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+      # 40+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+      # Adjust age at arrival
+      (ifelse(DT[, AGERP] > 10, 1, 0) &
+         ifelse(DT[, AGERP] < 66, 1, 0))
+    
+  }
+  
+} else if (onshore == 0) {
+  
+  Get.POP <- function(DT, strategy) {
+    
+    # 200+
+    #(ifelse(DT[, ISO3] == "200+", 1, 0)) & 
+    # 150+
+    # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0)) & 
+    # 100+
+    (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0)) &
+      # 40+
+      # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
+      # Adjust age at arrival
+      (ifelse(DT[, AGERP] > 10, 1, 0) &
+         ifelse(DT[, AGERP] < 36, 1, 0))
+    
+  }
+  
+}
+
 
 # Read in the migrant population data, showing how many have LTBI in each population group.
 austbase <- readRDS("Data/Aust16.psa.rds") # baseline
@@ -344,57 +366,57 @@ for(i in 1:nrow(plot.dt)) {
 }
 
 #plotting costs
-a <- which( dt$abbreviation == "csae" )
-b <- which( dt$abbreviation == "cmed9H" )
-plot.dt <- dt[a:b,]
-nrow(plot.dt)
-dev.off()
-# set up the plotting space
-par(mfrow = c(2, 3))
-#layout(matrix(1:nrow(plot.dt), ncol = 11))
-for(i in 1:nrow(plot.dt)) {
-  # store data in column.i as x
-  abbreviation <- plot.dt[i, abbreviation]
-  mid <- plot.dt[i, mid]
-  low <- plot.dt[i, low]
-  high <- plot.dt[i, high]
-  shape <- plot.dt[i, shape]
-  distribution <- plot.dt[i, distribution]
-  plotnum <- paste("plot", i, sep = "")
-  if (high < 1){
-    upperlim <- 1
-  }
-  else {
-    upperlim <- high + 20
-  }
-  if (distribution == "beta") {
-    p = seq(0, upperlim, length = 1000)
-    betaparam <- findbeta2(mid, low, high)
-    plot(p, dbeta(p, betaparam[1], betaparam[2]),
-         ylab = "density", type = "l", col = 4, xlim = c(0, high),
-         main = abbreviation)
-  }
-  else if (distribution == "uniform") {
-    p = seq(0, upperlim, length = 1000)
-    plot(p, dunif(p, min = low, max = high),
-         ylab = "density", type = "l", col = 4, xlim = c(0, high),
-         main = abbreviation)
-  }
-  else if (distribution == "gamma") {
-    p = seq(0, upperlim, length = 1000)
-    betaparam <- findbeta2(mid, low, high)
-    plot(p, dgamma(p, betaparam[1], betaparam[2]),
-         ylab = "density", type = "l", col = 4, xlim = c(0, high),
-         main = abbreviation)
-  }
-  else {
-    p = seq(0, upperlim, length = 1000)
-    plot(p, dpert(p, min = low, mode = mid,
-                  max = high, shape = shape),
-         ylab = "density", type = "l", col = 4, xlim = c(0, high),
-         main = abbreviation)
-  }
-}
+# a <- which( dt$abbreviation == "csae" )
+# b <- which( dt$abbreviation == "cmed9H" )
+# plot.dt <- dt[a:b,]
+# nrow(plot.dt)
+# dev.off()
+# # set up the plotting space
+# par(mfrow = c(2, 3))
+# #layout(matrix(1:nrow(plot.dt), ncol = 11))
+# for(i in 1:nrow(plot.dt)) {
+#   # store data in column.i as x
+#   abbreviation <- plot.dt[i, abbreviation]
+#   mid <- plot.dt[i, mid]
+#   low <- plot.dt[i, low]
+#   high <- plot.dt[i, high]
+#   shape <- plot.dt[i, shape]
+#   distribution <- plot.dt[i, distribution]
+#   plotnum <- paste("plot", i, sep = "")
+#   if (high < 1){
+#     upperlim <- 1
+#   }
+#   else {
+#     upperlim <- high + 20
+#   }
+#   if (distribution == "beta") {
+#     p = seq(0, upperlim, length = 1000)
+#     betaparam <- findbeta2(mid, low, high)
+#     plot(p, dbeta(p, betaparam[1], betaparam[2]),
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else if (distribution == "uniform") {
+#     p = seq(0, upperlim, length = 1000)
+#     plot(p, dunif(p, min = low, max = high),
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else if (distribution == "gamma") {
+#     p = seq(0, upperlim, length = 1000)
+#     betaparam <- findbeta2(mid, low, high)
+#     plot(p, dgamma(p, betaparam[1], betaparam[2]),
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+#   else {
+#     p = seq(0, upperlim, length = 1000)
+#     plot(p, dpert(p, min = low, mode = mid,
+#                   max = high, shape = shape),
+#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
+#          main = abbreviation)
+#   }
+# }
 
 #plotting utilities
 a <- which( dt$abbreviation == "uactivetb" )
@@ -537,6 +559,71 @@ simdata[, ctreatspec9H :=  spec.appt + cmed9H]
 simdata[, cparttreatspec9H :=  spec.appt / part.appt + cmed9H / part.med] 
 
 
+# Sort the partial treatment efficacy value for each row of the simdata table
+# because this doesn't need to be calcuated within the run
+
+parttreatrcalc3HP <- function(treat.complete, treat.effic) {
+  
+  treat.effic.1 <- 0
+  treat.effic.2 <- 0.368 # Gao et al 2018
+  treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+  
+  ratio.1 <- 0.6993362 # Page and Menzies
+  ratio.2 <- 0.3006638 # Page and Menzies
+  
+  PART.EFFIC <- treat.effic.2 * ratio.2
+  
+}
+
+parttreatrcalc4R <- function(treat.complete, treat.effic) {
+  
+  treat.effic.1 <- 0
+  treat.effic.2 <- 0.368 # Gao et al 2018
+  treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+  
+  ratio.1 <- 0.6993362 # Page and Menzies
+  ratio.2 <- 0.3006638 # Page and Menzies
+  
+  PART.EFFIC <- treat.effic.2 * ratio.2
+  
+}
+
+parttreatrcalc6H <- function(treat.complete, treat.effic) {
+  
+  treat.effic.1 <- 0
+  treat.effic.2 <- 0.310 # IUAT
+  treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic, treat.effic, treat.effic.2)
+  
+  ratio.1 <- 0.7273 # IUAT
+  ratio.2 <- 0.2727 # IUAT
+  
+  PART.EFFIC <- treat.effic.2 * ratio.2 
+  
+}
+
+parttreatrcalc9H <- function(treat.complete, treat.effic) {
+  
+  treat.effic.1 <- 0
+  treat.effic.2 <- 0.310 # IUAT
+  treat.effic.3 <- 0.69 # IUAT
+  treat.effic.3 <- ifelse(treat.effic.3 >= treat.effic, treat.effic, treat.effic.3)
+  
+  ratio.1 <- 0.59259 # IUAT
+  ratio.2 <- 0.18519 # IUAT
+  ratio.3 <- 0.22222 # IUAT
+  
+  PART.EFFIC <- treat.effic.1 * ratio.1 +
+    treat.effic.2 * ratio.2 +
+    treat.effic.3 * ratio.3
+  
+}
+
+simdata[, part.treat.effic.3HP :=  parttreatrcalc3HP(treat.complete.3HP, treat.effic.3HP)] 
+simdata[, part.treat.effic.4R :=  parttreatrcalc4R(treat.complete.4R, treat.effic.4R)] 
+simdata[, part.treat.effic.6H :=  parttreatrcalc6H(treat.complete.6H, treat.effic.6H)] 
+simdata[, part.treat.effic.9H :=  parttreatrcalc9H(treat.complete.9H, treat.effic.9H)] 
+
+
 # Sort the TREATR value for each row of the simdata table
 # because this doesn't need to be calcuated within the run
 
@@ -617,7 +704,7 @@ treatrcalc9H <- function(treat.complete, treat.effic) {
 }
 
 simdata[, treatr3HP :=  treatrcalc3HP(treat.complete.3HP, treat.effic.3HP)] 
-simdata[, treatr4R :=  treatrcalc4R(treat.complete.3HP, treat.effic.3HP)] 
+simdata[, treatr4R :=  treatrcalc4R(treat.complete.4R, treat.effic.4R)] 
 simdata[, treatr6H :=  treatrcalc6H(treat.complete.6H, treat.effic.6H)] 
 simdata[, treatr9H :=  treatrcalc9H(treat.complete.9H, treat.effic.9H)] 
 
@@ -686,8 +773,6 @@ Get.RRADJ <- function(xDT, year) {
   
   DT <- copy(xDT[, .(year, AGERP, YARP)])
   
-  DT[AGERP > 110, AGERP := 110]
-  
   mid <- rradjrates[DT[, .(AGERP, ST = year - YARP)], 
                     rate, on = .(aaa = AGERP, ysa = ST)]
   
@@ -709,6 +794,21 @@ Get.RRADJ <- function(xDT, year) {
 
 # Get.EMIGRATE
 
+Get.FULL.TREAT.EFFICACY <- function(xDT, year) {
+  
+  DT <- copy(xDT[, .(AGEP)])
+  
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  
+  # Need to reduce efficacy at older ages or the model creates negative CMPs
+  # treatment.efficacy.dt[Age > 65, Prob := 0.5]
+  
+  treatment.efficacy.dt[DT[, .(AGEP)], Prob, on = .(Age = AGEP)]
+  
+}
+
+
 Get.EMIGRATE <- function(xDT, year) {
   emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
   # emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
@@ -716,12 +816,15 @@ Get.EMIGRATE <- function(xDT, year) {
   
   DT <- copy(xDT[, .(year, AGEP, YARP)])
   
+  # To lookup all ages beyond the killing off age
+  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+  
   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
   emigrate.rate[Age > kill.off.above, Rate := 0]
   emigrate.rate[Age > kill.off.above, lower := 0]
   emigrate.rate[Age > kill.off.above, upper := 0]
   
-  mid <- emigrate.rate[DT[, .(AGEP)], 
+  mid <- emigrate.rate[DT[, .(AGEP)],
                        Rate, on = .(Age = AGEP)]
   low <- emigrate.rate[DT[, .(AGEP)],
                        lower, on = .(Age = AGEP)]
@@ -747,8 +850,10 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
   # To lookup all ages beyond the killing off age
   DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
   
+  # vic.mortality[Prob > 0.05, Prob := 0.05]
+  
   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
-  vic.mortality[Age > kill.off.above, Prob := 1]
+  vic.mortality[Age > kill.off.above + 1, Prob := 1]
   
   vic.mortality[Year == year & mrate == rate.assumption][DT, Prob, on = .(Age = AGEP, Sex = SEXP)]
   
@@ -820,33 +925,33 @@ Get.SAE <- function(xDT, treat) {
   # return(out)
 }
 
-# Look up SAE rate from sae.rate (age and treatment dependent)
-Get.SAEMR <- function(xDT, treat) {
-  
-  DT <- copy(xDT[, .(AGEP)])
-  
-  # To lookup all ages beyond the killing off age
-  DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
-  
-  # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
-  sae.mortality[Age > kill.off.above, Rate := 0]
-  sae.mortality[Age > kill.off.above, low := 0]
-  sae.mortality[Age > kill.off.above, high := 0]
-  
-  DT$treatment <- as.character(treat)
-  
-  mid <- sae.mortality[treatment == treat][DT, Rate, on = .(Age = AGEP)]
-  low <- sae.mortality[treatment == treat][DT, low, on = .(Age = AGEP)]
-  high <- sae.mortality[treatment == treat][DT, high, on = .(Age = AGEP)]
-  
-  set.seed(set.seed.number[simnumber])
-  rpertfunction <- function(x) {
-    rpert(1, min = low[x], mode = mid[x], max = high[x])
-  }
-  vector <- c(1:length(mid))
-  unlist(lapply(vector, rpertfunction))
-  
-}
+# # Look up SAE rate from sae.rate (age and treatment dependent)
+# Get.SAEMR <- function(xDT, treat) {
+#   
+#   DT <- copy(xDT[, .(AGEP)])
+#   
+#   # To lookup all ages beyond the killing off age
+#   DT[AGEP > kill.off.above, AGEP := kill.off.above + 1]
+#   
+#   # Knocking everyone off after a certain age (mortality risk 100%, everything else 0)
+#   sae.mortality[Age > kill.off.above, Rate := 0]
+#   sae.mortality[Age > kill.off.above, low := 0]
+#   sae.mortality[Age > kill.off.above, high := 0]
+#   
+#   DT$treatment <- as.character(treat)
+#   
+#   mid <- sae.mortality[treatment == treat][DT, Rate, on = .(Age = AGEP)]
+#   low <- sae.mortality[treatment == treat][DT, low, on = .(Age = AGEP)]
+#   high <- sae.mortality[treatment == treat][DT, high, on = .(Age = AGEP)]
+#   
+#   set.seed(set.seed.number[simnumber])
+#   rpertfunction <- function(x) {
+#     rpert(1, min = low[x], mode = mid[x], max = high[x])
+#   }
+#   vector <- c(1:length(mid))
+#   unlist(lapply(vector, rpertfunction))
+#   
+# }
 
 # MODEL RUN
 
@@ -869,6 +974,8 @@ simrun.output <- as.data.table(simrun.output)
 
 my.cl <- makeCluster(4)
 registerDoParallel(my.cl)
+i <- 3
+
 simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
   library(data.table)
   library(purrr)
@@ -997,10 +1104,9 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
                           transition.matrix = do.call(DefineTransition, arglist.BASELINE.S1.TM))
   
   # Creates an unevaluated set of parameters
-  parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "High"),
+  parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "Med"),
                                  RR = Get.RR(DT, year),
                                  TBMR = Get.TBMR(DT, year),
-                                 # TBMR = 0.001,
                                  RRADJUST = Get.RRADJ(DT, year),
                                  # RRADJUST takes into account the fact that a proportion (10% in Victoria)
                                  # of TB cases are picked up each year with existing TB control strategies, i.e.
@@ -1022,13 +1128,13 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
                                  # follow-up and treatment process is complete. The time that they remain 
                                  # at risk will be dependent on the treatment regimen (see timetotreat.dt).
                                  SAE = Get.SAE(DT, treatment),
-                                 SAEMR = Get.SAEMR(DT, treatment),
+                                 SAEMR = 0,
                                  EMIGRATE = Get.EMIGRATE(DT, year),
                                  TESTSN = Get.TEST(S = "SN", testing),
                                  TESTSP = Get.TEST(S = "SP", testing),
                                  TESTC = Get.TEST(S = "cost.primary", testing),
-                                 TREATCOMPLETE = Get.TREAT(S = "treat.complete", treatment),
-                                 TREATR = Get.TREATR(S = "rate", treatment),
+                                 # TREATCOMPLETE = Get.TREAT(S = "treat.complete", treatment),
+                                 TREATCOMPLETE = treat.complete.4R,
                                  TREATC = Get.TREATC(S = "cost.primary", treatment),
                                  POP = Get.POP(DT, strategy),
                                  UTILITY = Get.UTILITY(treatment),
@@ -1036,7 +1142,14 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
                                  ATTENDCOST = cattend,
                                  PARTIALTREATCOST = Get.TREATC(S = "cost.partial", treatment),
                                  TBCOST = ctb,
-                                 SAECOST = Get.TREATC(S = "cost.sae", treatment)
+                                 # SAECOST = Get.TREATC(S = "cost.sae", treatment),
+                                 SAECOST = csae4R,
+                                 # PART.TREAT.EFFICACY = Get.PART.EFFIC(DT, C = "treat.complete", E = "treat.effic", treatment),
+                                 # FULL.TREAT.EFFICACY = Get.FULL.EFFIC(DT, E = "treat.effic", treatment),
+                                 TREATR = treatr4R,
+                                 PART.TREAT.EFFICACY = part.treat.effic.4R,
+                                 # FULL.TREAT.EFFICACY = Get.FULL.TREAT.EFFICACY(DT, year)
+                                 FULL.TREAT.EFFICACY = treat.effic.4R
   )
   simnumber <- i
   PSA <- 1
@@ -1072,7 +1185,10 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
   att <- simdata[simnumber, att]
   attscreen <- simdata[simnumber, attscreen]
   cattend <- simdata[simnumber, cattend]
+  csae3HP <- simdata[simnumber, csae3HP]
   csae4R <- simdata[simnumber, csae4R]
+  csae6H <- simdata[simnumber, csae6H]
+  csae9H <- simdata[simnumber, csae9H]
   cscreenqft <- simdata[simnumber, cscreenqft]
   cscreentst <- simdata[simnumber, cscreentst]
   ctb <- simdata[simnumber, ctb]
@@ -1106,6 +1222,14 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
   treatr4R <- simdata[simnumber, treatr4R]
   treatr6H <- simdata[simnumber, treatr6H]
   treatr9H <- simdata[simnumber, treatr9H]
+  treat.effic.3HP <- simdata[simnumber, treat.effic.3HP]
+  treat.effic.4R <- simdata[simnumber, treat.effic.4R]
+  treat.effic.6H <- simdata[simnumber, treat.effic.6H]
+  treat.effic.9H <- simdata[simnumber, treat.effic.9H]
+  part.treat.effic.3HP <- simdata[simnumber, part.treat.effic.3HP]
+  part.treat.effic.4R <- simdata[simnumber, part.treat.effic.4R]
+  part.treat.effic.6H <- simdata[simnumber, part.treat.effic.6H]
+  part.treat.effic.9H <- simdata[simnumber, part.treat.effic.9H]
   ttt3HP <- simdata[simnumber, ttt3HP]
   ttt4R <- simdata[simnumber, ttt4R]
   ttt6H <- simdata[simnumber, ttt6H]
@@ -1143,10 +1267,11 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
   # Create a sample treatment data table
   treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
                              treat.complete = c(treat.complete.3HP, treat.complete.4R, treat.complete.6H, treat.complete.9H),
-                             rate = c(treatr3HP, treatr4R, treatr6H, treatr9H))
+                             rate = c(treatr3HP, treatr4R, treatr6H, treatr9H),
+                             treat.effic = c(treat.effic.3HP, treat.effic.4R, treat.effic.6H, treat.effic.9H))
   
   # Create a sample treatment cost data table
-  treatmentcost.dt <- data.table(treatment = c("3HP","4R", "6H", "9H", "3HP","4R", "6H", "9H"),
+  treatmentcost.dt <- data.table(treatment = c("3HP", "4R", "6H", "9H", "3HP","4R", "6H", "9H"),
                                  practitioner = c("gp","gp", "gp", "gp", 
                                                   "spec","spec", "spec", "spec"),
                                  cost.primary = c(ctreat3HP, ctreat4R, ctreat6H, ctreat9H,
@@ -1160,6 +1285,9 @@ simrun.output.cluster<- foreach (i = 1:nrow(simdata)) %dopar% {
                                               csae6H, csae9H,
                                               csae3HP, csae4R,
                                               csae6H, csae9H))
+  
+  treatment.efficacy.dt <- data.table(Age = c(0:150),
+                                      Prob = treat.effic.4R)
   
   # This data table indicates when those who receive LTBI treatment in the first 
   # year after migration are likely to have received that treatment (as an annual proportion).
@@ -1236,13 +1364,41 @@ simrun.output <- subset(check, !is.na(basecost))
 simrun.output.o <- copy(simrun.output) 
 simrun.output <- simrun.output %>% distinct()
 
+# Save this table to file
+
+if (onshore == 1 & ultbidec == 1) {
+  
+  saveRDS(simrun.output, "Data/PSA/onshoreultbi.rds")
+  
+} else if (onshore == 1 & ultbidec == 0) {
+  
+  saveRDS(simrun.output, "Data/PSA/onshore.rds")
+  
+} else if (onshore == 0 & ultbidec == 1) {
+  
+  saveRDS(simrun.output, "Data/PSA/offshoreultbi.rds")
+  
+} else if (onshore == 0 & ultbidec == 0) {
+  
+  saveRDS(simrun.output, "Data/PSA/offshore.rds")
+  
+}
+
+simrun.output.plot <- copy(simrun.output)
+
+# Read in previous data
+# simrun.output.plot <- readRDS("Data/PSA/onshore.rds")
+# simrun.output.plot <- readRDS("Data/PSA/onshoreultbi.rds")
+# simrun.output.plot <- readRDS("Data/PSA/onshore.rds")
+# simrun.output.plot <- readRDS("Data/PSA/offshoreultbi.rds")
+
 # Plot of PSA results on cost effectiveness plane.
 # The code below will plot the NumSIm model run outputs on a
 # cost effectiveness plane.
 
 WTP = 50000 # willingness to pay threshold
 
-plotdata <- cbind(simdata, simrun.output)
+plotdata <- cbind(simdata, simrun.output.plot)
 plotdata[, incremental.qaly := stratqaly - baseqaly] 
 plotdata[, incremental.cost := stratcost - basecost] 
 plotdata[, icer := (stratcost - basecost)/(stratqaly - baseqaly)]
@@ -1258,36 +1414,22 @@ plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer < WTP, wtp.colour :=
 plotdata[incremental.qaly < 0 & incremental.cost < 0 & icer > WTP, wtp.colour := 1]
 
 
-# Save this table to file
-
-if (onshore == 1) {
-  
-  saveRDS(simdata, "Data/PSA/onshore.rds")
-  
-} else if (onshore == 0) {
-  
-  saveRDS(simdata, "Data/PSA/offshore.rds")
-  
-}
-
-
-
 
 widthcm <- 8
 heightcm <- 6
 
 
-if (onshore == 1) {
+if (onshore == 1 & ultbidec == 1) {
   
   plotdata[, wtp.colour := as.factor(wtp.colour)]
   
   # ONSHORE
   ylimmin <- -1
-  ylimmax <- 5.2
-  xlimmin <- -45
-  xlimmax <- 45
+  ylimmax <- 9
+  xlimmin <- -80
+  xlimmax <- 85
   
-  pointsize <- 2.5
+  pointsize <- 1
   textsize <- 6
   textsize2 <- 20
   
@@ -1295,7 +1437,7 @@ if (onshore == 1) {
   myplot1<-
     ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
                          colour = wtp.colour)) +
-    geom_point(size = pointsize, alpha = 1, na.rm = T) +
+    geom_point(size = pointsize, alpha = 0.5, na.rm = T) +
     geom_vline(xintercept = 0, color = "black") +
     geom_hline(yintercept = 0, color = "black") +
     geom_abline(intercept = 0, slope = (50000/1000000)/1,
@@ -1304,7 +1446,54 @@ if (onshore == 1) {
     # geom_abline(intercept = 0, slope = (100000/1000000)/1,
     #             colour = "gray55",
     #             size = 1) +
-    geom_abline(intercept = 0, slope = (200000/1000000)/1,
+    geom_abline(intercept = 0, slope = (100000/1000000)/1,
+                colour = "gray65", 
+                size = 1) +
+    labs(x = "Incremental QALYs", 
+         y = "Incremental cost (AUD$millions)") +
+    scale_colour_manual(values = c("black", "black")) +
+    scale_y_continuous(breaks = seq(-500, 250, 1)) +
+    scale_x_continuous(breaks = seq(-5000000, 10000000, 10)) +
+    theme_bw() +
+    coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
+    theme(text = element_text(size = textsize2),
+          panel.border = element_blank(),
+          legend.position = "none")
+  
+  
+  tiff('Figures/psa onshore ultbi.tiff',
+       units = "in", width = widthcm, height = heightcm,
+       res = 200)
+  print(myplot1)
+  dev.off()
+  
+} else if (onshore == 1 & ultbidec == 0) {
+  
+  plotdata[, wtp.colour := as.factor(wtp.colour)]
+  
+  # ONSHORE
+  ylimmin <- -1
+  ylimmax <- 9
+  xlimmin <- -80
+  xlimmax <- 85
+  
+  pointsize <- 1
+  textsize <- 6
+  textsize2 <- 20
+  
+  myplot1<-
+    ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000,
+                         colour = wtp.colour)) +
+    geom_point(size = pointsize, alpha = 0.5, na.rm = T) +
+    geom_vline(xintercept = 0, color = "black") +
+    geom_hline(yintercept = 0, color = "black") +
+    geom_abline(intercept = 0, slope = (50000/1000000)/1,
+                colour = "gray65",
+                size = 1, lty = 2) +
+    # geom_abline(intercept = 0, slope = (100000/1000000)/1,
+    #             colour = "gray55",
+    #             size = 1) +
+    geom_abline(intercept = 0, slope = (100000/1000000)/1,
                 colour = "gray65", 
                 size = 1) +
     labs(x = "Incremental QALYs", 
@@ -1325,21 +1514,21 @@ if (onshore == 1) {
   print(myplot1)
   dev.off()
   
-} else if (onshore == 0) {
+} else if (onshore == 0 & ultbidec == 1) {
   
-  ylimmin <- -2
+  ylimmin <- -3
   ylimmax <- 4.5
   xlimmin <- -125
-  xlimmax <- 140
+  xlimmax <- 150
   
-  pointsize <- 2.5
+  pointsize <- 1
   textsize <- 6
   textsize2 <- 20
   
   # OFFSHORE
   myplot1<- 
     ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000)) +
-    geom_point(size = pointsize, alpha = 1, na.rm = T) +
+    geom_point(size = pointsize, alpha = 0.5, na.rm = T) +
     geom_vline(xintercept = 0, color = "black") +
     geom_hline(yintercept = 0, color = "black") +
     geom_abline(intercept = 0, slope = (50000/1000000)/1,
@@ -1348,7 +1537,50 @@ if (onshore == 1) {
     # geom_abline(intercept = 0, slope = (100000/1000000)/1,
     #             colour = "gray55",
     #             size = 1) +
-    geom_abline(intercept = 0, slope = (200000/1000000)/1,
+    geom_abline(intercept = 0, slope = (100000/1000000)/1,
+                colour = "gray65", 
+                size = 1) +
+    labs(x = "Incremental QALYs", 
+         y = "Incremental cost (AUD$millions)") +
+    #scale_colour_manual(values = c("black", "black")) +
+    scale_y_continuous(breaks = seq(-500, 250, 1)) +
+    scale_x_continuous(breaks = seq(-5000000, 10000000, 20)) +
+    theme_bw() +
+    coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
+    theme(text = element_text(size = textsize2),
+          panel.border = element_blank(),
+          legend.position = "none")
+  
+  tiff('Figures/psa offshore ultbi.tiff',
+       units = "in", width = widthcm, height = heightcm,
+       res = 200)
+  print(myplot1)
+  dev.off()
+  
+} else if (onshore == 0 & ultbidec == 0) {
+  
+  ylimmin <- -3
+  ylimmax <- 4.5
+  xlimmin <- -125
+  xlimmax <- 150
+  
+  pointsize <- 1
+  textsize <- 6
+  textsize2 <- 20
+  
+  # OFFSHORE
+  myplot1<- 
+    ggplot(plotdata, aes(x = incremental.qaly, y = incremental.cost/1000000)) +
+    geom_point(size = pointsize, alpha = 0.5, na.rm = T) +
+    geom_vline(xintercept = 0, color = "black") +
+    geom_hline(yintercept = 0, color = "black") +
+    geom_abline(intercept = 0, slope = (50000/1000000)/1,
+                colour = "gray65",
+                size = 1, lty = 2) +
+    # geom_abline(intercept = 0, slope = (100000/1000000)/1,
+    #             colour = "gray55",
+    #             size = 1) +
+    geom_abline(intercept = 0, slope = (100000/1000000)/1,
                 colour = "gray65", 
                 size = 1) +
     labs(x = "Incremental QALYs", 
@@ -1410,16 +1642,34 @@ myplot1 <-
   scale_y_continuous(breaks = seq(0, 100, 10)) +
   scale_x_continuous(label = comma, breaks = seq(0, 300000, 50000)) +
   theme_bw() +
-  theme(text = element_text(size = 25))
+  theme(text = element_text(size = 20))
 
 
-if (onshore == 1) {
+accepty[wtp==50000,"propcosteffect"]
+
+accepty[wtp==100000,"propcosteffect"]
+
+accepty[wtp==300000,"propcosteffect"]
+
+if (onshore == 1 & ultbidec == 1 ) {
+  tiff('Figures/acceptability onshore ultbi.tiff',
+       units = "in", width = widthcm, height = heightcm,
+       res = 200)
+  print(myplot1)
+  dev.off()
+} else if (onshore == 1 & ultbidec == 0) {
   tiff('Figures/acceptability onshore.tiff',
        units = "in", width = widthcm, height = heightcm,
        res = 200)
   print(myplot1)
   dev.off()
-} else if (onshore == 0) {
+} else if (onshore == 0 & ultbidec == 1) {
+  tiff('Figures/acceptability offshore ultbi.tiff',
+       units = "in", width = widthcm, height = heightcm,
+       res = 200)
+  print(myplot1)
+  dev.off()
+} else if (onshore == 0 & ultbidec == 0) {
   tiff('Figures/acceptability offshore.tiff',
        units = "in", width = widthcm, height = heightcm,
        res = 200)

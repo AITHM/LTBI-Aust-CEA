@@ -7,19 +7,19 @@ setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################# Assign main parameter values ##################################
 
-params <- readRDS("params onshore.rds")
-onshore <- 1
-payerperspect <- 0
-
-# params <- readRDS("params offshore.rds")
-# onshore <- 0
+# params <- readRDS("params onshore.rds")
+# onshore <- 1
 # payerperspect <- 0
+
+params <- readRDS("params offshore.rds")
+onshore <- 0
+payerperspect <- 0
 
 emigration <- 1
 
 # The tests and treatments I want to consider in the run
-testlist <- c("TST10") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("QFTGIT", "TST10", "TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # Rstart.year
