@@ -354,7 +354,7 @@ pop.master <- CreatePopulationMaster()
 
 
 
-# factor <-  896.394819490552 #      71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
+# factor <-  234.404422824184 #      71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 
 # pop.master[, NUMP := NUMP/factor]
 # pop.master[, LTBP := LTBP/factor]

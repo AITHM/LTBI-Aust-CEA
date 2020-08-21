@@ -18,8 +18,8 @@ payerperspect <- 0
 emigration <- 1
 
 # The tests and treatments I want to consider in the run
-testlist <- c("QFTGIT", "TST10", "TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("TST10") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # Rstart.year
@@ -55,7 +55,7 @@ sensfunc <- function(paramname, loworhigh) {
 }
 
 # sensfunc(attscreen, low)
-# params[p == "ctb", mid := 17783.28] # 22298.82
+# params[p == "ctb", mid := 19212.89] # 22298.82
 # params[p == "attscreen", mid := 1]
 
 # params[p == "cscreentst", mid := 30]

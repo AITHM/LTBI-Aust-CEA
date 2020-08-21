@@ -349,9 +349,9 @@ params[p == "cparttreatspec9H",
        mid := spec.appt / part.appt + med.cost.9H / part.med] 
 
 # Cost of active TB
-params[p == "ctb", mid := 19212.89] 
-params[p == "ctb", low := 12405.78] 
-params[p == "ctb", high := 30649.78] #18491.84
+params[p == "ctb", mid := 19079.60] 
+params[p == "ctb", low := 13400.74] 
+params[p == "ctb", high := 30436.95] #18491.84
 
 # Cost of sae
 params[p == "csae3HP", mid := 39.4059] 

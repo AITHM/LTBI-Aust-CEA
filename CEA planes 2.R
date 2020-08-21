@@ -27,12 +27,12 @@ parameters.already.set <- 1
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-params <- readRDS("params onshore.rds")
-onshore <- 1
+# params <- readRDS("params onshore.rds")
+# onshore <- 1
 
 
-# params <- readRDS("params offshore.rds")
-# onshore <- 0
+params <- readRDS("params offshore.rds")
+onshore <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO #################
 ################################## CHANGE IN PARAMETER VALUES SCRIPT TOO #################
 params <- as.data.table(params)
