@@ -67,16 +67,16 @@ getPalette <- brewer.pal(4, "Spectral")
 getPalette
 
 ylimmin <- -2
-ylimmax <- 9
+ylimmax <- 8.5
 xlimmin <- -4
-xlimmax <- 84
+xlimmax <- 79
 linewidth <- 0.5
 
 titleposxaxis <- 45 
 titleposyaxis <- 8 
 pointsize <- 2
 textsize <- 3
-textsize2 <- 14
+textsize2 <- 10
 
 #dev.off()
 
@@ -88,27 +88,30 @@ myplot1 <-
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "gray65",
+  geom_abline(intercept = 0, slope = (45000/1000000)/1,
+              colour = "gray83",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000000)/1,
-              colour = "gray65", 
+  geom_abline(intercept = 0, slope = (75000/1000000)/1,
+              colour = "gray83", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "",
+       y = "Incremental cost (A$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values = c(24, 24, 24, 24,
-                                21, 21, 21, 21,
-                                22, 22, 22, 22,
+  scale_shape_manual(values = c(5, 9, 23, 23,
+                                1, 10, 21, 21,
+                                0, 7, 22, 22,
                                 4)) +
-  annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize, 
-           #label = "Offshore strategy\n11-35 year olds from 100+/100,000ppy") + 
-           label = "") +
-  scale_fill_manual(values = c(getPalette, 
-                               getPalette,
-                               getPalette,
+  # scale_fill_manual(values = c(getPalette, 
+  #                              getPalette,
+  #                              getPalette,
+  #                              4)) +
+  scale_fill_manual(values = c(5, 9, "gray54", "black",
+                               1, 10, "gray54", "black",
+                               0, 7, "gray54", "black",
                                4)) +
+  annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
+           label = "Offshore strategy\n11-35 year olds from 100+/100,000ppy") +
   scale_y_continuous(breaks = seq(-10, 250, 2)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
@@ -125,27 +128,30 @@ myplot2 <-
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "gray65",
+  geom_abline(intercept = 0, slope = (45000/1000000)/1,
+              colour = "gray83",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000000)/1,
-              colour = "gray65", 
+  geom_abline(intercept = 0, slope = (75000/1000000)/1,
+              colour = "gray83", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (A$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values = c(24, 24, 24, 24,
-                                21, 21, 21, 21,
-                                22, 22, 22, 22,
+  scale_shape_manual(values = c(5, 9, 23, 23,
+                                1, 10, 21, 21,
+                                0, 7, 22, 22,
                                 4)) +
-  annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize, 
-           # label = "Offshore strategy\n11-65 year olds from 100+/100,000ppy") + 
-           label = "") +
-  scale_fill_manual(values = c(getPalette, 
-                               getPalette,
-                               getPalette,
+  # scale_fill_manual(values = c(getPalette, 
+  #                              getPalette,
+  #                              getPalette,
+  #                              4)) +
+  scale_fill_manual(values = c(5, 9, "gray54", "black",
+                               1, 10, "gray54", "black",
+                               0, 7, "gray54", "black",
                                4)) +
+  annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
+           label = "Offshore strategy\n11-65 year olds from 100+/100,000ppy") +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -173,27 +179,30 @@ myplot3 <-
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "gray65",
+  geom_abline(intercept = 0, slope = (45000/1000000)/1,
+              colour = "gray83",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000000)/1,
-              colour = "gray65", 
+  geom_abline(intercept = 0, slope = (75000/1000000)/1,
+              colour = "gray83", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "",
+       y = "Incremental cost (A$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values = c(24, 24, 24, 24,
-                                21, 21, 21, 21,
-                                22, 22, 22, 22,
+  scale_shape_manual(values = c(5, 9, 23, 23,
+                                1, 10, 21, 21,
+                                0, 7, 22, 22,
                                 4)) +
-  scale_fill_manual(values = c(getPalette, 
-                               getPalette,
-                               getPalette,
+  # scale_fill_manual(values = c(getPalette, 
+  #                              getPalette,
+  #                              getPalette,
+  #                              4)) +
+  scale_fill_manual(values = c(5, 9, "gray54", "black",
+                               1, 10, "gray54", "black",
+                               0, 7, "gray54", "black",
                                4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           #label = "Offshore strategy\n11-65 year olds from 200+/100,000ppy") + 
-           label = "") +
+           label = "Offshore strategy\n11-65 year olds from 200+/100,000ppy") +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -220,26 +229,29 @@ myplot4 <-
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "gray65",
+  geom_abline(intercept = 0, slope = (45000/1000000)/1,
+              colour = "gray83",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000000)/1,
-              colour = "gray65", 
+  geom_abline(intercept = 0, slope = (75000/1000000)/1,
+              colour = "gray83", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "",
+       y = "Incremental cost (A$millions)",
        fill = "Strategy",
        shape = "Strategy") +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           #label = "Onshore strategy\n11-35 year olds from 100+/100,000ppy") + 
-           label = "") +
-  scale_shape_manual(values = c(24, 24, 24, 24,
-                                21, 21, 21, 21,
-                                22, 22, 22, 22,
+           label = "Onshore strategy\n11-35 year olds from 100+/100,000ppy") +
+  scale_shape_manual(values = c(5, 9, 23, 23,
+                                1, 10, 21, 21,
+                                0, 7, 22, 22,
                                 4)) +
-  scale_fill_manual(values = c(getPalette, 
-                               getPalette,
-                               getPalette,
+  # scale_fill_manual(values = c(getPalette, 
+  #                              getPalette,
+  #                              getPalette,
+  #                              4)) +
+  scale_fill_manual(values = c(5, 9, "gray54", "black",
+                               1, 10, "gray54", "black",
+                               0, 7, "gray54", "black",
                                4)) +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
@@ -270,27 +282,30 @@ myplot5 <-
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "gray65",
+  geom_abline(intercept = 0, slope = (45000/1000000)/1,
+              colour = "gray83",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000000)/1,
-              colour = "gray65", 
+  geom_abline(intercept = 0, slope = (75000/1000000)/1,
+              colour = "gray83", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
        y = "Incremental cost (A$millions)",
        fill = "Strategy",
        shape = "Strategy") +
-  scale_shape_manual(values = c(24, 24, 24, 24,
-                                21, 21, 21, 21,
-                                22, 22, 22, 22,
+  scale_shape_manual(values = c(5, 9, 23, 23,
+                                1, 10, 21, 21,
+                                0, 7, 22, 22,
                                 4)) +
-  scale_fill_manual(values = c(getPalette, 
-                               getPalette,
-                               getPalette,
+  # scale_fill_manual(values = c(getPalette, 
+  #                              getPalette,
+  #                              getPalette,
+  #                              4)) +
+  scale_fill_manual(values = c(5, 9, "gray54", "black",
+                               1, 10, "gray54", "black",
+                               0, 7, "gray54", "black",
                                4)) +
-  annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           # label = "Onshore strategy\n11-65 year olds from 100+/100,000ppy") + 
-           label = "") +
+  annotate("text", x = 50, y = titleposyaxis,  size = textsize, 
+           label = "Onshore strategy\n11-65 year olds from 100+/100,000ppy") +
   scale_y_continuous(breaks = seq(-10, 250, 2)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
@@ -306,26 +321,29 @@ myplot6 <-
   geom_point(size = pointsize, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000000)/1,
-              colour = "gray65",
+  geom_abline(intercept = 0, slope = (45000/1000000)/1,
+              colour = "gray83",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000000)/1,
-              colour = "gray65", 
+  geom_abline(intercept = 0, slope = (75000/1000000)/1,
+              colour = "gray83", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "",
+       y = "Incremental cost (A$millions)",
        fill = "Strategy",
        shape = "Strategy") +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize,  
-           #label = "Onshore strategy\n11-65 year olds from 200+/100,000ppy") + 
-           label = "") +
-  scale_shape_manual(values = c(24, 24, 24, 24,
-                                21, 21, 21, 21,
-                                22, 22, 22, 22,
+           label = "Onshore strategy\n11-65 year olds from 200+/100,000ppy") +
+  scale_shape_manual(values = c(5, 9, 23, 23,
+                                1, 10, 21, 21,
+                                0, 7, 22, 22,
                                 4)) +
-  scale_fill_manual(values = c(getPalette, 
-                               getPalette,
-                               getPalette,
+  # scale_fill_manual(values = c(getPalette, 
+  #                              getPalette,
+  #                              getPalette,
+  #                              4)) +
+  scale_fill_manual(values = c(5, 9, "gray54", "black",
+                               1, 10, "gray54", "black",
+                               0, 7, "gray54", "black",
                                4)) +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
@@ -389,9 +407,9 @@ tiff('Figures/ceaplane1.tiff', units = "in", width = 11, height = 11,
 plot_grid(myplot4, myplot1, myplot5, myplot2, myplot6, myplot3, legend,
           nrow = 4, 
           rel_widths = c(1, 1, 1, 1, 1, 1, 1),
-          #labels = c("A)", "B)", "C)", "D)", "E)", "F)", ""))
-          labels = c("a)", "b)", "c)", "d)", "e)", "f)", ""),
-          label_x = -0.001, label_y = 0.05,
-          hjust = 0, vjust = 0)
+          labels = c("A)", "B)", "C)", "D)", "E)", "F)", ""))
+          #labels = c("a)", "b)", "c)", "d)", "e)", "f)", ""),
+          #label_x = -0.001, label_y = 0.05,
+          #hjust = 0, vjust = 0)
 dev.off()
 

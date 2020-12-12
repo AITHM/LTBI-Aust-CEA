@@ -18,10 +18,10 @@ library(gridExtra)
 
 
 
-ylimupper <- 4200000/1000
-ylimlower <- -50000/1000
+ylimupper <- 5300000/1000
+ylimlower <- -48000/1000
 xlimupper <- -5
-xlimlower <- 48 
+xlimlower <- 45 
 linewidth <- 1  
 
 # Reading in the data 
@@ -79,10 +79,10 @@ myplot1 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000)/1,
+  geom_abline(intercept = 0, slope = (45000/1000)/1,
               colour = "gray65",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000)/1,
+  geom_abline(intercept = 0, slope = (75000/1000)/1,
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
@@ -93,16 +93,20 @@ myplot1 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 24,
-                                22, 25,
-                                23, 7,
-                                12, 14)) +
+  # scale_shape_manual(values = c(21, 24,
+  #                               22, 25,
+  #                               23, 7,
+  #                               12, 14)) +
+  scale_shape_manual(values = c(1,
+                                10, 13,
+                                8, 11, 15,
+                                17, 19)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-scale_y_continuous(breaks = seq(-500000/1000, 20000000/1000, 500000/1000),
+scale_y_continuous(breaks = seq(-500000/1000, 5000000/1000, 500000/1000),
                    label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
@@ -175,10 +179,10 @@ myplot2 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000)/1,
+  geom_abline(intercept = 0, slope = (45000/1000)/1,
               colour = "gray65",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000)/1,
+  geom_abline(intercept = 0, slope = (75000/1000)/1,
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
@@ -189,16 +193,20 @@ myplot2 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 24,
-                                22, 25,
-                                23, 7,
-                                12, 14)) +
+  # scale_shape_manual(values = c(21, 24,
+  #                               22, 25,
+  #                               23, 7,
+  #                               12, 14)) +
+  scale_shape_manual(values = c(1,
+                                10, 13,
+                                8, 11, 15,
+                                17, 19)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
                    segment.color = "transparent",
                    size = geomtextsize) +
-scale_y_continuous(breaks = seq(-500000/1000, 20000000/1000, 500000/1000),
+scale_y_continuous(breaks = seq(-500000/1000, 5000000/1000, 500000/1000),
                    label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
@@ -234,10 +242,10 @@ myplot2 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000)/1,
+  geom_abline(intercept = 0, slope = (45000/1000)/1,
               colour = "gray65",
               size = linewidth, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000)/1,
+  geom_abline(intercept = 0, slope = (75000/1000)/1,
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
@@ -248,10 +256,14 @@ myplot2 <-
   #                       range = c(5, 12), 
   #                       breaks = c(250, 350,
   #                                  450))+
-  scale_shape_manual(values = c(21, 24,
-                                22, 25,
-                                23, 7,
-                                12, 14)) +
+  # scale_shape_manual(values = c(21, 24,
+  #                               22, 25,
+  #                               23, 7,
+  #                               12, 14)) +
+  scale_shape_manual(values = c(1,
+                                10, 13,
+                                8, 11, 15,
+                                17, 19)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
   geom_text_repel (aes(label = tb.prev.percent),
                    hjust = 0.5, vjust = -1,
@@ -269,7 +281,7 @@ myplot2 <-
   # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
   #           hjust = 1, vjust = -0.7, size = textsize, 
 #           colour = "black") +
-scale_y_continuous(breaks = seq(-500000/1000, 20000000/1000, 500000/1000),
+scale_y_continuous(breaks = seq(-500000/1000, 5000000/1000, 500000/1000),
                    label = comma) +
   scale_x_continuous(breaks = seq(-10, 50, 5)) +
   theme_bw() +
@@ -283,8 +295,8 @@ scale_y_continuous(breaks = seq(-500000/1000, 20000000/1000, 500000/1000),
 
 plotty <- plot_grid(myplot1, myplot2, legend, ncol = 3, 
                     rel_widths = c(1, 1, .3),
-                    # labels = c("A)", "B)", " "))
-                    labels = c("a)", "b)", " "))
+                    labels = c("A)", "B)", " "))
+                    # labels = c("a)", "b)", " "))
 tiff('Figures/ceaplaneageonshore.tiff', units = "in", width = 15, height = 5,
      res = 200)
 plotty

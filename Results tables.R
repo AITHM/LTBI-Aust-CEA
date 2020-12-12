@@ -18,7 +18,7 @@ parameters.already.set <- 1
 filenames <- list.files("Data/Output", 
                         pattern = "*.rds", full.names = TRUE)
 file.remove(filenames)
-
+ 
 # read in parameter list and values, which is  defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 #setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")

@@ -16,10 +16,10 @@ library(gridExtra)
 # Need to obtain chance of having sae with different treatment regimens.
 # I have researched this and it is in an excel file in "Model parameters"
 
-ylimupper <- 600000/1000
-ylimlower <- -1100000/1000
+ylimupper <- 800000/1000
+ylimlower <- -500000/1000
 xlimupper <- -5
-xlimlower <- 130
+xlimlower <- 100
  
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
@@ -68,10 +68,10 @@ myplot1 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000)/1,
+  geom_abline(intercept = 0, slope = (45000/1000)/1,
               colour = "gray65",
               size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000)/1,
+  geom_abline(intercept = 0, slope = (75000/1000)/1,
               colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
@@ -157,10 +157,10 @@ myplot2 <-
   geom_abline(intercept = 0, slope = (50000)/1000,
               colour = "grey",
               size = 1.5) +
-  geom_abline(intercept = 0, slope = (50000/1000)/1,
+  geom_abline(intercept = 0, slope = (45000/1000)/1,
               colour = "gray65",
               size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000)/1,
+  geom_abline(intercept = 0, slope = (75000/1000)/1,
               colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 
@@ -215,10 +215,10 @@ myplot2 <-
   geom_point(size = 7, alpha = 1, na.rm = T) +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
-  geom_abline(intercept = 0, slope = (50000/1000)/1,
+  geom_abline(intercept = 0, slope = (455000/1000)/1,
               colour = "gray65",
               size = 1, lty = 2) +
-  geom_abline(intercept = 0, slope = (100000/1000)/1,
+  geom_abline(intercept = 0, slope = (75000/1000)/1,
               colour = "gray65", 
               size = 1) +
   labs(x = "Incremental QALYs", 

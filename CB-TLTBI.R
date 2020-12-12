@@ -45,7 +45,6 @@ sae.rate <- as.data.table(sae.rate)
     # SAE rate from: several sources, e.g. Campbell et al 2019
 sae.mortality <- readRDS("Data/sae.mortality.rds") # this is also required
 sae.mortality <- as.data.table(sae.mortality)
-sae.mortality[, Rate := Rate/30]
     # SAE mortality data from: ...
 rradjrates <- readRDS("Data/rradjrates.rds")
 

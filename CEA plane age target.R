@@ -25,7 +25,7 @@ file.remove(filenames)
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 #setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
-# params <- readRDS("params onshore.rds") 
+# params <- readRDS("params onshore.rds")
 # onshore <- 1
 
 params <- readRDS("params offshore.rds")
