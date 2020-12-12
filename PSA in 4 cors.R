@@ -366,57 +366,57 @@ for(i in 1:nrow(plot.dt)) {
 }
 
 #plotting costs
-# a <- which( dt$abbreviation == "csae" )
-# b <- which( dt$abbreviation == "cmed9H" )
-# plot.dt <- dt[a:b,]
-# nrow(plot.dt)
-# dev.off()
-# # set up the plotting space
-# par(mfrow = c(2, 3))
-# #layout(matrix(1:nrow(plot.dt), ncol = 11))
-# for(i in 1:nrow(plot.dt)) {
-#   # store data in column.i as x
-#   abbreviation <- plot.dt[i, abbreviation]
-#   mid <- plot.dt[i, mid]
-#   low <- plot.dt[i, low]
-#   high <- plot.dt[i, high]
-#   shape <- plot.dt[i, shape]
-#   distribution <- plot.dt[i, distribution]
-#   plotnum <- paste("plot", i, sep = "")
-#   if (high < 1){
-#     upperlim <- 1
-#   }
-#   else {
-#     upperlim <- high + 20
-#   }
-#   if (distribution == "beta") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dbeta(p, betaparam[1], betaparam[2]),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "uniform") {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dunif(p, min = low, max = high),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else if (distribution == "gamma") {
-#     p = seq(0, upperlim, length = 1000)
-#     betaparam <- findbeta2(mid, low, high)
-#     plot(p, dgamma(p, betaparam[1], betaparam[2]),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-#   else {
-#     p = seq(0, upperlim, length = 1000)
-#     plot(p, dpert(p, min = low, mode = mid,
-#                   max = high, shape = shape),
-#          ylab = "density", type = "l", col = 4, xlim = c(0, high),
-#          main = abbreviation)
-#   }
-# }
+a <- which( dt$abbreviation == "csae3HP" )
+b <- which( dt$abbreviation == "cmed9H" )
+plot.dt <- dt[a:b,]
+nrow(plot.dt)
+dev.off()
+# set up the plotting space
+par(mfrow = c(3, 3))
+#layout(matrix(1:nrow(plot.dt), ncol = 11))
+for(i in 1:nrow(plot.dt)) {
+  # store data in column.i as x
+  abbreviation <- plot.dt[i, abbreviation]
+  mid <- plot.dt[i, mid]
+  low <- plot.dt[i, low]
+  high <- plot.dt[i, high]
+  shape <- plot.dt[i, shape]
+  distribution <- plot.dt[i, distribution]
+  plotnum <- paste("plot", i, sep = "")
+  if (high < 1){
+    upperlim <- 1
+  }
+  else {
+    upperlim <- high + 20
+  }
+  if (distribution == "beta") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dbeta(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "uniform") {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dunif(p, min = low, max = high),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else if (distribution == "gamma") {
+    p = seq(0, upperlim, length = 1000)
+    betaparam <- findbeta2(mid, low, high)
+    plot(p, dgamma(p, betaparam[1], betaparam[2]),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+  else {
+    p = seq(0, upperlim, length = 1000)
+    plot(p, dpert(p, min = low, mode = mid,
+                  max = high, shape = shape),
+         ylab = "density", type = "l", col = 4, xlim = c(0, high),
+         main = abbreviation)
+  }
+}
 
 #plotting utilities
 a <- which( dt$abbreviation == "uactivetb" )

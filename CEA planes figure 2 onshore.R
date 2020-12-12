@@ -383,7 +383,7 @@ tiff('Figures/ceaplane2.tiff', units = "in", width = 17, height = 7,
 plot_grid(myplot1, myplot6, myplot4, myplot7, myplot2, myplot3, myplot5, legend,
           nrow = 2, 
           rel_widths = c(1, 1, 1, 1, 1, 1, 1, 1),
-          labels = c("a)", "b)", "c)", "d)", "e)", "f)", "g", ""))
+          labels = c("A)", "B)", "C)", "D)", "E)", "F)", "G", ""))
 dev.off()
 
 # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),

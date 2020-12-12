@@ -14,13 +14,20 @@ source("CB-TLTBI_DataPreparation.R")
 source("CB-TLTBI Functions.R")
 
 # Read the data file
-aust <- readRDS("Data/Aust16byTBincid.rds") 
+aust <- readRDS("Data/Aust16.rds") # baseline
+aust <- as.data.table(aust)
 dt <- subset(aust, YARP == 2015)
 dt[, AGERP := AGEP - (2016L - YARP)]
+sum(dt$NUMP)
+252808
+migrant.inflow.size <- 434340 
+mult <- migrant.inflow.size/252808
+dt[, NUMP := NUMP * mult]
+sum(dt$NUMP)
+434340
 dt <- subset(dt, AGERP > 10)
-sum(dt$NUMP) * 1.7
+sum(dt$NUMP)
 371621.7
-dt[, NUMP := NUMP * 1.7]
 
 # Load the object with country of birth information
 raw <- readRDS("tab1data.rds")
@@ -179,8 +186,8 @@ plot2 <-
         axis.text.x = element_text(angle = 45, hjust = 1),
         strip.text = element_blank())
 
-tiff('Figures/Fig1.tiff', units = "in", width = 10, height = 5,
-     res = 200)
+tiff('Figures/Figure 1.tiff', units = "in", width = 10, height = 5,
+     res = 100)
 egg::ggarrange(plot1, plot2, nrow = 2)
 dev.off()
 

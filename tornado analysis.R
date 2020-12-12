@@ -8,16 +8,18 @@
 # The output is then analysed and the icer is entered
 # into the tornado.dt data table.
 
-######################################################################################################
-################### ###################################################################################
-# MAKE SURE THE DATA OUTPUTS FOLDER IS EMPTY BEFORE RUNNING THIS
-######################################################################################################
-######################################################################################################
-
 library(data.table)
 library(reshape2) 
 
+# This prevents the model run script (CB-TLTBI.R) from sourcing
+# the "parameter values" script for the parameter values, because these
+# are, instead, defined below.
 parameters.already.set <- 1
+
+# This makes sure the Data/Outputs folder is empty before running the script
+filenames <- list.files("Data/Output", 
+                        pattern = "*.rds", full.names = TRUE)
+file.remove(filenames)
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")

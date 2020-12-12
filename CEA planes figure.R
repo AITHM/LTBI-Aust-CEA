@@ -13,6 +13,7 @@ library(RColorBrewer)
 library(egg)
 library(cowplot)
 library(grid)
+library(gridExtra)
 
 # Need to obtain chance of having sae with different treatment regimens.
 # I have researched this and it is in an excel file in "Model parameters"
@@ -73,9 +74,9 @@ linewidth <- 0.5
 
 titleposxaxis <- 45 
 titleposyaxis <- 8 
-pointsize <- 1
+pointsize <- 2
 textsize <- 3
-textsize2 <- 10
+textsize2 <- 14
 
 #dev.off()
 
@@ -94,7 +95,7 @@ myplot1 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$millions)",
+       y = "",
        fill = "Strategy",
        shape = "Strategy") +
   scale_shape_manual(values = c(24, 24, 24, 24,
@@ -102,7 +103,8 @@ myplot1 <-
                                 22, 22, 22, 22,
                                 4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize, 
-           label = "Offshore LTBI screening\ntargeting 11-35 year olds from 100+/100,000ppy") +
+           #label = "Offshore strategy\n11-35 year olds from 100+/100,000ppy") + 
+           label = "") +
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette,
@@ -130,7 +132,7 @@ myplot2 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$millions)",
+       y = "Incremental cost (A$millions)",
        fill = "Strategy",
        shape = "Strategy") +
   scale_shape_manual(values = c(24, 24, 24, 24,
@@ -138,7 +140,8 @@ myplot2 <-
                                 22, 22, 22, 22,
                                 4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize, 
-           label = "Offshore LTBI screening\ntargeting 11-65 year olds from 100+/100,000ppy") +
+           # label = "Offshore strategy\n11-65 year olds from 100+/100,000ppy") + 
+           label = "") +
   scale_fill_manual(values = c(getPalette, 
                                getPalette,
                                getPalette,
@@ -177,7 +180,7 @@ myplot3 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$millions)",
+       y = "",
        fill = "Strategy",
        shape = "Strategy") +
   scale_shape_manual(values = c(24, 24, 24, 24,
@@ -189,7 +192,8 @@ myplot3 <-
                                getPalette,
                                4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Offshore LTBI screening\ntargeting 11-65 year olds from 200+/100,000ppy") +
+           #label = "Offshore strategy\n11-65 year olds from 200+/100,000ppy") + 
+           label = "") +
   # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
   #           hjust = -0.03, vjust = 1.2, size = textsize, 
   #           colour = "black") +
@@ -223,11 +227,12 @@ myplot4 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$millions)",
+       y = "",
        fill = "Strategy",
        shape = "Strategy") +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Onshore LTBI screening\ntargeting 11-35 year olds from 100+/100,000ppy") +
+           #label = "Onshore strategy\n11-35 year olds from 100+/100,000ppy") + 
+           label = "") +
   scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
                                 22, 22, 22, 22,
@@ -272,7 +277,7 @@ myplot5 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$millions)",
+       y = "Incremental cost (A$millions)",
        fill = "Strategy",
        shape = "Strategy") +
   scale_shape_manual(values = c(24, 24, 24, 24,
@@ -284,7 +289,8 @@ myplot5 <-
                                getPalette,
                                4)) +
   annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Onshore LTBI screening\ntargeting 11-65 year olds from 100+/100,000ppy") +
+           # label = "Onshore strategy\n11-65 year olds from 100+/100,000ppy") + 
+           label = "") +
   scale_y_continuous(breaks = seq(-10, 250, 2)) +
   scale_x_continuous(breaks = seq(-10, 1000, 5)) +
   theme_bw() +
@@ -307,11 +313,12 @@ myplot6 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$millions)",
+       y = "",
        fill = "Strategy",
        shape = "Strategy") +
   annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize,  
-           label = "Onshore LTBI screening\ntargeting 11-65 year olds from 200+/100,000ppy") +
+           #label = "Onshore strategy\n11-65 year olds from 200+/100,000ppy") + 
+           label = "") +
   scale_shape_manual(values = c(24, 24, 24, 24,
                                 21, 21, 21, 21,
                                 22, 22, 22, 22,
@@ -341,32 +348,50 @@ myplot6 <-
         legend.position = "none")
 
 
-grid_arrange_shared_legend <- function(...) {
-  plots <- list(...)
-  g <- ggplotGrob(plots[[1]] + theme(legend.position = "bottom")+
-                    guides(fill = guide_legend(ncol = 4),
-                           shape = guide_legend(ncol = 4)))$grobs
-  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
-  lheight <- sum(legend$height)
-  grid.arrange(
-    do.call(arrangeGrob, lapply(plots, function(x)
-      x + theme(legend.position = "none"))),
-    legend,
-    ncol = 1,
-    heights = unit.c(unit(1, "npc") - lheight, lheight))
-}
+# grid_arrange_shared_legend <- function(...) {
+#   plots <- list(...)
+#   g <- ggplotGrob(plots[[1]] + theme(legend.position = "bottom")+
+#                     guides(fill = guide_legend(ncol = 4),
+#                            shape = guide_legend(ncol = 4)))$grobs
+#   legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+#   lheight <- sum(legend$height)
+#   grid.arrange(
+#     do.call(arrangeGrob, lapply(plots, function(x)
+#       x + theme(legend.position = "none"))),
+#     legend,
+#     ncol = 1,
+#     heights = unit.c(unit(1, "npc") - lheight, lheight))
+# }
 
-# dev.off()
-grid_arrange_shared_legend(myplot4, myplot1,
-                           myplot5, myplot2,
-                           myplot6, myplot3,
-                           nrow = 3)
+# # dev.off()
+# grid_arrange_shared_legend(myplot4, myplot1,
+#                            myplot5, myplot2,
+#                            myplot6, myplot3,
+#                            nrow = 3)
+# 
+# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
+# tiff('ceaplane1.tiff', units = "in", width = 8, height = 8,
+#      res = 200)
+# grid_arrange_shared_legend(myplot4, myplot1,
+#                            myplot5, myplot2,
+#                            myplot6, myplot3,
+#                            nrow = 3)
 
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-tiff('ceaplane1.tiff', units = "in", width = 8, height = 8,
+
+g <- ggplotGrob(myplot5 + theme(legend.position = "bottom")+
+                  guides(fill = guide_legend(ncol = 4, title.position="top", title.hjust = 0.5),
+                         shape = guide_legend(ncol = 4, title.position="top", title.hjust = 0.5)))$grobs
+legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+tiff('Figures/ceaplane1.tiff', units = "in", width = 11, height = 11,
      res = 200)
-grid_arrange_shared_legend(myplot4, myplot1,
-                           myplot5, myplot2,
-                           myplot6, myplot3,
-                           nrow = 3)
+plot_grid(myplot4, myplot1, myplot5, myplot2, myplot6, myplot3, legend,
+          nrow = 4, 
+          rel_widths = c(1, 1, 1, 1, 1, 1, 1),
+          #labels = c("A)", "B)", "C)", "D)", "E)", "F)", ""))
+          labels = c("a)", "b)", "c)", "d)", "e)", "f)", ""),
+          label_x = -0.001, label_y = 0.05,
+          hjust = 0, vjust = 0)
 dev.off()
+

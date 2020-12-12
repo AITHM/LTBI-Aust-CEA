@@ -1,8 +1,9 @@
 
-# This script runs several analyses, one after the other
+# This script runs several the cost-effectiveness analysis model several times,
+# one after the other
 # with different target groups and time horizons
-# and puts the results into a large table that is saved. 
-# This table can then be used to create the CEA planes.
+# and puts the results into a large table that is saved into the Data folder. 
+# This table can then be used to create the CEA planes (see "CEA planes figure 2...").
 
 library(plyr)
 library(dplyr)
@@ -10,19 +11,19 @@ library(tidyverse)
 library(tidyr)
 library(data.table)
 
-# # Reading in the data
+# Reading in the data
 # setwd("H:/Katie/PhD/CEA/Data")
 # df <- read.csv("ltbi utility plot.csv")
 
+# This prevents the model run script (CB-TLTBI.R) from sourcing
+# the "parameter values" script for the parameter values, because these
+# are, instead, defined below.
 parameters.already.set <- 1
 
-
-######################################################################################################
-################### ###################################################################################
-# MAKE SURE THE DATA OUTPUTS FOLDER IS EMPTY BEFORE RUNNING THIS
-######################################################################################################
-############################  ##########################################################################
-
+# This makes sure the Data/Outputs folder is empty before running the script
+filenames <- list.files("Data/Output", 
+                        pattern = "*.rds", full.names = TRUE)
+file.remove(filenames)
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
@@ -43,6 +44,7 @@ params <- as.data.table(params)
 other <- c("lifetime horizon",
            "All specialist",
            "LTBI decrement",
+           "LTBI decrement no emig",
            "Perfect cascade",
            "30yr horizon", 
            "30 inflows and horizon",
@@ -227,6 +229,30 @@ for(target.x in 1:nrow(target.dt)) {
     ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
     ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
     
+    } else if (other.cat == "LTBI decrement no emig") {
+      
+      Get.EMIGRATE <- function(xDT, year) {
+        
+        0
+        
+      }
+      
+      ultbi3HP <- params[p == "ultbi3HP", low]
+      ultbi4R <- params[p == "ultbi4R", low]
+      ultbi6H <- params[p == "ultbi6H", low]
+      ultbi9H <- params[p == "ultbi9H", low]
+      
+      uactivetb <- uactivetb - (uhealthy - ultbi4R)
+      
+      # Adjusting the partial LTBI treatment utilities so 
+      # they are dependent on the value of
+      # the sampled utility for full treatment
+      part.utility.dec <- 0.5
+      ultbipart3HP <- uhealthy - ((uhealthy - ultbi3HP) * part.utility.dec)
+      ultbipart4R <- uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)
+      ultbipart6H <- uhealthy - ((uhealthy - ultbi6H) * part.utility.dec)
+      ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
+      
     } else if (other.cat == "30 inflows and horizon") {
       
       totalcycles <- 30

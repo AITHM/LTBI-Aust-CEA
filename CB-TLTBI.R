@@ -1,24 +1,19 @@
+
+
+# MODEL RUN SCRIPT
+# This is the script that is called on to set up and run the model 
+# by all other scripts, except the PSA.
+# It defines all the states and transition matrices
+# The strategies and all parameters are defined in the "Parameter values" document.
+
 # Coding style
 # https://google.github.io/styleguide/Rguide.xml
-
-
-# Load libraries. (not needed if using the *.rds data files objects)
-#library(tidyverse)
-#library(reshape2)
-#library(zoo) # used for filling empty AGEP values
-#library(readxl)
-#library(ggplot2)
-#library(rlang)
-#library(diagram)
-#library(heemod)
 
 # library(RevoScaleR)
 library(lazyeval) # required
 library(data.table) # required
 
-# Model setup located within this file.
-# It defines all the states and transition matrices
-# The strategies and all parameters are defined in the "Parameter values" document.
+
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 source("CB-TLTBI Functions.R")
@@ -30,10 +25,6 @@ if (exists("parameters.already.set") == TRUE) {
 }
 
 source("CB-TLTBI_DataPreparation.R")
-# This function uses the above three Fix* functions. 
-# Run once to create the *.rds objects (vic.fertility, vic.mortality, vic.migration)
-# based on ABS's population projection data
-# CreateRDSDataFiles()
 
 # Read the data files (if required)
 vic.mortality <- readRDS("Data/aust.mortality.rds") # this is also required
@@ -50,9 +41,11 @@ vic.tb.mortality[, age := as.integer(age)]
     # Int J Tuberc Lung Dis 2016;20(4):515-23. doi: 10.5588/ijtld.15.0659
 sae.rate <- readRDS("Data/sae.rate.rds") # this is also required
 sae.rate <- as.data.table(sae.rate)
-    # SAE rate from: ...
+
+    # SAE rate from: several sources, e.g. Campbell et al 2019
 sae.mortality <- readRDS("Data/sae.mortality.rds") # this is also required
 sae.mortality <- as.data.table(sae.mortality)
+sae.mortality[, Rate := Rate/30]
     # SAE mortality data from: ...
 rradjrates <- readRDS("Data/rradjrates.rds")
 
@@ -84,8 +77,6 @@ tests.dt <- data.table(tests = c("QFTGIT", "TST10", "TST15"),
                        # tuberculosis (UK PREDICT TB): a prospective cohort study. Lancet Infect Dis 2018; 18(10): 1077-87.
                        # cost.primary = c(74.34, 70.40, 70.40))
                        cost.primary = c(cscreenqft, cscreentst, cscreentst))
-# the line above reflects the fact that the costs of offshore screening are born by the migrant, not
-# Australia's health system
 
 # Create a sample treatment data table
 treatment.dt <- data.table(treatment = c("3HP","4R", "6H", "9H"),
@@ -112,28 +103,10 @@ treatmentcost.dt <- data.table(treatment = c("3HP","4R", "6H", "9H", "3HP","4R",
 # year after migration are likely to have received that treatment (as an annual proportion).
 timetotreat.dt <- data.table(treatment = c("3HP", "4R", "6H", "9H"),
                            yearfraction = c(ttt3HP, ttt4R, ttt6H, ttt9H))
-# could talk to Michael Flynn to establish how long it takes to complete treatment
 
 # Create a sample utility data table
-# TODO: fix hard coded data table. It should take state.names and create the columns.
 utility.dt <- data.table(treatment = c("", "3HP", "4R", "6H", "9H"))
 utility.dt[, c(state.names) := as.numeric(NA)]
-
-# treat.effic.1 <- 0
-# treat.effic.2 <- 0.368 # Gao et al 2018
-# treat.effic.2 <- ifelse(treat.effic.2 >= treat.effic.4R, treat.effic.4R, treat.effic.2)
-# 
-# ratio.1 <- 0.6993362 # Page and Menzies
-# ratio.2 <- 0.3006638 # Page and Menzies
-# 
-# treat.complete.1 <- (1 - treat.complete.4R) * ratio.1
-# treat.complete.2 <- (1 - treat.complete.4R) * ratio.2
-# 
-# SAE4R <- 0.000305
-# 
-# TREATR4R <- treat.effic.1 * treat.complete.1 +
-#   treat.effic.2 * treat.complete.2 +
-#   treat.effic.4R * treat.complete.4R
   
 utility.dt[treatment == "3HP", c(state.names) := .(uhealthy, uhealthy, uhealthy, uhealthy, ultbipart3HP, ultbi3HP,
                                                    ultbitreatsae, 0,
@@ -308,13 +281,10 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "Med"),
                                TBMR = Get.TBMR(DT, year),
                                # TBMR = 0.001,
                                RRADJUST = Get.RRADJ(DT, year),
-                               # RRADJUST takes into account the fact that a proportion (10% in Victoria)
+                               # RRADJUST takes into account the fact that a proportion (~12% in Victoria)
                                # of TB cases are picked up each year with existing TB control strategies, i.e.
                                # during follow-up as a result of an abnormal CXR during pre-migration off-shore screening.
                                BEGINTREAT = begintrt,
-                               # Yet to finalise this parameter. i need to Work out if the chance of beginning treatment 
-                               # is age-dependent. May well depend on treatment as well??
-                               # TBFOLLOWUPADJUST = Get.TBFOLLOWUPADJUST(DT, year, treatment),
                                ATTEND = att,
                                # Proportion of migrants referred following off-shore screening (CXR) 
                                # that attend follow-up appointment once onshore. 
@@ -351,8 +321,6 @@ parameters <- DefineParameters(MR = Get.MR(DT, year, rate.assumption = "Med"),
 pop.master <- CreatePopulationMaster()
 # pop.master <- subset(pop.master, AGERP == 60 & ISO3 == "40-99")
 # pop.master <- subset(pop.master, AGERP == 20 & ISO3 == "200+")
-
-
 
 # factor <-  234.404422824184 #      71 * 0.74 * 0.595 * 0.84 * 0.61 * 0.76 * 0.53 * 1.29 * 0.77 * 0.84 * 1.96 * 0.67 * 0.83
 # 
@@ -393,7 +361,6 @@ pop.master <- CreatePopulationMaster()
 
 #---------- Model parameters for STRATEGY 0 ----------------#
 
-# TODO - Need a new CreatePopulationMaster function to manage LGA column.
 PSA <- 0
 discount <- disc
 start.year <- startyear

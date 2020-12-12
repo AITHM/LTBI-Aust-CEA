@@ -113,7 +113,140 @@ if (onshore == 1) {
                   xmax = xmax, xmin = xmin, fill = type)) +
     theme_bw() + 
     geom_text(aes(x = 0, y = base.value),
-              size = 3.5, label = "Base case ICER: $144,723") +
+              size = 3.5, label = "Base case ICER: $145,114") +
+    labs(y = "Cost per QALY (AUD$)") +
+    scale_fill_manual(values = c("steelblue2", "darksalmon" )) +
+    theme(legend.position = 'bottom',
+          legend.title = element_blank(),
+          legend.direction = "vertical",
+          legend.margin = margin(0, 0, 0, 0),
+          legend.box.margin = margin(50, 50, 50, 50)) + 
+    geom_hline(yintercept = base.value) +
+    scale_x_continuous(breaks = c(1:length(order.parameters)), 
+                       labels = order.parameters) +
+    scale_y_continuous(position = "bottom", 
+                       breaks = seq(0, 5000000, 50000),
+                       labels = comma) +
+    coord_flip(ylim = c(0, 400000))+
+    theme(text = element_text(size = 12),
+          legend.position = c(0.75, 0.2))
+  
+
+  
+} else if (onshore == 0) {
+  myplot1 <- 
+    ggplot() + 
+    geom_rect(data = df.2, 
+              aes(ymax = ymax, ymin = ymin, 
+                  xmax = xmax, xmin = xmin, fill = type)) +
+    geom_text(aes(x = 0, y = base.value),
+              size = 3.5, label = "Base case ICER: $2,041") +
+    theme_bw() + 
+    labs(y = "Cost per QALY (AUD$)") +
+    scale_fill_manual(values = c("steelblue2", "darksalmon")) +
+    theme(legend.position = 'bottom',
+          legend.title = element_blank(),
+          legend.direction = "vertical",
+          legend.margin = margin(0, 0, 0, 0),
+          legend.box.margin = margin(50, 50, 50, 50)) + 
+    geom_hline(yintercept = base.value) +
+    scale_x_continuous(breaks = c(1:length(order.parameters)), 
+                       labels = order.parameters) +
+    scale_y_continuous(position = "bottom", 
+                       breaks = seq(-60000, 500000, 20000),
+                       labels = comma) +
+    coord_flip(ylim = c(-60000, 65000))+
+    theme(text = element_text(size = 11),
+          legend.position = c(0.76, 0.2))
+  
+  
+}
+
+
+
+onshore <- 0
+
+# Reading in the data from excel using XLSX, which has some sort of glitch
+setwd("H:/Katie/PhD/CEA/Data")
+# Reading in the original base ICER
+df <- read.csv("tornado plot.csv")
+# original value of output
+base.value <- (as.character(df[1,3]))
+base.value <- as.numeric(gsub("[^0-9\\-]", "", base.value))
+
+# Reading in the rest of the sensitivity analysis data from excel
+setwd("H:/Katie/PhD/CEA/Data")
+df <- read.csv("tornado plot.csv", skip = 2)
+df <- as.data.table(df)
+df[, X := NULL]
+df[, parameter := as.character(parameter)]
+setnames(df,"icer.lower.limit","lower")
+setnames(df,"icer.upper.limit","upper")
+df[, lower := as.numeric(gsub("[^0-9\\-]", "", lower))]
+df[, upper := as.numeric(gsub("[^0-9\\-]", "", upper))]
+df[, UL_Difference := abs(upper - lower)]
+# 
+# order.parameters <- df %>% arrange(UL_Difference) 
+# 
+# order.parametersb <- order.parameters %>% mutate(parameter = factor(x = parameter, levels = parameter)) 
+# 
+# %>%
+#   mutate(parameter = factor(x = parameter, levels = parameter)) %>%
+#   select(parameter) %>% unlist() %>% levels()
+
+df <- subset(df, !is.na(parameter))
+
+# get order of parameters according to size of intervals
+# (I use this to define the ordering of the factors which 
+# I then use to define the positions in the plot)
+order.parameters <- df %>% arrange(UL_Difference) %>%
+  mutate(parameter = factor(x = parameter, levels = parameter)) %>%
+  select(parameter) %>% unlist() %>% levels()
+
+# width of columns in plot (value between 0 and 1)
+width <- 0.7
+
+setnames(df, "lower", "Change in ICER from base-case using lower value")
+setnames(df, "upper", "Change in ICER from base-case using upper value")
+
+# get data frame in shape for ggplot and geom_rect
+df.2 <- df %>% 
+  # gather columns Lower_Bound and Upper_Bound into a single 
+  # column using gather
+  gather(key ='type', value = 'output.value', 2:3) %>%
+  # just reordering columns
+  select(parameter, type, output.value, UL_Difference) %>%
+  # create the columns for geom_rect
+  mutate(parameter = factor(parameter, levels = order.parameters),
+         ymin = pmin(output.value, base.value),
+         ymax = pmax(output.value, base.value),
+         xmin = as.numeric(parameter) - width / 2,
+         xmax = as.numeric(parameter) + width / 2)
+
+# order.parameters[14] <- "LTBI prevalence (25th-75th percentile) and\nreactivation rate estimates (upper - lower uncertainty limit)"
+# order.parameters[5] <- "Proportion of annual TB cases captured\nduring off-shore CXR screening follow-up (4.8 - 12.5%)"
+# order.parameters[13] <- "Proportion that began treatment\nwho were effectively treated (50-90%)"
+# order.parameters[3] <- "Time to LTBI treatment commencement\nfollowing migration (0 - 3 months)"
+
+
+# create plot
+# (use scale_x_continuous to change labels in y axis to name of parameters)
+#png(width = 960, height = 540)
+options(scipen = 5)
+
+# dev.off()
+# OFFSHORE SCREENING
+
+if (onshore == 1) {
+  # ONSHORE SCREENING
+  myplot2<- 
+    ggplot() + 
+    geom_rect(data = df.2, 
+              aes(ymax = ymax, ymin = ymin, 
+                  xmax = xmax, xmin = xmin, fill = type)) +
+    theme_bw() + 
+    geom_text(aes(x = 0, y = base.value),
+              size = 3.5, label = "Base case ICER: $145,114") +
     labs(y = "Cost per QALY (AUD$)") +
     scale_fill_manual(values = c("steelblue2", "darksalmon" )) +
     theme(legend.position = 'bottom',
@@ -132,20 +265,16 @@ if (onshore == 1) {
           legend.position = c(0.75, 0.2))
   
   
-  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-  tiff('tornadoonshore.tiff', units = "in", width = 14, height = 6,
-       res = 200)
-  print(myplot1)
-  dev.off()
+
   
 } else if (onshore == 0) {
-  myplot1 <- 
+  myplot2 <- 
     ggplot() + 
     geom_rect(data = df.2, 
               aes(ymax = ymax, ymin = ymin, 
                   xmax = xmax, xmin = xmin, fill = type)) +
     geom_text(aes(x = 0, y = base.value),
-              size = 3.5, label = "Base case ICER: $1,389") +
+              size = 3.5, label = "Base case ICER: $2,041") +
     theme_bw() + 
     labs(y = "Cost per QALY (AUD$)") +
     scale_fill_manual(values = c("steelblue2", "darksalmon")) +
@@ -160,17 +289,19 @@ if (onshore == 1) {
     scale_y_continuous(position = "bottom", 
                        breaks = seq(-60000, 500000, 20000),
                        labels = comma) +
-    coord_flip(ylim = c(-60000, 60000))+
+    coord_flip(ylim = c(-60000, 65000))+
     theme(text = element_text(size = 11),
           legend.position = c(0.76, 0.2))
   
-  setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-  tiff('tornadooffshore.tiff', units = "in", width = 14, height = 5,
-       res = 200)
-  print(myplot1)
-  dev.off()
   
 }
 
 
+tiff('Figures/Figure 2.tiff', units = "in", width = 12, height = 17,
+     res = 100)
+plot_grid(myplot1, myplot2,
+          nrow = 1, 
+          rel_widths = c(1, 1, 1, 1),
+          labels = c("A)", "B)"))
+dev.off()
 

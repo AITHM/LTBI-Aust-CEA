@@ -374,6 +374,7 @@ params[p == "begintrt", mid := 0.596]
 params[p == "begintrt", low := 0.262]
 params[p == "begintrt", high := 0.762]
 
+# Screening tool accuracy from PREDICT study in migrants from Auguste et al 2019 
 params[p == "snqftgit", mid := 0.6538] # 0.6104
 params[p == "snqftgit", low := 0.4438] # 0.4925
 params[p == "snqftgit", high := 0.8279] # 0.7195
@@ -398,33 +399,61 @@ params[p == "sptst10", mid := 0.89119] # 0.82227
 params[p == "sptst10", low := 0.873993] # 0.81780
 params[p == "sptst10", high := 0.907993] # 0.82686
 
-params[p == "treat.effic.3HP", mid := 0.69] # IUAT
+# Screening tool accuracy from pooled results from Auguste et al 2019 
+params[p == "snqftgit", mid := 0.70] # 0.6104
+params[p == "snqftgit", low := 0.46] # 0.4925
+params[p == "snqftgit", high := 0.88] # 0.7195
+
+params[p == "spqftgit", mid := 0.8553] # 0.95820
+params[p == "spqftgit", low := 0.7288] # 0.95700
+params[p == "spqftgit", high := 0.8913] # 0.95948
+
+params[p == "sntst15", mid := 0.59] # 0.6753
+params[p == "sntst15", low := 0.30] # 0.5590
+params[p == "sntst15", high := 0.80] # 0.7777
+
+params[p == "sptst15", mid := 1] # 0.95117
+params[p == "sptst15", low := 1] # 0.94978
+params[p == "sptst15", high := 1] # 0.95255
+
+params[p == "sntst10", mid := 0.77] # 0.7532
+params[p == "sntst10", low := 0.58] # 0.6418
+params[p == "sntst10", high := 0.90] # 0.8444
+
+params[p == "sptst10", mid := 0.7763] # 0.82227
+params[p == "sptst10", low := 0.6271] # 0.81780
+params[p == "sptst10", high := 0.8587] # 0.82686
+
+
+
+
+params[p == "treat.effic.3HP", mid := 0.69] # IUATs
 params[p == "treat.effic.3HP", low := 0.28] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
 params[p == "treat.effic.3HP", high := 0.82] # Zenner
-params[p == "treat.complete.3HP", mid := 0.764] # Belknap
+params[p == "treat.complete.3HP", mid := 0.790] ######### Haas
 params[p == "treat.complete.3HP", low := 0.740] # Belknap
 params[p == "treat.complete.3HP", high := 0.900] # Denholm
 
 params[p == "treat.effic.4R", mid := 0.69] # IUAT
 params[p == "treat.effic.4R", low := 0.50] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
 params[p == "treat.effic.4R", high := 0.88] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
-params[p == "treat.complete.4R", mid := 0.852] # Belknap
+params[p == "treat.complete.4R", mid := 0.676] ######### Haas
 params[p == "treat.complete.4R", low := 0.535] # Roland
 params[p == "treat.complete.4R", high := 0.872] # Denholm
 
 params[p == "treat.effic.6H", mid := 0.69] # IUAT
 params[p == "treat.effic.6H", low := 0.41] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
 params[p == "treat.effic.6H", high := 0.74] # Zenner
-params[p == "treat.complete.6H", mid := 0.78] # Belknap
-params[p == "treat.complete.6H", low := 0.441] # Belknap
-params[p == "treat.complete.6H", high := 0.85] # Denholm
+params[p == "treat.complete.6H", mid := 0.672] # Flynn
+params[p == "treat.complete.6H", low := 0.441] # Trauer
+params[p == "treat.complete.6H", high := 0.850] # Denholm
 
 params[p == "treat.effic.9H", mid := 0.69] # IUAT
 params[p == "treat.effic.9H", low := 0.41] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
 params[p == "treat.effic.9H", high := 0.93] # Zenner
-params[p == "treat.complete.9H", mid := 0.73] # Belknap
-params[p == "treat.complete.9H", low := 0.4] # Belknap
-params[p == "treat.complete.9H", high := 0.85] # Denholm
+params[p == "treat.complete.9H", mid := 0.653] # Flynn
+params[p == "treat.complete.9H", low := 0.369] # Ronald
+params[p == "treat.complete.9H", high := 0.850] # Denholm
 
 # params[p == "treatr3HP", mid := 0.543]
 # params[p == "treatr3HP", low := 0.221]
@@ -630,9 +659,9 @@ params[p == "uactivetbr", mid := 0.873333333]
 params[p == "uactivetbr", low := 0.849333333]
 params[p == "uactivetbr", high := 0.873333333]
 
-params[p == "ultbitreatsae", mid := 0.8525000]
-params[p == "ultbitreatsae", low := 0.8420833]
-params[p == "ultbitreatsae", high := 0.8629167]
+params[p == "ultbitreatsae", mid := 0.8685]
+params[p == "ultbitreatsae", low := 0.8525]
+params[p == "ultbitreatsae", high := 0.8720]
 
 # Write the table to clipboard so I can 
 # paste it into my Excel spreadsheet

@@ -18,8 +18,8 @@ payerperspect <- 0
 emigration <- 1
 
 # The tests and treatments I want to consider in the run
-testlist <- c("TST10") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+testlist <- c("TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # Rstart.year
@@ -151,7 +151,7 @@ if (onshore == 1) {
       # (ifelse(DT[, ISO3] == "200+", 1, 0) | ifelse(DT[, ISO3] == "150-199", 1, 0) | ifelse(DT[, ISO3] == "100-149", 1, 0) | ifelse(DT[, ISO3] == "40-99", 1, 0)) &
       # Adjust age at arrival
       (ifelse(DT[, AGERP] > 10, 1, 0) &
-         ifelse(DT[, AGERP] < 36, 1, 0))
+         ifelse(DT[, AGERP] < 66, 1, 0))
     
   }
   
@@ -167,7 +167,7 @@ if (onshore == 1) {
     # DT <- subset(DT, ISO3 == "200+" | ISO3 == "150-199" | ISO3 == "100-149" | ISO3 == "40-99")
     # Adjust age at arrival
     DT <- subset(DT, AGERP > 10 &
-                   AGERP < 36)
+                   AGERP < 66)
     DT
   }
 }

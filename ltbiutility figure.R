@@ -21,7 +21,11 @@ library(cowplot)
 library(grid)
 library(gridExtra)
 
+# This prevents the model run script (CB-TLTBI.R) from sourcing
+# the "parameter values" script for the parameter values, because these
+# are, instead, defined below.
 parameters.already.set <- 1
+
 
 # read in parameter list and values, which is defined in the "Parameter creation" script
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
@@ -141,14 +145,14 @@ ultbi.dt[, utility := uhealthy - utility.dec]
 options(scipen=5)
 
 # Function that estimates where th eline intercepts the x-axis
-f2 <- approxfun(ultbi.dt$incremental.qalys, ultbi.dt$utility.dec)
+f2 <- approxfun(ultbi.dt$incremental.qalys, ultbi.dt$utility.dec*100)
 f2(0)
 
 
 
 #dev.off()
 myplot1 <-
-  ggplot(ultbi.dt, aes(x = utility.dec, y = incremental.qalys)) +
+  ggplot(ultbi.dt, aes(x = utility.dec*100, y = incremental.qalys)) +
   geom_line(size = 1, color = "steelblue2") +
   geom_point(aes(x = f2(0),
                  y = 0), colour = "black", size = 12,
@@ -156,16 +160,16 @@ myplot1 <-
   theme_bw() +
   geom_text(aes(x = f2(0), y = 0),
                    hjust = 0.5, vjust = -1,
-                   size = 10, label = "0.0046") +
+                   size = 10, label = "0.46%") +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   labs(y = "Incremental QALYS",
-       x = "LTBI treatment utility decrement relative to healthy state") +
+       x = "LTBI treatment utility decrement relative to healthy state (%)") +
   # scale_fill_manual(values = c("steelblue2", "darksalmon")) +
   scale_y_continuous(breaks = seq(-60, 100, 5),
                      labels = comma) +
-  scale_x_continuous(breaks = seq(0, 0.1, 0.001)) +
-  coord_cartesian(xlim = c(0, 0.01), ylim = c(-20, 20)) +
+  scale_x_continuous(breaks = seq(0, 1, 0.1)) +
+  coord_cartesian(xlim = c(0, 1), ylim = c(-20, 20)) +
   theme(text = element_text(size = 20),
         panel.border = element_blank(),
         legend.position = "none",
@@ -173,7 +177,7 @@ myplot1 <-
 
 
 tiff('Figures/ltbiutility.tiff', units = "in", width = 16, height = 6,
-     res = 200)
+     res = 100)
 myplot1
 dev.off()
 

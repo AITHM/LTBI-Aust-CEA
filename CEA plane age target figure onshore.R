@@ -1,9 +1,9 @@
-# This script creates a cost-effectivenes plane, showing incremental cost and effectiveness (in QALYs) of
+# This script creates a cost-effectivenes plane, showing 
+# incremental cost and effectiveness (in QALYs) of
 # different intervention strategies.
-# To be used in the cost-effectivness model for latent TB screening and treatment program.
-# The files CB-TLTBI.R and CEA analyses need to be run to create the output, which was then added into
-# an excel spreadsheet ("Model paramenter") into the sheet names "Table 3"
-# and then these results are transferred into the sheet called "CEA plane", which is read by this script.
+# That data for these figures needs to be created first
+# see "CEA plane age target".
+
 
 library(xlsx)
 library(data.table)
@@ -15,8 +15,8 @@ library(egg)
 library(cowplot)
 library(grid)
 library(gridExtra)
-# Need to obtain chance of having sae with different treatment regimens.
-# I have researched this and it is in an excel file in "Model parameters"
+
+
 
 ylimupper <- 4200000/1000
 ylimlower <- -50000/1000
@@ -26,13 +26,14 @@ linewidth <- 1
 
 # Reading in the data 
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-#setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
+# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 # data <- readRDS("Data/agetarget.rds")
 data <- readRDS("Data/agetargetonshore.rds")
 data <- as.data.table(data)
 
 
 # Write the table to clipboard so I can paste it into Excel
+# to create the data table associated with the figure.
 write.table(data, "clipboard", sep = "\t", row.names = FALSE)
 
 data <- subset(data, strategy != "0_12...rds")
@@ -85,7 +86,7 @@ myplot1 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (AUD$thousands)",
+       y = "Incremental cost (A$thousands)",
        fill = "Age group\n(years)",
        shape = "Age group\n(years)") +
   # scale_size_continuous(limits = c(250, 450), 
@@ -181,7 +182,7 @@ myplot2 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (in thousands, AUD$)",
+       y = "Incremental cost (in thousands, A$)",
        fill = "Age group\n(years)",
        shape = "Age group\n(years)") +
   # scale_size_continuous(limits = c(250, 450), 
@@ -240,7 +241,7 @@ myplot2 <-
               colour = "gray65", 
               size = linewidth) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (in thousands, AUD$)",
+       y = "Incremental cost (in thousands, A$)",
        fill = "Age group\n(years)",
        shape = "Age group\n(years)")  +
   # scale_size_continuous(limits = c(250, 450), 
@@ -282,8 +283,8 @@ scale_y_continuous(breaks = seq(-500000/1000, 20000000/1000, 500000/1000),
 
 plotty <- plot_grid(myplot1, myplot2, legend, ncol = 3, 
                     rel_widths = c(1, 1, .3),
+                    # labels = c("A)", "B)", " "))
                     labels = c("a)", "b)", " "))
-
 tiff('Figures/ceaplaneageonshore.tiff', units = "in", width = 15, height = 5,
      res = 200)
 plotty
