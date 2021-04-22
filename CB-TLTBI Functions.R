@@ -1,5 +1,20 @@
-# The set of Define* functions implement lazy evaluation and create respective objects.
-# Ultimately a singular model object will have multiple strategies with multiple transition matrices and states.
+
+#'===========================================================================================================
+#' This script simply contains a lot of necessary functions for the model run
+#' 
+#' Inputs:
+#' None
+#' 
+#' Output:
+#' Only functions
+#' 
+#' Coding style
+#' https://google.github.io/styleguide/Rguide.xml
+#'===========================================================================================================
+
+
+#' The set of Define* functions implement lazy evaluation and create respective objects.
+#' Ultimately a singular model object will have multiple strategies with multiple transition matrices and states.
 
 DefineTransition <- function(..., state.names) {
   # Define an unevaluated transmission matrix, for use in model running later
@@ -295,12 +310,7 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
   # NOTE: at this point both Get.MR() and Get.RR() functions are called by the evaluator.
   # Use param$* when using DefineTransition() 
   param <- lazy_eval(parameters)
-  
-  # TODO (Milinda) - extract param$* and re assign to variables of same name.
-  # As a result we can stop using param$ inside DefineTransition().
-  #for (i in names(param)) {
-  #assign(i, param[[i]])
-  #}
+
   
   flow.cost <- lazy_eval(unevaluated.flow.cost)
   state.cost <- lazy_eval(unevaluated.state.cost)
@@ -311,7 +321,6 @@ GetStateCounts <- function(DT, year, strategy, testing, treatment, markov.cycle)
   # param$MR[is.na(param$MR)] <- 0.01
   # param$RR[is.na(param$RR)] <- 0.0013
   # param$TBMR[is.na(param$TBMR)] <- 0.01
-  
   
   # assign the current environment for evaluation. 
   for (i in 1:length(transMatrix)) {
@@ -534,22 +543,3 @@ DoRunModel <- function(strategy, start.year, cycles) {
 
 
 }
-
-
-## SQL Server and RevoScaleR.  
-#connStr <- "Driver=SQL Server;Server=MU00111629;Database=VICWINTER;Trusted_Connection=True"
-#sqlShareDir <- paste("C:\\Users\\maba0001\\Documents\\sqlShareDir", sep = " ")
-#sqlWait <- TRUE
-#sqlConsoleOutput <- FALSE
-#sqlcc <- RxInSqlServer(connectionString = connStr, shareDir = sqlShareDir, wait = sqlWait, consoleOutput = sqlConsoleOutput)
-##rxSetComputeContext(sqlcc)
-#rxSetComputeContext("local")
-
-#sqlRowsPerRead <- 5000
-#sql.table.name <- "popcalculatedtest"
-
-
-#sql.pop.table <- RxSqlServerData(connectionString = connStr,
-#table = sql.table.name,
-#rowsPerRead = sqlRowsPerRead)
-

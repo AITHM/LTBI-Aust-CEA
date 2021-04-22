@@ -1,10 +1,20 @@
 
-
-# This is the file that can analyse the output data from the cost-effectiveness analysis.
-# The file CB-TLTBI.R needs to be run to create the output files that this script then analyses.
-# Before running CB-TLTBI.R, define the strategies you want to consider and parameter values
-# in the script "Parameter values".
-# This script outputs a table that includes the results for each strategy (and its baseline) in separate rows.
+#'===========================================================================================================
+#' This is the file that can analyse the output data from the cost-effectiveness analysis.
+#' The file Model run.R needs to be run to create the output files that this script then analyses.
+#' Before running Model run.R, define the strategies you want to consider and parameter values
+#' in the script "Parameter values".
+#' 
+#' Inputs:
+#' Model run.R needs to be run
+#' 
+#' Output:
+#' This script outputs a table onto the clipboard that includes the results 
+#' for each strategy (and its baseline) in separate rows.
+#' 
+#' Coding style
+#' https://google.github.io/styleguide/Rguide.xml
+#'===========================================================================================================
 
 library(tidyverse)
 library(data.table)
@@ -89,23 +99,8 @@ tabfunc <- function(dt) {
   numscreened <- dt[, sum(p.sus.nf) + sum(p.sus.nbt) + sum(p.sus.nct) +
                   sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nf) + sum(p.ltbi.nbt) +
                   sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)]
-  # cdt <- targetfunc(dt)
-  # cdt <- as.data.table(cdt)
-  # numscreened <- (cdt[YEAR == start.year & YARP == start.year, sum(NUMP),]) * attscreen
   
   # annual number referred 
-  # this will either be:
-      # those with and without LTBI in the target population (which I get using the targetfunc) 
-      # multiplied by the relevent sensitivities and specificities and multiplied by
-      # the proportion that attended the screen:
-  # cdt <- targetfunc(dt)
-  # cdt <- as.data.table(cdt)
-  # numref <- ((cdt[YEAR == start.year & YARP == start.year, sum(LTBP),]) * attscreen * sntst10) +
-  #   ((cdt[YEAR == start.year & YARP == start.year, sum(NUMP),] -
-  #      cdt[YEAR == start.year & YARP == start.year, sum(LTBP),]) * attscreen * (1 - sptst10))
-  
-  # or it will be the number that attended in each of the LTBI and SUS categories
-  # divided by the chance of attending
   numref <- dt[, sum(p.sus.nbt) +
                       sum(p.sus.nct) + sum(p.sus.sae) + sum(p.sus.tc) + sum(p.ltbi.nbt) +
                        sum(p.ltbi.nct) + sum(p.ltbi.sae) + sum(p.ltbi.tc)] / att
