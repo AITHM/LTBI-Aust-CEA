@@ -1,11 +1,19 @@
-# This script creates a figure with six cost-effectivenes planes,
-# showing incremental cost and effectiveness (in QALYs) of
-# different intervention strategies.
-# To create the rds files that this script can import
-# You need to run to gene the "Results table.R" first
-# to generate the results.
+#'===========================================================================================================
+#' This script creates a figure with six cost-effectivenes planes,
+#' showing incremental cost and effectiveness (in QALYs) of different intervention strategies.
+#' To create the rds files that this script can import you need to run to gene the "Results table.R" first
+#' to generate the results.
+#' 
+#' Inputs:
+#' Need to run the "Results table.R" first, which creates a couple of rds files that this code then uses.
+#' 
+#' Output:
+#' tiff
+#' 
+#' Coding style
+#' https://google.github.io/styleguide/Rguide.xml
 
-
+#' LOAD LIBRARIES ===========================================================================================
 library(xlsx)
 library(data.table)
 library(ggplot2)
@@ -14,11 +22,13 @@ library(egg)
 library(cowplot)
 library(grid)
 library(gridExtra)
+# library(extrafont)
+# install.packages("extrafont", type = "binary")
 
-# Need to obtain chance of having sae with different treatment regimens.
-# I have researched this and it is in an excel file in "Model parameters"
+#' Need to obtain chance of having sae with different treatment regimens.
+#' I have researched this and it is in an excel file in "Model parameters"
 
-# Save the output to file
+#' Set working directory
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
 
 data <- readRDS("offshore_results.rds")
@@ -32,9 +42,6 @@ off11.65.200  <- subset(data, age.low == 11 & age.high == 65 & tbincid == "200+"
 on11.35 <- subset(data2, age.low == 11 & age.high == 35 & tbincid == "100+")
 on11.65 <- subset(data2, age.low == 11 & age.high == 65 & tbincid == "100+")
 on11.65.200  <- subset(data2, age.low == 11 & age.high == 65 & tbincid == "200+")
-
-# on11.65 <- subset(data2, age.low == 11 & age.high == 65 & tbincid == "100+")
-# dt <- copy(on11.65)
 
 sortformatfunc <- function(dt){
   dt <- as.data.table(dt)
@@ -62,23 +69,32 @@ plot5 <- sortformatfunc(on11.65)
 plot6 <- sortformatfunc(on11.65.200)
 
 # Get the colour palatte
-# I need 4 fill colours
 getPalette <- brewer.pal(4, "Spectral")
 getPalette
 
 ylimmin <- -2
 ylimmax <- 8.5
-xlimmin <- -4
-xlimmax <- 79
+xlimmin <- -5
+xlimmax <- 76
 linewidth <- 0.5
 
 titleposxaxis <- 45 
-titleposyaxis <- 8 
+titleposyaxis <- 7 
 pointsize <- 2
-textsize <- 3
-textsize2 <- 10
+textsize <- 7
+textsize2 <- 7
 
-#dev.off()
+
+#' I need to use true negative signs and not the hyphens that R automatically uses,
+#' therefore I need to create new labels for the x axis.
+yaxislab  <- c("\u20132", "0", "2", "4", "6", "8")
+xaxislab  <- c("\u20135", "0", "5",  "15", 
+               "25",  "35", "45", 
+               "55",  "65", "75")
+yaxisbreaks  <- c(-2, 0, 2, 4, 6, 8)
+xaxisbreaks  <- c(-5, 0, 5, 15,
+               25, 35, 45,
+               55, 65,  75)
 
 options(scipen=5)
 myplot1 <-
@@ -90,37 +106,37 @@ myplot1 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (45000/1000000)/1,
               colour = "gray83",
-              size = linewidth, lty = 2) +
+              size = linewidth, lty = 3) +
   geom_abline(intercept = 0, slope = (75000/1000000)/1,
               colour = "gray83", 
-              size = linewidth) +
+              size = linewidth, lty = 2) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (A$millions)",
+       y = "Incremental Cost in Millions, A$.",
        fill = "Strategy",
-       shape = "Strategy") +
+       shape = "Strategy",
+       tag =  "D)") +
   scale_shape_manual(values = c(5, 9, 23, 23,
                                 1, 10, 21, 21,
                                 0, 7, 22, 22,
                                 4)) +
-  # scale_fill_manual(values = c(getPalette, 
-  #                              getPalette,
-  #                              getPalette,
-  #                              4)) +
   scale_fill_manual(values = c(5, 9, "gray54", "black",
                                1, 10, "gray54", "black",
                                0, 7, "gray54", "black",
                                4)) +
-  annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Offshore strategy\n11-35 year olds from 100+/100,000ppy") +
-  scale_y_continuous(breaks = seq(-10, 250, 2)) +
-  scale_x_continuous(breaks = seq(-10, 1000, 5)) +
+  # annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
+  #          label = "Offshore strategy\n11-35 year olds from 100+/100,000ppy") +
+  scale_y_continuous(breaks = yaxisbreaks,
+                     labels = yaxislab) +
+  scale_x_continuous(breaks = xaxisbreaks,
+                     labels = xaxislab) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
-  theme(text = element_text(size = textsize2),
-        panel.border = element_blank(),
-        legend.position = "none",
-        axis.title.x = element_blank())
-#axis.text.x = element_text(angle=45, hjust=1),
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax), 
+                  expand = F) +
+  theme(panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(colour="black"),
+        legend.position = "none")
 myplot2 <-
   ggplot(plot2, aes(x = incremental.qalys, y = incremental.cost/1000000,
                     fill = strategy,
@@ -130,48 +146,37 @@ myplot2 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (45000/1000000)/1,
               colour = "gray83",
-              size = linewidth, lty = 2) +
+              size = linewidth, lty = 3) +
   geom_abline(intercept = 0, slope = (75000/1000000)/1,
               colour = "gray83", 
-              size = linewidth) +
+              size = linewidth, lty = 2) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (A$millions)",
+       y = "Incremental Cost in Millions, A$.",
        fill = "Strategy",
-       shape = "Strategy") +
+       shape = "Strategy",
+       tag =  "E)") +
   scale_shape_manual(values = c(5, 9, 23, 23,
                                 1, 10, 21, 21,
                                 0, 7, 22, 22,
                                 4)) +
-  # scale_fill_manual(values = c(getPalette, 
-  #                              getPalette,
-  #                              getPalette,
-  #                              4)) +
   scale_fill_manual(values = c(5, 9, "gray54", "black",
                                1, 10, "gray54", "black",
                                0, 7, "gray54", "black",
                                4)) +
-  annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Offshore strategy\n11-65 year olds from 100+/100,000ppy") +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  scale_y_continuous(breaks = seq(-10, 250, 2)) +
-  scale_x_continuous(breaks = seq(-10, 1000, 5)) +
+  # annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
+  #          label = "Offshore strategy\n11-65 year olds from 100+/100,000ppy") +
+  scale_y_continuous(breaks = yaxisbreaks,
+                     labels = yaxislab) +
+  scale_x_continuous(breaks = xaxisbreaks,
+                     labels = xaxislab) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
-  theme(text = element_text(size = textsize2),
-        panel.border = element_blank(),
-        legend.position = "none",
-        axis.title.x = element_blank())
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax), 
+                  expand = F) +
+  theme(panel.border = element_blank(),
+        axis.text = element_text(colour="black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.position = "none")
 myplot3 <-
   ggplot(plot3, aes(x = incremental.qalys, y = incremental.cost/1000000,
                     fill = strategy,
@@ -181,46 +186,36 @@ myplot3 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (45000/1000000)/1,
               colour = "gray83",
-              size = linewidth, lty = 2) +
+              size = linewidth, lty = 3) +
   geom_abline(intercept = 0, slope = (75000/1000000)/1,
               colour = "gray83", 
-              size = linewidth) +
+              size = linewidth, lty = 2) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (A$millions)",
+       y = "Incremental Cost in Millions, A$.",
        fill = "Strategy",
-       shape = "Strategy") +
+       shape = "Strategy",
+       tag =  "F)") +
   scale_shape_manual(values = c(5, 9, 23, 23,
                                 1, 10, 21, 21,
                                 0, 7, 22, 22,
                                 4)) +
-  # scale_fill_manual(values = c(getPalette, 
-  #                              getPalette,
-  #                              getPalette,
-  #                              4)) +
   scale_fill_manual(values = c(5, 9, "gray54", "black",
                                1, 10, "gray54", "black",
                                0, 7, "gray54", "black",
                                4)) +
-  annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Offshore strategy\n11-65 year olds from 200+/100,000ppy") +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  scale_y_continuous(breaks = seq(-10, 250, 2)) +
-  scale_x_continuous(breaks = seq(-10, 1000, 5)) +
+  # annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
+  #          label = "Offshore strategy\n11-65 year olds from 200+/100,000ppy") +
+  scale_y_continuous(breaks = yaxisbreaks,
+                     labels = yaxislab) +
+  scale_x_continuous(breaks = xaxisbreaks,
+                     labels = xaxislab) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
-  theme(text = element_text(size = textsize2),
-        panel.border = element_blank(),
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax), 
+                  expand = F) +
+  theme(panel.border = element_blank(),
+        axis.text = element_text(colour="black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
         legend.position = "none")
 myplot4 <-
   ggplot(plot4, aes(x = incremental.qalys, y = incremental.cost/1000000,
@@ -231,48 +226,39 @@ myplot4 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (45000/1000000)/1,
               colour = "gray83",
-              size = linewidth, lty = 2) +
+              size = linewidth, lty = 3) +
   geom_abline(intercept = 0, slope = (75000/1000000)/1,
               colour = "gray83", 
-              size = linewidth) +
+              size = linewidth, lty = 2) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (A$millions)",
+       y = "Incremental Cost in Millions, A$.",
        fill = "Strategy",
-       shape = "Strategy") +
-  annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
-           label = "Onshore strategy\n11-35 year olds from 100+/100,000ppy") +
+       shape = "Strategy",
+       tag =  "A)") +
+  # annotate("text", x = titleposxaxis, y = titleposyaxis,  size = textsize, 
+  #          label = "Onshore strategy\n11-35 year olds from 100+/100,000ppy") +
   scale_shape_manual(values = c(5, 9, 23, 23,
                                 1, 10, 21, 21,
                                 0, 7, 22, 22,
                                 4)) +
-  # scale_fill_manual(values = c(getPalette, 
-  #                              getPalette,
-  #                              getPalette,
-  #                              4)) +
   scale_fill_manual(values = c(5, 9, "gray54", "black",
                                1, 10, "gray54", "black",
                                0, 7, "gray54", "black",
                                4)) +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  scale_y_continuous(breaks = seq(-10, 250, 2)) +
-  scale_x_continuous(breaks = seq(-10, 1000, 5)) +
+  scale_y_continuous(breaks = yaxisbreaks,
+                     labels = yaxislab) +
+  scale_x_continuous(breaks = xaxisbreaks,
+                     labels = xaxislab) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
-  theme(text = element_text(size = textsize2),
-        panel.border = element_blank(),
-        legend.position = "none",
-        axis.title.x = element_blank())
+  # theme_set(theme_cowplot(font_size = 8)) +
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax), 
+                  expand = F) +
+  theme(panel.border = element_blank(),
+        #text = element_text(size = textsize2),
+        axis.text = element_text(colour="black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.position = "none")
         #legend.position = c(0.80, 0.8),
         #axis.text.x = element_text(angle=45, hjust=1),
 myplot5 <-
@@ -284,36 +270,38 @@ myplot5 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (45000/1000000)/1,
               colour = "gray83",
-              size = linewidth, lty = 2) +
+              size = linewidth, lty = 3) +
   geom_abline(intercept = 0, slope = (75000/1000000)/1,
               colour = "gray83", 
-              size = linewidth) +
+              size = linewidth, lty = 2) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (A$millions)",
+       y = "Incremental Cost in Millions, A$.",
        fill = "Strategy",
-       shape = "Strategy") +
+       shape = "Strategy",
+       tag = "B)") +
   scale_shape_manual(values = c(5, 9, 23, 23,
                                 1, 10, 21, 21,
                                 0, 7, 22, 22,
                                 4)) +
-  # scale_fill_manual(values = c(getPalette, 
-  #                              getPalette,
-  #                              getPalette,
-  #                              4)) +
   scale_fill_manual(values = c(5, 9, "gray54", "black",
                                1, 10, "gray54", "black",
                                0, 7, "gray54", "black",
                                4)) +
-  annotate("text", x = 50, y = titleposyaxis,  size = textsize, 
-           label = "Onshore strategy\n11-65 year olds from 100+/100,000ppy") +
-  scale_y_continuous(breaks = seq(-10, 250, 2)) +
-  scale_x_continuous(breaks = seq(-10, 1000, 5)) +
+  # annotate("text", x = 50, y = titleposyaxis,  size = textsize, 
+  #          label = "Onshore strategy\n11-65 year olds from 100+/100,000ppy") +
+  scale_y_continuous(breaks = yaxisbreaks,
+                     labels = yaxislab) +
+  scale_x_continuous(breaks = xaxisbreaks,
+                     labels = xaxislab) +
+  # theme_set(theme_cowplot(font_size = 8))+
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
-  theme(text = element_text(size = textsize2),
-        panel.border = element_blank(),
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax), 
+                  expand = F) +
+  theme(panel.border = element_blank(),
+        axis.text = element_text(colour="black"),
+        panel.grid.major = element_blank(),
         legend.position = "none",
-        axis.title.x = element_blank())
+        panel.grid.minor = element_blank())
 myplot6 <-
   ggplot(plot6, aes(x = incremental.qalys, y = incremental.cost/1000000,
                     fill = strategy,
@@ -323,93 +311,54 @@ myplot6 <-
   geom_hline(yintercept = 0, color = "black") +
   geom_abline(intercept = 0, slope = (45000/1000000)/1,
               colour = "gray83",
-              size = linewidth, lty = 2) +
+              size = linewidth, lty = 3) +
   geom_abline(intercept = 0, slope = (75000/1000000)/1,
               colour = "gray83", 
-              size = linewidth) +
+              size = linewidth, lty = 2) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental cost (A$millions)",
+       y = "Incremental Cost in Millions, A$.",
        fill = "Strategy",
-       shape = "Strategy") +
-  annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize,  
-           label = "Onshore strategy\n11-65 year olds from 200+/100,000ppy") +
+       shape = "Strategy",
+       tag =  "C)") +
+  # theme_set(theme_cowplot(font_size = 8))+
+  # annotate("text", x = titleposxaxis, y = titleposyaxis, size = textsize,  
+  #          label = "Onshore strategy\n11-65 year olds from 200+/100,000ppy") +
   scale_shape_manual(values = c(5, 9, 23, 23,
                                 1, 10, 21, 21,
                                 0, 7, 22, 22,
                                 4)) +
-  # scale_fill_manual(values = c(getPalette, 
-  #                              getPalette,
-  #                              getPalette,
-  #                              4)) +
   scale_fill_manual(values = c(5, 9, "gray54", "black",
                                1, 10, "gray54", "black",
                                0, 7, "gray54", "black",
                                4)) +
-  # geom_text(aes(label="More costly\nLess effective", x = -Inf, y = Inf),
-  #           hjust = -0.03, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="More costly\nMore effective", x = Inf, y = Inf),
-  #           hjust = 1, vjust = 1.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nLess effective", x = -Inf, y = -Inf),
-  #           hjust = -0.03, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  # geom_text(aes(label="Less costly\nMore effective", x = Inf, y = -Inf),
-  #           hjust = 1, vjust = -0.2, size = textsize, 
-  #           colour = "black") +
-  scale_y_continuous(breaks = seq(-10, 250, 2)) +
-  scale_x_continuous(breaks = seq(-10, 1000, 5)) +
+  scale_y_continuous(breaks = yaxisbreaks,
+                     labels = yaxislab) +
+  scale_x_continuous(breaks = xaxisbreaks,
+                     labels = xaxislab) +
   theme_bw() +
-  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax)) +
-  theme(text = element_text(size = textsize2),
-        panel.border = element_blank(),
-        legend.position = "none")
-
-
-# grid_arrange_shared_legend <- function(...) {
-#   plots <- list(...)
-#   g <- ggplotGrob(plots[[1]] + theme(legend.position = "bottom")+
-#                     guides(fill = guide_legend(ncol = 4),
-#                            shape = guide_legend(ncol = 4)))$grobs
-#   legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
-#   lheight <- sum(legend$height)
-#   grid.arrange(
-#     do.call(arrangeGrob, lapply(plots, function(x)
-#       x + theme(legend.position = "none"))),
-#     legend,
-#     ncol = 1,
-#     heights = unit.c(unit(1, "npc") - lheight, lheight))
-# }
-
-# # dev.off()
-# grid_arrange_shared_legend(myplot4, myplot1,
-#                            myplot5, myplot2,
-#                            myplot6, myplot3,
-#                            nrow = 3)
-# 
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Figures")
-# tiff('ceaplane1.tiff', units = "in", width = 8, height = 8,
-#      res = 200)
-# grid_arrange_shared_legend(myplot4, myplot1,
-#                            myplot5, myplot2,
-#                            myplot6, myplot3,
-#                            nrow = 3)
-
+  coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax), 
+                  expand = F) +
+  theme(panel.border = element_blank(),
+        axis.text = element_text(colour="black"),
+        panel.grid.major = element_blank(),
+        legend.position = "none",
+        panel.grid.minor = element_blank())
 
 g <- ggplotGrob(myplot5 + theme(legend.position = "bottom")+
                   guides(fill = guide_legend(ncol = 4, title.position="top", title.hjust = 0.5),
                          shape = guide_legend(ncol = 4, title.position="top", title.hjust = 0.5)))$grobs
 legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
 
+
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-tiff('Figures/ceaplane1.tiff', units = "in", width = 11, height = 11,
-     res = 200)
-plot_grid(myplot4, myplot1, myplot5, myplot2, myplot6, myplot3, legend,
-          nrow = 4, 
-          rel_widths = c(1, 1, 1, 1, 1, 1, 1),
-          labels = c("A)", "B)", "C)", "D)", "E)", "F)", ""))
-          #labels = c("a)", "b)", "c)", "d)", "e)", "f)", ""),
-          #label_x = -0.001, label_y = 0.05,
-          #hjust = 0, vjust = 0)
+tiff('Figures/ceaplane1.tiff', units = "in", width = 9, height = 5,
+     res = 300)
+plot_grid(myplot4, myplot5, myplot6, myplot1, myplot2,  myplot3,
+          nrow = 2, 
+          rel_widths = c(1, 1, 1, 1, 1, 1))
+          #labels = c("A)", "B)", "C)", "D)", "E)", "F)"))
+#labels = c("a)", "b)", "c)", "d)", "e)", "f)", ""),
+#label_x = -0.001, label_y = 0.05,
+#hjust = 0, vjust = 0)
 dev.off()
 

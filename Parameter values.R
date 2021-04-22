@@ -1,12 +1,33 @@
-# PARAMETER ADJUSTMENT (now all in one place, i.e. below)
+#'===========================================================================================================
+#' This script is where many of the model parameters are either defined or read in.
+#' 
+#' It is sourced by the "Model run" script
+#'
+#' Inputs:
+#' Many of the parameters are first defined by the "Parameter creation" scripts and 
+#' the output of that script is then simply read in below.
+#' 
+#' Output:
+#' A whole bunch of parameter value objects
+#' 
+#' This script also creates a lot of functions that are called on to define the parameters values during 
+#' the model run when they are dependent on other parameters (e.g. age, years since arrival etc).
+#' 
+#' Coding style
+#' https://google.github.io/styleguide/Rguide.xml
 
+#'LOAD LIBRARIES ===========================================================================================
 library(data.table)
 
-# read in parameter list and values, which is defined in the "Parameter creation" script
+
+#'DEFTINE SOME PARAMETERS HERE ==============================================================================
+
+# Set the working directory
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
-################################# Assign main parameter values ##################################
 
+#' Choose whether it is the onshore or offshore strategy here, and whether to use a payer perspective (1)
+#' or not (0)
 params <- readRDS("params onshore.rds")
 onshore <- 1
 payerperspect <- 0
@@ -15,12 +36,15 @@ payerperspect <- 0
 # onshore <- 0
 # payerperspect <- 0
 
-emigration <- 1
+#' Choose whether to include emigration here (1) or not (0)
+emigration <- 0
 
-# The tests and treatments I want to consider in the run
-testlist <- c("QFTGIT", "TST10", "TST15") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
-treatmentlist <- c("4R", "3HP", "6H", "9H") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
+#' The tests and treatments we want to consider in the run:
+testlist <- c("TST10") # baseline c("QFTGIT", "TST10", "TST15"), for sensitivity analysis c("TST15") 
+treatmentlist <- c("4R") # baseline c("4R", "3HP", "6H", "9H"), for sensitivity analysis c("3HP")
 
+
+#' Other parameters
 disc <- 0.03 # discount rate baseline 0.03, low 0.00, high 0.05
 startyear <- 2020 # Rstart.year
 start.year <- startyear
@@ -29,9 +53,9 @@ finalyear <- startyear + totalcycles
 final.year <- finalyear
 kill.off.above <- 119 # age above which all enter death state
 
-# MIGRANT INFLOWS
+#' Migrant inflow size
 migrant.inflow.size <- 434340 # baseline 434340, permanent 103740
-# the migrant inflow will stop after the following Markov cycles. Inflows possible until 2050
+#' the migrant inflow will stop after the following number of Markov cycles. Inflows possible until 2050 (i.e. 30)
 finalinflow <- 0
 
 if (payerperspect == 1) {
@@ -41,12 +65,12 @@ if (payerperspect == 1) {
   
 }
 
-########################## Manual Sensitivity analyses##########################################
+#'Manual Sensitivity analyses ==============================================================================
 
-# This function can be used to choose which parameters to change
-# for sensitivity analysis.
-# It replaces the "mid" value in the dataframe with a 
-# low or high value depending on what is specified.
+#' This function can be used to choose which parameters to change
+#' for sensitivity analysis.
+#' It replaces the "mid" value in the dataframe with a 
+#' low or high value depending on what is specified.
 sensfunc <- function(paramname, loworhigh) {
   paramname <- deparse(substitute(paramname))
   colname <- deparse(substitute(loworhigh))
@@ -55,55 +79,9 @@ sensfunc <- function(paramname, loworhigh) {
 }
 
 # sensfunc(attscreen, low)
-# params[p == "ctb", mid := 19212.89] # 22298.82
-# params[p == "attscreen", mid := 1]
+# =========================================================================================================
 
-# params[p == "cscreentst", mid := 30]
-
-# sensfunc(cmed4R, high)
-# sensfunc(num.appt4R, high)
-
-# sensfunc(treat.effic.4R, high)
-
-# sensfunc(begintrt, high)
-
-# sensfunc(csae4R, low)
-
-# # apply realistic LTBI utilities
-# sensfunc(ultbi4R, low)
-# sensfunc(ultbipart4R, low)
-# sensfunc(ultbi3HP, low)
-# sensfunc(ultbipart3HP, low)
-# sensfunc(ultbi6H, low)
-# sensfunc(ultbipart6H, low)
-# sensfunc(ultbi9H, low)
-# sensfunc(ultbipart9H, low)
-
-# # the perfect cascade - figure 8
-# params[p == "attscreen", mid := 0.9]
-# params[p == "treat.complete.4R", mid := 0.9]
-# params[p == "treat.complete.3HP", mid := 0.9]
-# params[p == "treat.complete.6H", mid := 0.9]
-# params[p == "att", mid := 0.9]
-# params[p == "begintrt", mid := 0.9]
-
-# [p == "prop.spec", mid := 1]
-
-# # the perfect everything - figure 8
-# params[p == "attscreen", mid := 1]
-# params[p == "treat.complete.4R", mid := 1]
-# params[p == "att", mid := 1]
-# params[p == "begintrt", mid := 1]
-# params[p == "sntst10", mid := 1]
-# params[p == "sptst10", mid := 1]
-# params[p == "sntst15", mid := 1]
-# params[p == "sptst15", mid := 1]
-# params[p == "treat.effic.4R", mid := 1]
-
-#################################################################################################
-
-# Target population
-
+#' Define the target population
 if (onshore == 1) {
   Get.POP <- function(DT, strategy) {
     
@@ -175,15 +153,15 @@ if (onshore == 1) {
 options(scipen = 999)
 params <- as.data.table(params)
 
-# Taking the values from the params table and
-# putting them into the environment
+#' Taking the values from the params table and
+#' putting them into the environment
 for(i in 1:nrow(params)) {
   assign(params[i, p], params[i, mid])
 }
 
-# Adjusting the partial LTBI treatment utilities so 
-# they are dependent on the value of
-# the sampled utility for full treatment
+#' Adjusting the partial LTBI treatment utilities so 
+#' they are dependent on the value of
+#' the sampled utility for full treatment
 part.utility.dec <- 0.5
 ultbipart3HP <- uhealthy - ((uhealthy - ultbi3HP) * part.utility.dec)
 ultbipart4R <- uhealthy - ((uhealthy - ultbi4R) * part.utility.dec)
@@ -192,11 +170,11 @@ ultbipart9H <- uhealthy - ((uhealthy - ultbi9H) * part.utility.dec)
 
 # uactivetb <- uactivetb - (uhealthy - ultbi4R)
 
-# Sourcing the medical costs
+#' Sourcing the medical costs
 source("Medical costs.R")
 
-# These specify how much of the appointment and medicine
-# costs are applied for the partial costs and treatment
+#' These specify how much of the appointment and medicine
+#' costs are applied for the partial costs and treatment
 part.appt <- 2
 part.med <- 3
 
@@ -206,14 +184,14 @@ c.gp.review <- c.gp.b.vr * (1 - proportion.nonvr) + c.gp.b.nonvr * proportion.no
 
 chance.of.needing.mcs <- 0.1
 
-# Cost of initial appointment after positive screen
-# These costs are different for on and off-shore screening
-# so this need to be taken into account, i.e. for onshore
-# screening this appointment will be a review with the GP
-# or it may be the first appointment with a specialist
-# and a liver function test will be ordered
-# Also, all ongoing appointments related to LTBI treatment will be
-# review appointments
+#' Cost of initial appointment after positive screen
+#' These costs are different for on and off-shore screening
+#' so this need to be taken into account, i.e. for onshore
+#' screening this appointment will be a review with the GP
+#' or it may be the first appointment with a specialist
+#' and a liver function test will be ordered
+#' Also, all ongoing appointments related to LTBI treatment will be
+#' review appointments
 
 if (onshore == 0) {
   cattend <- c.gp.first + (c.mcs * chance.of.needing.mcs) + c.cxr
@@ -228,28 +206,28 @@ if (onshore == 1) {
   c.spec.first <- c.spec.review
 } 
 
-# 3HP sort
+#' 3HP sort
 appt <- num.appt3HP * c.gp.review + c.liver
 spec.appt <- c.spec.first + (num.appt3HP - 1) * c.spec.review + c.liver
 ctreat3HP <- appt + cmed3HP
 cparttreat3HP <-  appt / part.appt + cmed3HP / part.med      
 ctreatspec3HP <-  spec.appt + cmed3HP 
 cparttreatspec3HP <-  spec.appt / part.appt + cmed3HP / part.med
-# 4r sort
+#' 4r sort
 appt <- num.appt4R * c.gp.review
 spec.appt <- c.spec.first + (num.appt4R - 1) * c.spec.review
 ctreat4R <- appt + cmed4R 
 cparttreat4R <-  appt / part.appt + cmed4R / part.med      
 ctreatspec4R <-  spec.appt + cmed4R 
 cparttreatspec4R <-  spec.appt / part.appt + cmed4R / part.med
-# 6H sort
+#' 6H sort
 appt <- num.appt6H * c.gp.review + c.liver
 spec.appt <- c.spec.first + (num.appt6H - 1) * c.spec.review + c.liver
 ctreat6H <- appt + cmed6H
 cparttreat6H <-  appt / part.appt + cmed6H / part.med      
 ctreatspec6H <-  spec.appt + cmed6H 
 cparttreatspec6H <-  spec.appt / part.appt + cmed6H / part.med
-# 9H sort
+#' 9H sort
 appt <- num.appt9H * c.gp.review + c.liver
 spec.appt <- c.spec.first + (num.appt9H - 1) * c.spec.review + c.liver
 ctreat9H <- appt + cmed9H
@@ -257,32 +235,25 @@ cparttreat9H <-  appt / part.appt + cmed9H / part.med
 ctreatspec9H <-  spec.appt + cmed9H 
 cparttreatspec9H <-  spec.appt / part.appt + cmed9H / part.med 
 
-
-# Testing the results for TST 5mm
-# sntst10 <- 0.8077
-# sptst10 <- 0.7005
-
-# Initial migrant cohort and LTBI prevalence and reactivation rates
+#' Initial migrant cohort and LTBI prevalence and reactivation rates
 aust <- readRDS("Data/Aust16.rds") # baseline
 aust <- as.data.table(aust)
 # aust <- subset(aust, ISO3 == "150-199")
-# Australian 2016 census data extracted from Table Builder by country of birth
-# (place of usual residence), single year age and single year of arrival. 
+#' Australian 2016 census data extracted from Table Builder by country of birth
+#' (place of usual residence), single year age and single year of arrival. 
 
-# # Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
+# #' Assuming a lower prevalence of LTBI and a higher reactivation rate (use UUI reactivation rate)
 # aust[, LTBP := NULL]
 # setnames(aust, "tfnum", "LTBP")
 
-# # Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
+# #' Assuming a higher prevalence of LTBI and a lower reactivation rate (use LUI reactivation rate)
 # aust[, LTBP := NULL]
 # setnames(aust, "sfnum", "LTBP")
 
-
-
-## Reactivation rates
+#' Reactivation rates
 RRates <- readRDS("Data/RRatescobincidnosex.rds")
-# TB reactivation rate data from: Dale K, Trauer J, et al. Estimating long-term tuberculosis
-# reactivation rates in Australian migrants. Clinical Infectious Diseases 2019 (in press)
+#' TB reactivation rate data from: Dale K, Trauer J, et al. Estimating long-term tuberculosis
+#' reactivation rates in Australian migrants. Clinical Infectious Diseases 2019 (in press)
 Get.RR <- function(xDT, year) {
 
   DT <- copy(xDT[, .(AGERP, SEXP, YARP, ISO3, AGEP)])
@@ -312,7 +283,7 @@ Get.RR <- function(xDT, year) {
 }
  
 
-# Reactivation rate adjustment for existing TB control
+#' Reactivation rate adjustment for existing TB control
 Get.RRADJ <- function(xDT, year) {
   
   DT <- copy(xDT[, .(year, AGERP, YARP, AGEP)])
@@ -328,14 +299,7 @@ Get.RRADJ <- function(xDT, year) {
 }
 
 
-
-# Change the makeup of the migrant inflow by TB incidence in country of birth
-# Altering the COBI for all those who have arrived from 
-# a country with 100-149 to 40-99, i.e. mostly Vietnam
-# aust <- as.data.table(aust)
-# aust[ISO3 == "100-149", ISO3 := "40-99"]
-
-# Look up the mortality rate from vic.mortality
+#' Look up the mortality rate from vic.mortality
 Get.MR <- function(xDT, year, rate.assumption = "Med") {
   
   DT <- copy(xDT[, .(AGEP, SEXP)])
@@ -350,7 +314,7 @@ Get.MR <- function(xDT, year, rate.assumption = "Med") {
 
 }
 
-# Look up TB mortality rate
+#' Look up TB mortality rate
 Get.TBMR <- function(xDT, year) {
   
   DT <- copy(xDT[, .(AGEP, SEXP)])
@@ -370,7 +334,7 @@ Get.TBMR <- function(xDT, year) {
 }
 
 
-# Look up SAE rate from sae.rate (age and treatment dependent)
+#' Look up SAE rate from sae.rate (age and treatment dependent)
 Get.SAE <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGEP)])
@@ -391,7 +355,7 @@ Get.SAE <- function(xDT, treat) {
 
 }
 
-# Look up SAE rate from sae.rate (age and treatment dependent)
+#' Look up SAE rate from sae.rate (age and treatment dependent)
 Get.SAEMR <- function(xDT, treat) {
   
   DT <- copy(xDT[, .(AGEP)])
@@ -412,14 +376,14 @@ Get.SAEMR <- function(xDT, treat) {
   
 }
 
-# Emigrate rate from emigrate.rate (zero)
-# Source emigrate data
+#' Emigrate rate from emigrate.rate (zero)
+#' Source emigrate data
 emigrate.rate <- readRDS("Data/emigrate.rate.rds") # BASELINE assumed rate incorporating both temp and permanent residents 
-# emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
+#' emigrate.rate <- readRDS("Data/emigrate.rate.perm.rds") # LOWER assumed rate among permanent residents
 
 emigrate.rate <- as.data.table(emigrate.rate)
 
-# Emigrate rate from emigrate.rate (age dependent)
+#' Emigrate rate from emigrate.rate (age dependent)
 Get.EMIGRATE <- function(xDT, year) {
 
   DT <- copy(xDT[, .(year, AGEP, YARP)])
@@ -447,7 +411,7 @@ Get.EMIGRATE <- function(xDT, year) {
 }
 
 
-# Look up treatment costs (it's treatment dependent)
+#' Look up treatment costs (it's treatment dependent)
 Get.TREATC <- function(S, treat) {
   
   as.numeric(treatmentcost.dt[treatment == treat & practitioner == "spec", ..S]) * prop.spec +
@@ -455,7 +419,7 @@ Get.TREATC <- function(S, treat) {
   
 }
 
-# Calculating the partial treatment efficacy
+#' Calculating the partial treatment efficacy
 Get.PART.EFFIC <- function(xDT, C, E, treat) {
   
   DT <- copy(xDT[, .(year, AGEP)])

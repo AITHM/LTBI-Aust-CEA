@@ -160,7 +160,7 @@ myplot1 <-
   theme_bw() +
   geom_text(aes(x = f2(0), y = 0),
                    hjust = 0.5, vjust = -1,
-                   size = 10, label = "0.46%") +
+                   size = 10, label = "0.67%") +
   geom_vline(xintercept = 0, color = "black") +
   geom_hline(yintercept = 0, color = "black") +
   labs(y = "Incremental QALYS",

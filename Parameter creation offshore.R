@@ -1,14 +1,25 @@
+#'===========================================================================================================
+#' This script is where many of the model parameters are defined.
+#' 
+#' It is sourced by the "Parameter values" script
+#' 
+#' Inputs:
+#' Not much, many of the parameters are simply manually entered below.
+#' 
+#' Output:
+#' An rds table defining the parameter values
+#' 
+#' Coding style
+#' https://google.github.io/styleguide/Rguide.xml
 
+#' LOAD LIBRARIES ===========================================================================================
 library(data.table)
 
-# Cost calculations
-
-# Sourcing the medical costs
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+#' Sourcing the medical costs
+setwd("H:/Katie/PhD/CEA/Model run")
 source("Medical costs.R")
 
-
-# Create table of parameters
+#' Create table of parameters
 p <- c("attscreen", "att", "cscreenqft", "cscreentst",
        "num.appt3HP", "num.appt4R", "num.appt6H", "num.appt9H",
        "begintrt", "prop.spec",
@@ -60,21 +71,11 @@ c.gp.review <- c.gp.b.vr * (1 - proportion.nonvr) + c.gp.b.nonvr * proportion.no
 
 chance.of.needing.mcs <- 0.1
 
-# Parameters that need to vary in sensitivity analysis 
-# - medicine costs - uniform parameter???????? or fixed??????
-# - percentage requiring specialist care
-# - number of follow-up appointments required
-# - number of extra assessments required
-# - 
-
 params[p == "prop.spec", mid := 0.135] 
 params[p == "prop.spec", low := 0.085] 
 params[p == "prop.spec", high := 0.185] 
 
-########DON'T SKEW THE COSTS IN FAVOUR OF LOW COSTS FOR MEDICINES??????
-
-
-# Cost of initial appointment after positive screen - FIXED
+#' Cost of initial appointment after positive screen - FIXED
 params[p == "cattend",
        mid := c.gp.first + (c.mcs * chance.of.needing.mcs) + c.cxr]
 params[p == "cattend",
@@ -85,13 +86,12 @@ params[p == "cattend",
 # params[p == "cattendspec",
 #        mid := c.spec.first + (c.mcs * chance.of.needing.mcs) + c.cxr]
 
-# These specify how much of the appointment and medicine
-# costs are applied for the partial costs and treatment
+#' These specify how much of the appointment and medicine
+#' costs are applied for the partial costs and treatment
 part.appt <- 2
 part.med <- 3
 
-
-# Cost of 1HP latent TB treatment
+#' Cost of 1HP latent TB treatment
 inh.packets <- 1
 rpt.packets <- 5
 
@@ -126,7 +126,7 @@ params[p == "cparttreatspec1HP",
        mid := spec.appt / part.appt + med.cost.1HP / part.med] 
 
 
-# Cost of 6wP, 6 weeks daily rifapentine latent TB treatment
+#' Cost of 6wP, 6 weeks daily rifapentine latent TB treatment
 rpt.packets <- 7
 
 params[p == "num.appt6wP", mid := 2]
@@ -160,7 +160,7 @@ params[p == "cparttreatspec6wP",
        mid := spec.appt / part.appt + med.cost.6wP / part.med]
 
 
-# Cost of 3HR latent TB treatment
+#' Cost of 3HR latent TB treatment
 inh.packets <- 1
 rif.packets <- 2
 
@@ -194,7 +194,7 @@ params[p == "ctreatspec3HR", mid := spec.appt + med.cost.3HR]
 params[p == "cparttreatspec3HR",
        mid := spec.appt / part.appt + med.cost.3HR / part.med]
 
-# Cost of 3HP latent TB treatment
+#' Cost of 3HP latent TB treatment
 inh.packets <- 1
 rpt.packets <- 3
 
@@ -229,7 +229,7 @@ params[p == "cparttreatspec3HP",
        mid := spec.appt / part.appt + med.cost.3HP / part.med] 
 
 
-# Cost of 4R latent TB treatment
+#' Cost of 4R latent TB treatment
 rif.packets <- 3
  
 params[p == "num.appt4R", mid := 3] 
@@ -263,7 +263,7 @@ params[p == "cparttreatspec4R",
        mid := spec.appt / part.appt + med.cost.4R / part.med] 
 
 
-# Cost of 6H latent TB treatment
+#' Cost of 6H latent TB treatment
 inh.packets <- 6
 
 params[p == "num.appt6H", mid := 4] 
@@ -296,7 +296,7 @@ params[p == "ctreatspec6H", mid := spec.appt + med.cost.6H]
 params[p == "cparttreatspec6H",
        mid := spec.appt / part.appt + med.cost.6H / part.med] 
 
-# Cost of 9H latent TB treatment
+#' Cost of 9H latent TB treatment
 inh.packets <- 9
 
 params[p == "num.appt9H", mid := 5] 
@@ -329,13 +329,12 @@ params[p == "ctreatspec9H", mid := spec.appt + med.cost.9H]
 params[p == "cparttreatspec9H",
        mid := spec.appt / part.appt + med.cost.9H / part.med] 
 
-
-# Cost of active TB
+#' Cost of active TB
 params[p == "ctb", mid := 19079.60] 
 params[p == "ctb", low := 13400.74] 
 params[p == "ctb", high := 30436.95] #18491.84
 
-# Cost of sae
+#' Cost of sae
 params[p == "csae3HP", mid := 39.4059] 
 params[p == "csae3HP", low := 0] 
 params[p == "csae3HP", high := 78.811] 
@@ -352,8 +351,7 @@ params[p == "csae9H", mid := 71.42]
 params[p == "csae9H", low := 0] 
 params[p == "csae9H", high := 142.8464] 
 
-
-# Cost of screening
+#' Cost of screening
 params[p == "cscreenqft", mid := 0] 
 params[p == "cscreenqft", low := 0] 
 params[p == "cscreenqft", high := 0] 
@@ -374,7 +372,7 @@ params[p == "begintrt", mid := 0.596]
 params[p == "begintrt", low := 0.262]
 params[p == "begintrt", high := 0.762]
 
-# Screening tool accuracy from pooled results from Auguste et al 2019 
+#' Screening tool accuracy from pooled results from Auguste et al 2019 
 params[p == "snqftgit", mid := 0.70] # 0.6104
 params[p == "snqftgit", low := 0.46] # 0.4925
 params[p == "snqftgit", high := 0.88] # 0.7195
@@ -398,9 +396,6 @@ params[p == "sntst10", high := 0.90] # 0.8444
 params[p == "sptst10", mid := 0.7763] # 0.82227
 params[p == "sptst10", low := 0.6271] # 0.81780
 params[p == "sptst10", high := 0.8587] # 0.82686
-
-
-
 
 params[p == "treat.effic.3HP", mid := 0.69] # IUATs
 params[p == "treat.effic.3HP", low := 0.28] # MMWR Guidelines for LTBI treatment 2020 2018 Zenner update
@@ -430,42 +425,6 @@ params[p == "treat.complete.9H", mid := 0.653] # Flynn
 params[p == "treat.complete.9H", low := 0.369] # Ronald
 params[p == "treat.complete.9H", high := 0.850] # Denholm
 
-# params[p == "treatr3HP", mid := 0.543]
-# params[p == "treatr3HP", low := 0.221]
-# params[p == "treatr3HP", high := 0.749]
-# 
-# params[p == "treatr3HP", low.treat.complete := 0.539]
-# params[p == "treatr3HP", high.treat.complete := 0.632]
-# params[p == "treatr3HP", low.treat.eff := 0.218]
-# params[p == "treatr3HP", high.treat.eff := 0.643]
-# 
-# params[p == "treatr4R", mid := 0.604]
-# params[p == "treatr4R", low := 0.301]
-# params[p == "treatr4R", high := 0.79]
-# 
-# params[p == "treatr4R", low.treat.complete := 0.458]
-# params[p == "treatr4R", high.treat.complete := 0.616]
-# params[p == "treatr4R", low.treat.eff := 0.3826]
-# params[p == "treatr4R", high.treat.eff := 0.774]
-# 
-# params[p == "treatr6H", mid := 0.557]
-# params[p == "treatr6H", low := 0.224]
-# params[p == "treatr6H", high := 0.642]
-# 
-# params[p == "treatr6H", low.treat.complete := 0.352]
-# params[p == "treatr6H", high.treat.complete := 0.599]
-# params[p == "treatr6H", low.treat.eff := 0.331]
-# params[p == "treatr6H", high.treat.eff := 0.596]
-# 
-# params[p == "treatr9H", mid := 0.561]
-# params[p == "treatr9H", low := 0.248]
-# params[p == "treatr9H", high := 0.812]
-# 
-# params[p == "treatr9H", low.treat.complete := 0.402]
-# params[p == "treatr9H", high.treat.complete := 0.618]
-# params[p == "treatr9H", low.treat.eff := 0.332]
-# params[p == "treatr9H", high.treat.eff := 0.718]
-
 params[p == "ttt3HP", mid := 0.250]
 params[p == "ttt3HP", low := 0.167]
 params[p == "ttt3HP", high := 0.375]
@@ -483,8 +442,8 @@ params[p == "ttt9H", low := 0.417]
 params[p == "ttt9H", high := 0.625]
 
 
-# Utility calculations
-# the healthy state utility remains constant
+#' Utility calculations
+#' the healthy state utility remains constant
 
 uhealthy.fix <- 0.8733333
 
@@ -516,7 +475,7 @@ utb.6mths <- 0.85/12
 utb.9mths <- 0.91/12
 utb.12mths <- 0.91/12
 
-# Active TB utility calculations
+#' Active TB utility calculations
 sae.decrement <- 0.25
 
 uactivetbfunct <- function(symptom.mths, sae.mths, chance.of.sae) {
@@ -558,7 +517,7 @@ params[p == "uactivetb", mid := uactivetbfunct(3, 1, 0.007)]
 params[p == "uactivetb", low := 0.7068]
 params[p == "uactivetb", high := uactivetbfunct(1, 0.5, 0.003)]
 
-# LTBI treatment utility calculations
+#' LTBI treatment utility calculations
 
 part.utility.dec <- 0.5
 
@@ -638,20 +597,11 @@ params[p == "ultbitreatsae", mid := 0.8685]
 params[p == "ultbitreatsae", low := 0.8525]
 params[p == "ultbitreatsae", high := 0.8720]
 
-# Write the table to clipboard so I can 
-# paste it into my Excel spreadsheet
+#' Write the table to clipboard so I can 
+#' paste it into my Excel spreadsheet
 write.table(params, file = "clipboard-16384", 
             sep = "\t", row.names = FALSE)
 
-# Save this table to file
+#' Save this table to file
 setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 saveRDS(params, "params offshore.rds")
-
-
-
-
-
-
-
-
-

@@ -45,8 +45,8 @@ library(tidyr)
 
 
 # Sourcing required functions from other scripts
-# setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
+setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
+#setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 source("CB-TLTBI Functions.R") # contains many functions necessary to run the model
 source("CB-TLTBI_DataPreparation.R") # for sorting the population data
 # source("Distribution parameter calculations.R") # for determining distribution parameter values
@@ -87,7 +87,7 @@ finalinflow <- 0
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##############################
 ################################## AND WHETHER THERE IS A LTBI TREATMENT DECREMENT OR NOT ##################
 # dt <- readRDS("params onshore.rds")
-# onshore <- 1 
+# onshore <- 1
 
 # LTBI treatment decrement?
 ultbidec <- 1 # Yes
@@ -205,8 +205,11 @@ dtcopy <- copy(dt)
 dtcopy <- as.data.table(dtcopy)
 dtcopy <- subset(dtcopy, abbreviation != "cscreenqft")
 dtcopy <- subset(dtcopy, abbreviation != "cscreentst")
+dtcopy <- subset(dtcopy, abbreviation != "num.appt3HP")
+dtcopy <- subset(dtcopy, abbreviation != "num.appt6H")
+dtcopy <- subset(dtcopy, abbreviation != "num.appt9H")
 a <- which( dtcopy$abbreviation == "attscreen" )
-b <- which( dtcopy$abbreviation == "num.appt9H" )
+b <- which( dtcopy$abbreviation == "num.appt4R" )
 plot.dt <- dtcopy[c(a:b)]
 nrow(plot.dt)
 # dev.off()
@@ -313,13 +316,24 @@ for(i in 1:nrow(plot.dt)) {
 }
 
 #plotting more transitions - a
-a <- which( dt$abbreviation == "treat.complete.3HP" )
-b <- which( dt$abbreviation == "ttt9H" )
-plot.dt <- dt[a:b,]
+dtcopy <- copy(dt)
+dtcopy <- subset(dtcopy, abbreviation != "treat.complete.3HP")
+dtcopy <- subset(dtcopy, abbreviation != "treat.complete.6H")
+dtcopy <- subset(dtcopy, abbreviation != "treat.complete.9H")
+dtcopy <- subset(dtcopy, abbreviation != "treat.effic.3HP")
+dtcopy <- subset(dtcopy, abbreviation != "treat.effic.6H")
+dtcopy <- subset(dtcopy, abbreviation != "treat.effic.9H")
+dtcopy <- subset(dtcopy, abbreviation != "ttt3HP")
+dtcopy <- subset(dtcopy, abbreviation != "ttt6H")
+dtcopy <- subset(dtcopy, abbreviation != "ttt9H")
+
+a <- which( dtcopy$abbreviation == "treat.complete.4R" )
+b <- which( dtcopy$abbreviation == "ttt4R" )
+plot.dt <- dtcopy[a:b,]
 nrow(plot.dt)
 dev.off()
 # set up the plotting space
-par(mfrow = c(3, 4))
+par(mfrow = c(2, 3))
 #layout(matrix(1:nrow(plot.dt), ncol = 11))
 for(i in 1:nrow(plot.dt)) {
   # store data in column.i as x
@@ -366,13 +380,17 @@ for(i in 1:nrow(plot.dt)) {
 }
 
 #plotting costs
-a <- which( dt$abbreviation == "csae3HP" )
-b <- which( dt$abbreviation == "cmed9H" )
-plot.dt <- dt[a:b,]
+dtcopy <- copy(dt)
+dtcopy <- subset(dtcopy, abbreviation != "csae6H")
+dtcopy <- subset(dtcopy, abbreviation != "csae9H")
+dtcopy <- subset(dtcopy, abbreviation != "cmed3HP")
+a <- which( dtcopy$abbreviation == "csae4R" )
+b <- which( dtcopy$abbreviation == "cmed4R" )
+plot.dt <- dtcopy[a:b,]
 nrow(plot.dt)
 dev.off()
 # set up the plotting space
-par(mfrow = c(3, 3))
+par(mfrow = c(2, 3))
 #layout(matrix(1:nrow(plot.dt), ncol = 11))
 for(i in 1:nrow(plot.dt)) {
   # store data in column.i as x
@@ -419,13 +437,18 @@ for(i in 1:nrow(plot.dt)) {
 }
 
 #plotting utilities
-a <- which( dt$abbreviation == "uactivetb" )
-b <- which( dt$abbreviation == "ultbi9H" )
-plot.dt <- dt[a:b,]
+dtcopy <- copy(dt)
+dtcopy <- subset(dtcopy, abbreviation != "ultbi3HP")
+dtcopy <- subset(dtcopy, abbreviation != "ultbi6H")
+dtcopy <- subset(dtcopy, abbreviation != "ultbi9H")
+a <- which( dtcopy$abbreviation == "uactivetb" )
+b <- which( dtcopy$abbreviation == "ultbitreatsae" )
+
+plot.dt <- dtcopy[a:b,]
 nrow(plot.dt)
 dev.off()
 # set up the plotting space
-par(mfrow = c(2, 4))
+par(mfrow = c(2, 3))
 for(i in 1:nrow(plot.dt)) {
   # store data in column.i as x
   abbreviation <- plot.dt[i, abbreviation]
@@ -469,6 +492,8 @@ for(i in 1:nrow(plot.dt)) {
          main = abbreviation)
   }
 }
+
+
 # Restore margins...could also do it with dev.off()?
 par(mfrow = c(1,1))
 
