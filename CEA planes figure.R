@@ -25,9 +25,6 @@ library(extrafont)
 loadfonts(device="win")
 library(showtext)
 
-#' Need to obtain chance of having sae with different treatment regimens.
-#' I have researched this and it is in an excel file in "Model parameters"
-
 #' Set working directory
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
 setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/Am J Epi/Technical review/R/")

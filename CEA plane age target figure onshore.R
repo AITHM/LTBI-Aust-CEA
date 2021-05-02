@@ -1,16 +1,16 @@
 
 #'===========================================================================================================
-#' This script creates a cost-effectivenes plane, showing different intervention strategies.
-#' showing incremental cost and effectiveness (in QALYs) of different intervention strategies.
-#' To create the rds files that this script can import you need to run to gene the "CEA plane age target" first
+#' This script creates a cost-effectivenes plane showing incremental cost and 
+#' effectiveness (in QALYs) of different intervention onshore strategies.
+#' To create the rds files that this script can import you need to run the "CEA plane age target" first
 #' to generate the results.
 #' 
 #' Inputs:
-#' Need to run the "CEA plane age target" first, which can be used to create four rds files (onshore, and offshore
-#' with and wihout emigration) that this code then uses.
+#' Need to run the "CEA plane age target" first, which can be used to create four 
+#' rds files (onshore with and wihout emigration) that this code then uses.
 #' 
 #' Output:
-#' tiff, eps and pdf files
+#' eps and pdf files
 #' 
 #' Coding style
 #' https://google.github.io/styleguide/Rguide.xml
