@@ -648,15 +648,6 @@ offshore.b1 <-
   annotate("segment", x = -40, y = ylimmin, 
            xend = 53.333, yend = ylimmax.axis,
            colour = "gray53",  size = 1, lty = 2) +
-  # geom_abline(intercept = 0, slope = (45000/1000000)/1,
-  #             colour = "gray53",
-  #             size = 1, lty = 3) +
-  # # geom_abline(intercept = 0, slope = (100000/1000000)/1,
-  # #             colour = "gray55",
-  # #             size = 1) +
-  # geom_abline(intercept = 0, slope = (75000/1000000)/1,
-  #             colour = "gray53", 
-  #             size = 1, lty = 2) +
   labs(x = "Incremental QALYs", 
        y = "Incremental Cost in Millions, A$") +
   # tag = "C)") +
@@ -688,12 +679,6 @@ dominated <- plotdata$dominated
 maxwtp <- 300000
 wtp <- c(0:maxwtp)
 
-
-# wtp <- 473
-# sum(dominant == 1, na.rm = TRUE)
-# sum(better.and.costly.list <= wtp, na.rm = TRUE) 
-# sum(cheaper.and.worse.list >= wtp, na.rm = TRUE)
-# length(cheaper.and.worse.list)
 
 propcosteffectivefunc <- function(wtp) {
   ((sum(dominant == 1, na.rm = TRUE) + 
@@ -749,7 +734,6 @@ plot_grid(offshore.a1, offshore.a2, offshore.b1, offshore.b2,
           nrow = 2, 
           rel_widths = c(1, 1, 1, 1),
           labels = c("A)", "B)", "C)", "D)"))
-# labels = c("a)", "b)", "c)", "d)"))
 dev.off()
 
 
@@ -783,7 +767,6 @@ showtext_begin() ## call this function after opening a device
 plot_grid(offshore.a1, offshore.a2, offshore.b1, offshore.b2,
           nrow = 2, 
           rel_widths = c(1, 1, 1, 1))
-# labels = c("A)", "B)", "C)", "D)"))
 
 dev.off()
 

@@ -1,16 +1,16 @@
 
 #'===========================================================================================================
-#' This script creates a cost-effectivenes plane showing incremental cost and 
-#' effectiveness (in QALYs) of different intervention onshore strategies.
-#' To create the rds files that this script can import you need to run the "CEA plane age target" first
+#' This script creates a cost-effectivenes plane, showing different intervention strategies.
+#' showing incremental cost and effectiveness (in QALYs) of different intervention strategies.
+#' To create the rds files that this script can import you need to run to gene the "CEA plane age target" first
 #' to generate the results.
 #' 
 #' Inputs:
-#' Need to run the "CEA plane age target" first, which can be used to create four 
-#' rds files (onshore with and wihout emigration) that this code then uses.
+#' Need to run the "CEA plane age target" first, which can be used to create four rds files (onshore, and offshore
+#' with and wihout emigration) that this code then uses.
 #' 
 #' Output:
-#' eps and pdf files
+#' tiff
 #' 
 #' Coding style
 #' https://google.github.io/styleguide/Rguide.xml
@@ -44,12 +44,14 @@ xaxisbreaks  <- c(-5, 0, 5, 10,
                   15, 20, 25,
                   30, 35,  40, 45)
 
+
 # Reading in the data 
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/Am J Epi/Technical review/R")
 # data <- readRDS("Data/agetarget.rds")
 data <- readRDS("Data/agetargetonshore.rds")
 data <- as.data.table(data)
+
 
 # Write the table to clipboard so I can paste it into Excel
 # to create the data table associated with the figure.
@@ -72,8 +74,7 @@ percent <- function(x, digits = 1, format = "f", ...) {
 data$tb.prev.percent <- percent(data$tb.prev.percent)
 
 
-# This section is required so that the dashes between the numbers are the 
-# length required by the journal.
+
 data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
                                                  "40-59", "60-69", 
                                                  "11-35", "11-65", "36-65"))
@@ -88,9 +89,19 @@ data[strategy == "11-65", strategy := paste0("11", "\U2013", "65")]
 data[strategy == "36-65", strategy := paste0("36", "\U2013", "65")]
 
 
-# Defining useful parameters
-textsize <- 24
-geomtextsize <- 7
+
+
+# Get the colour palatte
+# I need 4 fill colours
+getPalette <- brewer.pal(5, "Spectral")
+getPalette 
+getPalette <- c(getPalette, "gray50")
+getPalette
+
+textsize <- 20
+geomtextsize <- 6.9
+
+
 
 ylimmax <- 5300000/1000
 ylimmin <- -500000/1000
@@ -101,11 +112,12 @@ linewidth <- 1
 ylimmax.axis <- 5000
 xlimmax.axis <- 45
 
-dist <- 10 # distance between axis numbers and text
+dist <- 10
+
 
 
 options(scipen = 5)
-
+#dev.off()
 myplot1 <-  
   ggplot(data, aes(x = incremental.qalys, y = incremental.cost/1000,
                    fill = strategy,
@@ -141,10 +153,10 @@ myplot1 <-
                                 10, 13,
                                 8, 11, 15,
                                 17, 19)) +
-  geom_text_repel (aes(label = tb.prev.percent),
-                   hjust = 1.1, 
-                   segment.color = "transparent",
-                   size = geomtextsize) +
+  # geom_text_repel (aes(label = tb.prev.percent),
+  #                  hjust = 1.1, family = "Arial",
+  #                  segment.color = "transparent",
+  #                  size = geomtextsize) +
   scale_y_continuous(breaks = yaxisbreaks,
                      labels = yaxislab) +
   scale_x_continuous(breaks = xaxisbreaks,
@@ -157,13 +169,17 @@ myplot1 <-
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.position = "none",
-        axis.text = element_text(colour="black"),
-        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0)),
+        axis.text = element_text(colour = "black",
+                                 size = textsize),
+        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0),
+                                    size = textsize),
+        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0),
+                                    size = textsize),
         panel.border = element_blank())
 
 
 # Reading in the data without emigration
+# data <- readRDS("Data/agetargetnoemig.rds")
 data <- readRDS("Data/agetargetonshorenoemig.rds")
 data <- as.data.table(data)
 
@@ -188,8 +204,6 @@ data$strategy <- factor(data$strategy,levels = c("11-19", "20-29", "30-39",
                                                  "40-59", "60-69", 
                                                  "11-35", "11-65", "36-65"))
 
-# This section is required so that the dashes between the numbers are the 
-# length required by the journal.
 data[strategy == "11-19", strategy := paste0("11", "\U2013", "19")]
 data[strategy == "20-29", strategy := paste0("20", "\U2013", "29")]
 data[strategy == "30-39", strategy := paste0("30", "\U2013", "39")]
@@ -198,6 +212,16 @@ data[strategy == "60-69", strategy := paste0("60", "\U2013", "69")]
 data[strategy == "11-35", strategy := paste0("11", "\U2013", "35")]
 data[strategy == "11-65", strategy := paste0("11", "\U2013", "65")]
 data[strategy == "36-65", strategy := paste0("36", "\U2013", "65")]
+
+
+# Get the colour palatte
+# I need 4 fill colours
+getPalette <- brewer.pal(5, "Spectral")
+getPalette 
+getPalette <- c(getPalette, "gray50")
+getPalette
+
+# options(scipen = 5)
 
 # Resave the plot without the legend
 myplot2 <-  
@@ -236,11 +260,11 @@ myplot2 <-
                                 8, 11, 15,
                                 17, 19)) +
   scale_fill_manual(values = c(getPalette, getPalette)) +
-  geom_text_repel (aes(label = tb.prev.percent),
-                   hjust = 1.1, 
-                   segment.color = "transparent",
-                   size = geomtextsize) +
-  geom_rect(aes(xmin = 1, xmax = 18, ymin = 2200, ymax = 4980),
+  # geom_text_repel (aes(label = tb.prev.percent),
+  #                  hjust = 1.1, family = "Arial",
+  #                  segment.color = "transparent",
+  #                  size = geomtextsize) +
+  geom_rect(aes(xmin = 1, xmax = 18, ymin = 2170, ymax = 4980),
             size = 0.5, fill = "#00000000", color = "black") +
   scale_y_continuous(breaks = yaxisbreaks,
                      labels = yaxislab) +
@@ -252,15 +276,19 @@ myplot2 <-
                   expand = F) +
   annotate(geom = "text", x = 9.5, y = 4820, 
            label = expression(paste("", underline('Age Group, years'))),
-           color = "black", size = 7) +
+           color = "black", size = geomtextsize) +
   theme(text = element_text(family = "Arial", size = textsize),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         legend.title = element_blank(),
-        axis.text = element_text(colour = "black"),
-        legend.position = c(0.23, 0.68),
-        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0)),
+        legend.text = element_text(family = "Arial", size = textsize),
+        axis.text = element_text(colour = "black",
+                                 size = textsize),
+        legend.position = c(0.23, 0.679),
+        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0),
+                                    size = textsize),
+        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0),
+                                    size = textsize),
         panel.border = element_blank())
 
 plotty <- plot_grid(myplot1, myplot2, ncol = 2, 
@@ -284,5 +312,3 @@ pdf("C:/Users/Robin/Documents/Katie/PhD/CEA/Am J Epi/Technical review/R/Figures/
 showtext_begin() ## call this function after opening a device
 plotty
 dev.off()
-
-

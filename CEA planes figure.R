@@ -25,6 +25,9 @@ library(extrafont)
 loadfonts(device="win")
 library(showtext)
 
+#' Need to obtain chance of having sae with different treatment regimens.
+#' I have researched this and it is in an excel file in "Model parameters"
+
 #' Set working directory
 # setwd("H:/Katie/PhD/CEA/MH---CB-LTBI/Data")
 setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/Am J Epi/Technical review/R/")
@@ -72,14 +75,14 @@ plot6 <- sortformatfunc(on11.65.200)
 ylimmin <- -0
 ylimmax <- 8.5
 xlimmin <- 0
-xlimmax <- 76
+xlimmax <- 78
 linewidth <- 0.5
 
 titleposxaxis <- 45 
 titleposyaxis <- 7 
 pointsize <- 5
 textsize <- 25
-textsize2 <- 25
+
 
 ylimmax.axis <- 8
 xlimmax.axis <- 75
@@ -152,9 +155,12 @@ myplot1 <-
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0)),
-        axis.text = element_text(colour = "black"),
+        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0),
+                                    size = textsize),
+        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0),
+                                    size = textsize),
+        axis.text = element_text(colour = "black", family = "Arial",
+                                 size = textsize),
         legend.position = "none")
 
 myplot2 <-
@@ -185,13 +191,7 @@ myplot2 <-
            xend = xlimmax.axis, yend = 5.6250,
            colour = "gray53",  size = 1, lty = 2) +
   labs(x = "Incremental QALYs", 
-       y = "Incremental Cost in Thousands, A$",
-       fill = expression(paste("", underline('Age Group, years'))),
-       shape = expression(paste("", underline('Age Group, years'))))  +
-  labs(x = "Incremental QALYs", 
-       y = "Incremental Cost in Millions, A$",
-       fill = "Strategy",
-       shape = "Strategy") +
+       y = "Incremental Cost in Millions, A$") +
   scale_shape_manual(values = c(5, 9, 23, 23,
                                 1, 10, 21, 21,
                                 0, 7, 22, 22,
@@ -204,17 +204,26 @@ myplot2 <-
                      labels = yaxislab) +
   scale_x_continuous(breaks = xaxisbreaks,
                      labels = xaxislab) +
+  geom_rect(aes(xmin = 3, xmax = 35, ymin = 1.5, ymax = 8),
+            size = 0.5, fill = "#00000000", color = "black") +
   theme_bw() +
   coord_cartesian(xlim = c(xlimmin, xlimmax), ylim = c(ylimmin, ylimmax), 
                   expand = F) +
   theme(text = element_text(size = textsize, family = "Arial"),
         panel.border = element_blank(),
-        axis.text = element_text(colour="black"),
+        axis.text = element_text(colour = "black", family = "Arial",
+                                 size = textsize),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0)),
-        legend.position = "none")
+        legend.title = element_blank(),
+        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0),
+                                    size = textsize),
+        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0),
+                                    size = textsize),
+        legend.position = c(0.1, 0.53)) +
+  annotate(geom = "text", x = 19, y = 7.74, 
+           label = expression(paste("", underline('Strategy'))),
+           color = "black", size = 8) 
 
 myplot3 <-
   ggplot(plot3, aes(x = incremental.qalys, y = incremental.cost/1000000,
@@ -270,11 +279,14 @@ myplot3 <-
                   expand = F) +
   theme(text = element_text(size = textsize, family = "Arial"),
         panel.border = element_blank(),
-        axis.text = element_text(colour="black"),
+        axis.text = element_text(colour = "black", family = "Arial",
+                                 size = textsize),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0),
+                                    size = textsize),
+        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0),
+                                    size = textsize),
         legend.position = "none")
 
 myplot4 <-
@@ -330,12 +342,15 @@ myplot4 <-
                   expand = F) +
   theme(text = element_text(size = textsize, family = "Arial"),
         panel.border = element_blank(),
-        #text = element_text(size = textsize2),
-        axis.text = element_text(colour="black"),
+        #text = element_text(size = textsize),
+        axis.text = element_text(colour = "black", family = "Arial",
+                                 size = textsize),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0),
+                                    size = textsize),
+        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0),
+                                    size = textsize),
         legend.position = "none")
 
 myplot5 <-
@@ -390,11 +405,14 @@ myplot5 <-
                   expand = F) +
   theme(text = element_text(size = textsize, family = "Arial"),
         panel.border = element_blank(),
-        axis.text = element_text(colour="black"),
+        axis.text = element_text(colour = "black", family = "Arial",
+                                 size = textsize),
         panel.grid.major = element_blank(),
         legend.position = "none",
-        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0),
+                                    size = textsize),
+        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0),
+                                    size = textsize),
         panel.grid.minor = element_blank())
 myplot6 <-
   ggplot(plot6, aes(x = incremental.qalys, y = incremental.cost/1000000,
@@ -448,11 +466,14 @@ myplot6 <-
                   expand = F) +
   theme(text = element_text(size = textsize, family = "Arial"),
         panel.border = element_blank(),
-        axis.text = element_text(colour="black"),
+        axis.text = element_text(colour = "black", family = "Arial",
+                                 size = textsize),
         panel.grid.major = element_blank(),
         legend.position = "none",
-        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0)),
-        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = dist, b = 0, l = 0),
+                                    size = textsize),
+        axis.title.x = element_text(margin = margin(t = dist, r = 0, b = 0, l = 0),
+                                    size = textsize),
         panel.grid.minor = element_blank())
 
 g <- ggplotGrob(myplot5 + theme(legend.position = "bottom")+
