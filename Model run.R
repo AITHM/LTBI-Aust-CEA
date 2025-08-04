@@ -1,23 +1,5 @@
-#' MODEL RUN SCRIPT
-#' This is the script that is called on to set up and run the model 
-#' The probabilisitic sensitivity analysis is the only instance when this script is not
-#' used for the model run.
-#' The strategies and all parameters are defined in the "Parameter values" script
 
-#' Coding style
-#' https://google.github.io/styleguide/Rguide.xml
 
-#'LOAD LIBRARIES ===========================================================================================
-library(lazyeval) # required
-library(data.table) # required
-
-#'LOAD LIBRARIES ===========================================================================================
-
-#' Set working directory
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
-
-source("CB-TLTBI Functions.R")
 
 #' For some analyses the paramenters are already defined, and so the
 #' "Parameter values" script doesn't need to be called here.
