@@ -42,5 +42,5 @@ source("CB-TLTBI Functions.R")
 source("Parameter values.R")
 
 source("CB-TLTBI_DataPreparation.R")
-
-
+source("Model run.R")
+source("CEA analysis.R")
