@@ -16,41 +16,15 @@
 #' https://google.github.io/styleguide/Rguide.xml
 #'===========================================================================================================
 
-package_list <- c("data.table", "tidyverse","lazyeval", "ggplot2", "rstudioapi")
 
-for (pack in package_list) {
-  if (!requireNamespace(pack, quietly = TRUE)) {
-    install.packages(pack)
-  }
-  library(pack, character.only = TRUE)
-}
-
-library(rstudioapi)
-this_file_path <- dirname(getActiveDocumentContext()$path)
-setwd(this_file_path)
-
-
-
-# Dynamically set working directory to the folder containing the script
-this_file_path <- dirname(getActiveDocumentContext()$path)
-setwd(this_file_path)
 
 # Define a relative path from the script directory to the output folder
-output_path <- file.path(this_file_path, "Data", "Output")
+output_path <- file.path(this_file_path, "Data")
 
 # Read in the .rds files from that folder
 filenames <- list.files(output_path, pattern = "\\.rds$", full.names = TRUE)
 files <- lapply(filenames, readRDS)
 
-
-library(rstudioapi)
-
-# Set working directory to the script's location
-this_file_path <- dirname(getActiveDocumentContext()$path)
-setwd(this_file_path)
-
-# Path to output folder (relative to script)
-output_path <- file.path(this_file_path, "Data", "Output")
 
 # Create a list of output file names
 namelist <- list.files(output_path, pattern = "\\.rds$")
