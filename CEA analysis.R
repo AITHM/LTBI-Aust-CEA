@@ -19,7 +19,7 @@
 
 
 # Define a relative path from the script directory to the output folder
-output_path <- file.path(this_file_path, "Data")
+output_path <- file.path(this_file_path, "Data", "Output")
 
 # Read in the .rds files from that folder
 filenames <- list.files(output_path, pattern = "\\.rds$", full.names = TRUE)
@@ -342,3 +342,4 @@ table1 <- rbindlist(lapply(files, tabfunc))
 
 # Write the table to clipboard so I can paste it into Excel
 write.table(table1, "clipboard", sep = "\t", row.names = FALSE)
+
