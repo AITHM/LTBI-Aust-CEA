@@ -39,4 +39,8 @@ setwd(this_file_path)
 
 
 source("CB-TLTBI Functions.R")
+source("Parameter values.R")
+
+source("CB-TLTBI_DataPreparation.R")
+
 
