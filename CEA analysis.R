@@ -16,8 +16,16 @@
 #' https://google.github.io/styleguide/Rguide.xml
 #'===========================================================================================================
 
-library(tidyverse)
-library(data.table)
+package_list <- c("data.table", "tidyverse","lazyeval", "ggplot2")
+
+for (pack in package_list) {
+  if (!requireNamespace(pack, quietly = TRUE)) {
+    install.packages(pack)
+  }
+  library(pack, character.only = TRUE)
+}
+
+
 
 # Read in the output files
 filenames <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern = "*.rds", full.names = TRUE)
