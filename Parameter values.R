@@ -16,14 +16,7 @@
 #' Coding style
 #' https://google.github.io/styleguide/Rguide.xml
 
-#'LOAD LIBRARIES ===========================================================================================
-library(data.table)
 
-
-#'DEFTINE SOME PARAMETERS HERE ==============================================================================
-
-# Set the working directory
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
 # setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 
 #' Choose whether it is the onshore or offshore strategy here, and whether to use a payer perspective (1)
