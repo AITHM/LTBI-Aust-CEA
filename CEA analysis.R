@@ -16,7 +16,7 @@
 #' https://google.github.io/styleguide/Rguide.xml
 #'===========================================================================================================
 
-package_list <- c("data.table", "tidyverse","lazyeval", "ggplot2")
+package_list <- c("data.table", "tidyverse","lazyeval", "ggplot2", "rstudioapi")
 
 for (pack in package_list) {
   if (!requireNamespace(pack, quietly = TRUE)) {
@@ -25,20 +25,44 @@ for (pack in package_list) {
   library(pack, character.only = TRUE)
 }
 
+library(rstudioapi)
+this_file_path <- dirname(getActiveDocumentContext()$path)
+setwd(this_file_path)
 
 
-# Read in the output files
-filenames <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern = "*.rds", full.names = TRUE)
+
+# Dynamically set working directory to the folder containing the script
+this_file_path <- dirname(getActiveDocumentContext()$path)
+setwd(this_file_path)
+
+# Define a relative path from the script directory to the output folder
+output_path <- file.path(this_file_path, "Data", "Output")
+
+# Read in the .rds files from that folder
+filenames <- list.files(output_path, pattern = "\\.rds$", full.names = TRUE)
 files <- lapply(filenames, readRDS)
 
-# Create a list of the names of the output files
-namelist <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", pattern = "*.rds")
-namelist <- gsub("\\b.rds\\b", "", namelist)
-namelist <- gsub("\\bS2\\b", "", namelist)
-namelist <- substring(namelist, 2)
 
-# Name the files in the list
+library(rstudioapi)
+
+# Set working directory to the script's location
+this_file_path <- dirname(getActiveDocumentContext()$path)
+setwd(this_file_path)
+
+# Path to output folder (relative to script)
+output_path <- file.path(this_file_path, "Data", "Output")
+
+# Create a list of output file names
+namelist <- list.files(output_path, pattern = "\\.rds$")
+
+# Clean up the names
+namelist <- gsub("\\.rds$", "", namelist)  # Remove file extension
+namelist <- gsub("S2", "", namelist)       # Remove S2
+namelist <- substring(namelist, 2)         # Remove first character
+
+# Assign cleaned names to the list of files
 files <- setNames(files, namelist)
+
 
 # Create a column with the YEAR and strategy name within each data table
 counter <- 0
