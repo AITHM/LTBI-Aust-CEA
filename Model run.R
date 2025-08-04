@@ -1,16 +1,4 @@
 
-
-
-#' For some analyses the paramenters are already defined, and so the
-#' "Parameter values" script doesn't need to be called here.
-if (exists("parameters.already.set") == TRUE) {
-  
-} else {
-  source("Parameter values.R")
-}
-
-source("CB-TLTBI_DataPreparation.R")
-
 #' Read in some extra parameter values not defined in the "Parameter values" script
 vic.mortality <- readRDS("Data/aust.mortality.rds") # this is also required
 vic.mortality <- as.data.table(vic.mortality)
