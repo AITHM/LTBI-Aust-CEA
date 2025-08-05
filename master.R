@@ -46,7 +46,7 @@ str(inputs)
 tb_incidence <- read.csv(inputs$file_paths$file_path[inputs$file_paths$data_type == "tb_incidence"])
 age_dist <- read.csv(inputs$file_paths$file_path[inputs$file_paths$data_type == "age_distribution"])
 #input parameter values
-# this reads in an rds file and determines the seetting and perspectives
+# this reads in an rds file and determines the seetting and persp ectives
 source("Parameter values.R")
 # prepare the data
 
