@@ -34,7 +34,17 @@ setwd(this_file_path)
 # input some functions
 
 source("CB-TLTBI Functions.R")
+# Load input reader
 
+# Load inputs
+inputs <- read_inputs("CEA_inputs_example.xlsx")
+
+# View contents (for debugging)
+str(inputs)
+
+# Load scenario-specific files (example)
+tb_incidence <- read.csv(inputs$file_paths$file_path[inputs$file_paths$data_type == "tb_incidence"])
+age_dist <- read.csv(inputs$file_paths$file_path[inputs$file_paths$data_type == "age_distribution"])
 #input parameter values
 # this reads in an rds file and determines the seetting and perspectives
 source("Parameter values.R")
