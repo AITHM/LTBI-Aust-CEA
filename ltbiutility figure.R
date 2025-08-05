@@ -14,32 +14,13 @@
 #' https://google.github.io/styleguide/Rguide.xml
 
 #' LOAD LIBRARIES ===========================================================================================
-library(ggplot2)
-library(plyr)
-library(dplyr)
-library(tidyverse)
-library(tidyr)
-library(xlsx)
-library(data.table)
-library(ggplot2)
-library(RColorBrewer)
-library(grid)
-library(scales)
-library(ggrepel)
-library(scales)
-library(egg)
-library(cowplot)
-library(grid)
-library(gridExtra)
+
 
 #' This prevents the model run script (Model run.R) from sourcing
 #' the "parameter values" script for the parameter values, because these
 #' are, instead, defined below.
 parameters.already.set <- 1
 
-#' Read in parameter list and values, which is defined in the "Parameter creation" script
-setwd("H:/Katie/PhD/CEA/MH---CB-LTBI")
-# setwd("C:/Users/Robin/Documents/Katie/PhD/CEA/LTBI-Aust-CEA")
 ################################## CHOOSE WHETHER ONSHORE OR OFFSHORE SCENARIO ##################
 # params <- readRDS("params onshore.rds")
 params <- readRDS("params offshore.rds")
