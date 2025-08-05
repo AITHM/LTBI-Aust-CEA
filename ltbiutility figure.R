@@ -70,13 +70,14 @@ for(ltbi.x in 1:nrow(ultbi.dt)) {
   library(data.table)
   
   #' Read in the output files
-  filenames <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", 
-                          pattern = "*.rds", full.names = TRUE)
+  output_path <- file.path(this_file_path, "Data", "Output")
+  filenames <- list.files(output_path, pattern = "\\.rds$", full.names = TRUE)
+  
   files <- lapply(filenames, readRDS)
   
   #' Create a list of the names of the output files
-  namelist <- list.files("H:/Katie/PhD/CEA/MH---CB-LTBI/Data/Output", 
-                         pattern = "*.rds")
+  namelist <- list.files(output_path, pattern = "\\.rds$")
+  
   namelist <- gsub("\\b.rds\\b", "", namelist)
   namelist <- gsub("\\bS2\\b", "", namelist)
   namelist <- substring(namelist, 2)
@@ -128,7 +129,7 @@ f2(0)
 # dev.off()
 myplot1 <-
   ggplot(ultbi.dt, aes(x = utility.dec*100, y = incremental.qalys)) +
-  geom_line(size = 1, color = "steelblue2") +
+  geom_line(linewidth = 1, color = "steelblue2") +
   geom_point(aes(x = f2(0),
                  y = 0), colour = "black", size = 12,
              shape = 1) + # this adds a point at the intercept
