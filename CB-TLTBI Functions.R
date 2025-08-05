@@ -543,3 +543,37 @@ DoRunModel <- function(strategy, start.year, cycles) {
 
 
 }
+
+
+# read_inputs.R
+
+read_inputs <- function(excel_path = "CEA_inputs_example.xlsx") {
+  library(readxl)
+  
+  # Read Excel sheets
+  general <- read_excel(excel_path, sheet = "general")
+  costs <- read_excel(excel_path, sheet = "costs")
+  utilities <- read_excel(excel_path, sheet = "utilities")
+  file_paths <- read_excel(excel_path, sheet = "file_paths")
+  
+  # Convert general to named list
+  general_list <- setNames(as.list(general$value), general$parameter)
+  general_list$population_size <- as.numeric(general_list$population_size)
+  general_list$ltbi_prevalence <- as.numeric(general_list$ltbi_prevalence)
+  general_list$treatment_uptake <- as.numeric(general_list$treatment_uptake)
+  general_list$discount_rate <- as.numeric(general_list$discount_rate)
+  
+  # Build final parameter list
+  inputs <- list(
+    scenario_name = general_list$scenario_name,
+    population_size = general_list$population_size,
+    ltbi_prevalence = general_list$ltbi_prevalence,
+    treatment_uptake = general_list$treatment_uptake,
+    discount_rate = general_list$discount_rate,
+    costs = costs,
+    utilities = utilities,
+    file_paths = file_paths
+  )
+  
+  return(inputs)
+}
