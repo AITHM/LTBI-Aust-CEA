@@ -45,8 +45,55 @@ if (!"p.tb.death" %in% names(base)) stop("Column 'p.tb.death' not found in basel
 basetbcount <- base[, sum(p.tb, na.rm = TRUE)]
 basetbdeath <- base[YEAR == finalyear, sum(p.tb.death, na.rm = TRUE)]
 
-# Define the tabfunc() here or source it from a helper file
-# ... (tabfunc logic remains unchanged) ...
+# Define the tabfunc() to calculate metrics for a given strategy
+
+tabfunc <- function(dt) {
+  dt <- as.data.table(dt)
+  strat <- dt$STRAT[1]
+  
+  # Total cost
+  sc_cols <- grep("^SC\\.", names(dt), value = TRUE)
+  fc_cols <- grep("^FC\\.", names(dt), value = TRUE)
+  dt[, SCsum := rowSums(.SD, na.rm = TRUE), .SDcols = sc_cols]
+  dt[, FCsum := rowSums(.SD, na.rm = TRUE), .SDcols = fc_cols]
+  totcost <- sum(dt$SCsum) + sum(dt$FCsum)
+  
+  # Total QALYs
+  sq_cols <- grep("^SQ\\.", names(dt), value = TRUE)
+  dt[, SQsum := rowSums(.SD, na.rm = TRUE), .SDcols = sq_cols]
+  qalytot <- sum(dt$SQsum)
+  
+  # Incremental values
+  totaddcost <- totcost - sum(base$SCsum) - sum(base$FCsum)
+  incremqaly <- qalytot - sum(base$SQsum)
+  
+  # ICER logic
+  if (totaddcost < 0 & incremqaly > 0) {
+    description <- "cost saving"
+    costperqaly <- totaddcost / incremqaly
+  } else if (totaddcost > 0 & incremqaly < 0) {
+    description <- "dominated"
+    costperqaly <- totaddcost / incremqaly
+  } else if (totaddcost < 0 & incremqaly < 0) {
+    description <- "lower cost and QALY"
+    costperqaly <- totaddcost / incremqaly
+  } else {
+    description <- "ICER"
+    costperqaly <- totaddcost / incremqaly
+  }
+  
+  result <- data.table(
+    strategy = strat,
+    total_cost = totcost,
+    total_qalys = qalytot,
+    incremental_cost = totaddcost,
+    incremental_qalys = incremqaly,
+    cost_per_qaly = costperqaly,
+    outcome = description
+  )
+  
+  return(result)
+}
 
 # Compare all strategies except baseline
 comparison_strategies <- setdiff(names(files), baseline_strategy)
