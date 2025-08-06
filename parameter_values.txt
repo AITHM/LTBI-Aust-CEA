@@ -1,0 +1,94 @@
+# parameter_values.R
+
+
+# Load parameters from Excel
+param_file <- "parameters.xlsx"
+params <- read_excel(param_file, sheet = "cascade_of_care")
+switches <- read_excel(param_file, sheet = "switches")
+costs <- read_excel(param_file, sheet = "costs")
+utility <- read_excel(param_file, sheet = "utilities")
+# Define lookup functions
+get_param <- function(name) {
+  val <- params$mid[params$p == name]
+  if (length(val) == 0) stop(paste("Parameter not found:", name))
+  return(val)
+}
+
+get_costs <- function(name) {
+  val <- costs$mid[costs$p == name]
+  if (length(val) == 0) stop(paste("Parameter not found:", name))
+  return(val)
+}
+get_utility <- function(name) {
+  val <- utility$mid[utility$p == name]
+  if (length(val) == 0) stop(paste("Parameter not found:", name))
+  return(val)
+}
+get_switch <- function(name) {
+  val <- switches$value[switches$name == name]
+  if (length(val) == 0) stop(paste("Switch not found:", name))
+  return(val)
+}
+
+# Load switches
+onshore <- as.numeric(get_switch("onshore"))
+emigration <- as.numeric(get_switch("emigration"))
+payerperspect <- as.numeric(get_switch("payerperspect"))
+disc <- as.numeric(get_switch("disc"))
+startyear <- as.numeric(get_switch("startyear"))
+totalcycles <- as.numeric(get_switch("totalcycles"))
+finalyear <- startyear + totalcycles
+kill.off.above <- as.numeric(get_switch("kill.off.above"))
+
+testlist <- strsplit(get_switch("testlist"), ",")[[1]]
+treatmentlist <- strsplit(get_switch("treatmentlist"), ",")[[1]]
+
+# Cost and utility inputs
+part.utility.dec <- 0.5
+ultbipart3HP <- get_utility("uhealthy") - ((get_utility("uhealthy") - get_utility("ultbi3HP")) * part.utility.dec)
+ultbipart4R <- get_utility("uhealthy") - ((get_utility("uhealthy") - get_utility("ultbi4R")) * part.utility.dec)
+ultbipart6H <- get_utility("uhealthy") - ((get_utility("uhealthy") - get_utility("ultbi6H")) * part.utility.dec)
+ultbipart9H <- get_utility("uhealthy") - ((get_utility("uhealthy") - get_utility("ultbi9H")) * part.utility.dec)
+
+# Partial treatment cost ratios
+part.appt <- 2
+part.med <- 3
+
+# Example cost calculations
+c.gp.review <- get_costs("c.gp.review")
+c.spec.first <- get_costs("c.spec.first")
+c.spec.review <- get_costs("c.spec.review")
+c.liver <- get_costs("c.liver")
+prop.spec <- get_costs("prop.spec")
+
+# Treatment regimens - example for 3HP
+treatments <- list()
+treatments$`3HP` <- list(
+  num_appt = get_param("num.appt3HP"),
+  med_cost = get_costs("cmed3HP")
+)
+
+appt_3HP <- treatments$`3HP`$num_appt * c.gp.review + c.liver
+spec_appt_3HP <- c.spec.first + (treatments$`3HP`$num_appt - 1) * c.spec.review + c.liver
+
+ctreat3HP <- appt_3HP + treatments$`3HP`$med_cost
+cparttreat3HP <- appt_3HP / part.appt + treatments$`3HP`$med_cost / part.med
+ctreatspec3HP <- spec_appt_3HP + treatments$`3HP`$med_cost
+cparttreatspec3HP <- spec_appt_3HP / part.appt + treatments$`3HP`$med_cost / part.med
+
+# Sensitivity analysis function
+sensfunc <- function(paramname, loworhigh) {
+  paramname <- deparse(substitute(paramname))
+  colname <- deparse(substitute(loworhigh))
+  newvalue <- params[params$p == paramname, ][[colname]]
+  params[params$p == paramname, "mid"] <<- newvalue
+}
+
+# Set scientific notation off for readability
+options(scipen = 999)
+
+# Placeholder for sourced files if needed (e.g., Medical costs.R)
+# source("Medical costs.R")
+
+# Further logic (e.g., target population filters, mortality functions)
+# can be added below or modularised into separate helper files
