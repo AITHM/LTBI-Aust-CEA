@@ -17,7 +17,8 @@
 #' https://google.github.io/styleguide/Rguide.xml
 #'===========================================================================================================
 
-package_list <- c("data.table", "tidyverse","lazyeval", "ggplot2", "rstudioapi","plyr", "tidyr","xlsx","RColorBrewer", "grid","scales","ggrepel", "egg", "cowplot", "gridExtra")
+
+package_list <- c("data.table", "tidyverse","lazyeval", "ggplot2", "rstudioapi","plyr", "tidyr","xlsx","RColorBrewer", "grid","scales","ggrepel", "egg", "cowplot", "gridExtra", "openxlsx", "readxl", "dplyr")
 for (pack in package_list) {
   if (!requireNamespace(pack, quietly = TRUE)) {
     install.packages(pack)
@@ -37,23 +38,61 @@ source("CB-TLTBI Functions.R")
 # Load input reader
 
 # Load inputs
-inputs <- read_inputs("CEA_inputs_example.xlsx")
 
-# View contents (for debugging)
-str(inputs)
 
-# Load scenario-specific files (example)
-tb_incidence <- read.csv(inputs$file_paths$file_path[inputs$file_paths$data_type == "tb_incidence"])
-age_dist <- read.csv(inputs$file_paths$file_path[inputs$file_paths$data_type == "age_distribution"])
+# Load all parameter sheets
+param_file <- "parameters.xlsx"
+
+# Main parameter table (e.g., for PSA)
+cascade_params <- read_excel(param_file, sheet = "cascade_of_care")
+
+# Clean up name column if needed
+cascade_params$p <- trimws(cascade_params$p)
+
+# Load other sheets
+utilities <- read_excel(param_file, sheet = "utilities")  # <- you may want to rename this to 'utilities'
+costs <- read_excel(param_file, sheet = "costs")
+age_dist <- read_excel(param_file, sheet = "age_dist")
+tb_incidence <- read_excel(param_file, sheet = "tb_incidence")
+
+
+
+
+
 #input parameter values
 # this reads in an rds file and determines the seetting and persp ectives
-source("Parameter values.R")
+#source("Parameter values.R")
+source("parameter_values.R")
 # prepare the data
+
+switches <- read_excel(param_file, sheet = "switches")
+
+get_switch <- function(name) {
+  val <- switches$value[switches$name == name]
+  if (length(val) == 0) stop(paste("Switch not found:", name))
+  return(val)
+}
+
+# Use the switches
+onshore <- as.numeric(get_switch("onshore"))
+emigration <- as.numeric(get_switch("emigration"))
+disc <- as.numeric(get_switch("disc"))
+startyear <- as.numeric(get_switch("startyear"))
+totalcycles <- as.numeric(get_switch("totalcycles"))
+finalyear <- startyear + totalcycles
+kill.off.above <- as.numeric(get_switch("kill.off.above"))
+
+# Convert string lists
+testlist <- strsplit(get_switch("testlist"), ",")[[1]]
+treatmentlist <- strsplit(get_switch("treatmentlist"), ",")[[1]]
+
+
+
 
 source("CB-TLTBI_DataPreparation.R")
 
-source("Model run.R")
-source("CEA analysis.R")
+source("model_run.R")
+source("cea_analysis.R")
 source("ltbiutility figure.R")
 
 
