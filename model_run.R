@@ -1,122 +1,76 @@
-# parameter_values.R
+# Model run.R (Refactored)
 
-# Load required packages
+library(data.table)
+library(lazyeval)
 library(readxl)
-library(dplyr)
 
-# Load parameters from Excel
-param_file <- "parameters.xlsx"
-params <- read_excel(param_file, sheet = "cascade_of_care")
-switches <- read_excel(param_file, sheet = "switches")
-costs <- read_excel(param_file, sheet = "costs")
-utility <- read_excel(param_file, sheet = "utilities")
+# Set working directory
+this_file_path <- dirname(rstudioapi::getActiveDocumentContext()$path)
+setwd(this_file_path)
 
-# Define lookup functions
-get_param <- function(name) {
-  val <- params$mid[params$p == name]
-  if (length(val) == 0) stop(paste("Parameter not found:", name))
-  assign(name, val, envir = .GlobalEnv)
-  return(val)
-}
+# Load parameter values and setup
+parameters.already.set <- 0
+source("parameter_values.R")
+source("CB-TLTBI Functions.R")
+source("CB-TLTBI_DataPreparation.R")
 
-get_costs <- function(name) {
-  val <- costs$mid[costs$p == name]
-  if (length(val) == 0) stop(paste("Parameter not found:", name))
-  assign(name, val, envir = .GlobalEnv)
-  return(val)
-}
+# Load additional required data from Excel
+mortality <- as.data.table(read_excel("parameters.xlsx", sheet = "mortality"))
+sae.rate <- as.data.table(read_excel("parameters.xlsx", sheet = "sae_rate"))
+sae.mortality <- as.data.table(read_excel("parameters.xlsx", sheet = "sae_mortality"))
+rradjrates <- as.data.table(read_excel("parameters.xlsx", sheet = "rradjrates"))
+tb.mortality <- as.data.table(read_excel("parameters.xlsx", sheet = "tb_mortality"))
 
-get_utility <- function(name) {
-  val <- utility$mid[utility$p == name]
-  if (length(val) == 0) stop(paste("Parameter not found:", name))
-  assign(name, val, envir = .GlobalEnv)
-  return(val)
-}
+vic.mortality <- mortality
+vic.tb.mortality <- tb.mortality
+vic.tb.mortality[, age := as.integer(age)]
 
-get_switch <- function(name) {
-  if (!(name %in% switches$name)) {
-    stop(paste("Switch not found:", name))
+# Create state names and derived labels
+state.names <- c("p.sus", "p.sus.notest", "p.sus.nf", "p.sus.nbt", "p.sus.nct", "p.sus.tc",
+                 "p.sus.sae", "p.sus.sae.death", "p.sus.no.risk",
+                 "p.ltbi", "p.ltbi.notest", "p.ltbi.nf", "p.ltbi.nbt", "p.ltbi.nct", "p.ltbi.tc",
+                 "p.ltbi.sae", "p.ltbi.sae.death", "p.ltbi.ongoing.risk", "p.ltbi.no.risk",
+                 "p.tb", "p.tbr", "p.tb.death", "p.death", "p.emigrate")
+
+state.number <- length(state.names)
+new.state.names <- c(state.names,
+                     paste("V.", state.names, sep = ""),
+                     paste("SC.", state.names, sep = ""),
+                     paste("FC.", state.names, sep = ""),
+                     paste("SQ.", state.names, sep = ""))
+
+# Define argument list for transitions
+arglist <- CreateArgumentList(state.names, state.number)
+
+# Run the model for each test/treatment combo and save results
+for (test in testlist) {
+  for (treat in treatmentlist) {
+    
+    testing <- test
+    treatment <- treat
+    strategy <- paste(test, treat, sep = "_")
+    
+    # Transition matrices
+    arglist.S1.TM <- arglist$load.list("S1.TMKD")
+    arglist.BASELINE.S1.TM <- arglist$load.list("BASELINE.S1.TMKD")
+    
+    # State creation
+    CreateStates(state.names)
+    
+    # Define strategies
+    S2 <- DefineStrategy(..., transition.matrix = do.call(DefineTransition, arglist.S1.TM))
+    S0_12 <- DefineStrategy(..., transition.matrix = do.call(DefineTransition, arglist.BASELINE.S1.TM))
+    
+    # Define parameters
+    parameters <- DefineParameters(...)
+    
+    # Run model
+    result_baseline <- DoRunModel(S0_12, startyear, totalcycles)
+    result_strategy <- DoRunModel(S2, startyear, totalcycles)
+    
+    # Save results
+    dir.create("Data/Output", showWarnings = FALSE, recursive = TRUE)
+    saveRDS(result_baseline, file = file.path("Data", "Output", paste0("S0_", strategy, ".rds")))
+    saveRDS(result_strategy, file = file.path("Data", "Output", paste0("S2_", strategy, ".rds")))
   }
-  val <- switches$value[switches$name == name]
-  assign(name, val, envir = .GlobalEnv)
-  return(val)
 }
-
-# Load switches
-onshore <- as.numeric(get_switch("onshore"))
-emigration <- as.numeric(get_switch("emigration"))
-payerperspect <- as.numeric(get_switch("payerperspect"))
-disc <- as.numeric(get_switch("disc"))
-startyear <- as.numeric(get_switch("startyear"))
-totalcycles <- as.numeric(get_switch("totalcycles"))
-finalyear <- startyear + totalcycles
-kill.off.above <- as.numeric(get_switch("kill.off.above"))
-
-migrant.inflow.size <- as.numeric(get_switch("migrant.inflow.size"))
-finalinflow <- as.numeric(get_switch("finalinflow"))
-
-testlist <- strsplit(get_switch("testlist"), ",")[[1]]
-treatmentlist <- strsplit(get_switch("treatmentlist"), ",")[[1]]
-
-# Cost and utility inputs
-part.utility.dec <- 0.5
-ultbipart3HP <- get_utility("uhealthy") - ((get_utility("uhealthy") - get_utility("ultbi3HP")) * part.utility.dec)
-ultbipart4R <- get_utility("uhealthy") - ((get_utility("uhealthy") - get_utility("ultbi4R")) * part.utility.dec)
-ultbipart6H <- get_utility("uhealthy") - ((get_utility("uhealthy") - get_utility("ultbi6H")) * part.utility.dec)
-ultbipart9H <- get_utility("uhealthy") - ((get_utility("uhealthy") - get_utility("ultbi9H")) * part.utility.dec)
-
-# Partial treatment cost ratios
-part.appt <- 2
-part.med <- 3
-
-# Composite costs (using cascade parameters)
-c.gp.first <- get_costs("c.gp.c.vr") * (1 - get_param("proportion.nonvr")) + get_costs("c.gp.c.nonvr") * get_param("proportion.nonvr")
-c.gp.review <- get_costs("c.gp.b.vr") * (1 - get_param("proportion.nonvr")) + get_costs("c.gp.b.nonvr") * get_param("proportion.nonvr")
-
-# Base costs
-c.spec.first <- get_costs("c.spec.first")
-c.spec.review <- get_costs("c.spec.review")
-c.liver <- get_costs("c.liver")
-prop.spec <- get_param("prop.spec")
-chance.of.needing.mcs <- get_param("chance.of.needing.mcs")
-c.mcs <- get_costs("c.mcs")
-c.cxr <- get_costs("c.cxr")
-
-# Attendance cost logic
-if (onshore == 0) {
-  cattend <- c.gp.first + (c.mcs * chance.of.needing.mcs) + c.cxr
-} else {
-  cattend <- ((c.gp.review + (c.mcs * chance.of.needing.mcs) + c.cxr) * (1 - prop.spec)) +
-    ((c.spec.first + (c.mcs * chance.of.needing.mcs) + c.cxr) * prop.spec)
-}
-
-# Treatment regimens: 3HP, 4R, 6H, 9H
-treatments <- list()
-for (regimen in c("3HP", "4R", "6H", "9H")) {
-  treatments[[regimen]] <- list(
-    num_appt = get_param(paste0("num.appt", regimen)),
-    med_cost = get_costs(paste0("cmed", regimen))
-  )
-  
-  appt <- treatments[[regimen]]$num_appt * c.gp.review + ifelse(regimen %in% c("3HP", "6H", "9H"), c.liver, 0)
-  spec_appt <- c.spec.first + (treatments[[regimen]]$num_appt - 1) * c.spec.review + ifelse(regimen %in% c("3HP", "6H", "9H"), c.liver, 0)
-  
-  assign(paste0("ctreat", regimen), appt + treatments[[regimen]]$med_cost)
-  assign(paste0("cparttreat", regimen), appt / part.appt + treatments[[regimen]]$med_cost / part.med)
-  assign(paste0("ctreatspec", regimen), spec_appt + treatments[[regimen]]$med_cost)
-  assign(paste0("cparttreatspec", regimen), spec_appt / part.appt + treatments[[regimen]]$med_cost / part.med)
-}
-
-# Sensitivity analysis function
-sensfunc <- function(paramname, loworhigh) {
-  paramname <- deparse(substitute(paramname))
-  colname <- deparse(substitute(loworhigh))
-  newvalue <- params[params$p == paramname, ][[colname]]
-  params[params$p == paramname, "mid"] <<- newvalue
-}
-
-# Set scientific notation off for readability
-options(scipen = 999)
-
-# Placeholder for sourced files if needed (e.g., Medical costs.R)
-# source("Medical costs.R")
