@@ -1,0 +1,25 @@
+FROM\TO,p_sus,p_sus_notest,p_sus_nf,p_sus_nbt,p_sus_nct,p_sus_tc,p_sus_sae,p_sus_sae_death,p_sus_no_risk,p_ltbi,p_ltbi_notest,p_ltbi_nf,p_ltbi_nbt,p_ltbi_nct,p_ltbi_tc,p_ltbi_sae,p_ltbi_sae_death,p_ltbi_ongoing_risk,p_ltbi_no_risk,p_tb,p_tbr,p_tb_death,p_death,p_emigrate
+p_sus,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_sus_notest,1 - ( param.ATTENDSCREEN),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_sus_nf,( param.ATTENDSCREEN) * (1 - (1 - param.TESTSP) * param.ATTEND),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_sus_nbt,( param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * (1 - param.BEGINTREAT),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_sus_nct,( param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * (1 - param.TREATCOMPLETE - param.SAE),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_sus_tc,( param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * param.TREATCOMPLETE,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_sus_sae,( param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * param.SAE,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_sus_sae_death,0,0,0,0,0,0,param.SAEMR,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_sus_no_risk,0,CMP,CMP,CMP,CMP,CMP,CMP,0,CMP,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_ltbi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_ltbi_notest,0,0,0,0,0,0,0,0,0,(1 - ( param.ATTENDSCREEN)) * (1 - (param.RR * param.RRADJUST)),0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_ltbi_nf,0,0,0,0,0,0,0,0,0,( param.ATTENDSCREEN) * (1 - (param.TESTSN * param.ATTEND) - (param.RR * param.RRADJUST * (1 - ((param.TESTSN * param.ATTEND * param.BEGINTREAT * param.TREATR) * (1 - param.TIMETOTREAT)))) ),0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_ltbi_nbt,0,0,0,0,0,0,0,0,0, param.ATTENDSCREEN * param.TESTSN * param.ATTEND * (1 - param.BEGINTREAT),0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_ltbi_nct,0,0,0,0,0,0,0,0,0, param.ATTENDSCREEN * param.TESTSN * param.ATTEND * param.BEGINTREAT * (1 - param.TREATCOMPLETE - param.SAE),0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_ltbi_tc,0,0,0,0,0,0,0,0,0, param.ATTENDSCREEN * param.TESTSN * param.ATTEND * param.BEGINTREAT * param.TREATCOMPLETE,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_ltbi_sae,0,0,0,0,0,0,0,0,0,( param.ATTENDSCREEN) * param.TESTSN * param.ATTEND * param.BEGINTREAT * param.SAE,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+p_ltbi_sae_death,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,param.SAEMR,1,0,0,0,0,0,0,0
+p_ltbi_ongoing_risk,0,0,0,0,0,0,0,0,0,0,CMP,CMP,CMP,CMP,CMP,CMP,0,CMP,0,0,0,0,0,0
+p_ltbi_no_risk,0,0,0,0,0,0,0,0,0,0,0,0,0,param.PART_TREAT_EFFICACY,param.FULL_TREAT_EFFICACY - (param.MR * param.FULL_TREAT_EFFICACY),0,0,0,CMP,0,0,0,0,0
+p_tb,0,0,0,0,0,0,0,0,0,((1 - ( param.ATTENDSCREEN)) * param.RR * param.RRADJUST) + (( param.ATTENDSCREEN) * param.RR * param.RRADJUST * (1 - ((param.TESTSN * param.ATTEND * param.BEGINTREAT * param.TREATR) * (1 - param.TIMETOTREAT)))),param.RR * param.RRADJUST,param.RR * param.RRADJUST,param.RR * param.RRADJUST,(1 - param.PART_TREAT_EFFICACY) * param.RR * param.RRADJUST,(1 - param.FULL_TREAT_EFFICACY - param.MR * (1 - param.FULL_TREAT_EFFICACY)) * param.RR * param.RRADJUST,param.RR * param.RRADJUST,0,param.RR * param.RRADJUST,0,0,0,0,0,0
+p_tbr,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,CMP,CMP,0,0,0
+p_tb_death,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,param.TBMR,0,1,0,0
+p_death,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,0,0,0,1,0
+p_emigrate,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,0,1
