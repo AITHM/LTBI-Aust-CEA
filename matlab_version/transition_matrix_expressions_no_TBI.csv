@@ -1,0 +1,11 @@
+,,,,,,,,,,
+1 - (param.POP * param.ATTENDSCREEN),,,,,,,,,,
+(param.POP * param.ATTENDSCREEN) * (1 - param.ATTEND),,,,,,,,,,
+(param.POP * param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * (1 - param.BEGINTREAT),,,,,,,,,,
+(param.POP * param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * (1 - param.TREATCOMPLETE - param.SAE),,,,,,,,,,
+(param.POP * param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * param.TREATCOMPLETE,,,,,,,,,,
+(param.POP * param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * param.SAE,,,,,,,,,,
+,,,,,,param.SAEMR,1,,,
+,CMP,CMP,CMP,CMP,CMP,CMP,,CMP,,
+param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,1,
+param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,,1
