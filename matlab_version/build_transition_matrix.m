@@ -14,9 +14,9 @@ n_states = length(state_names);
 param = p.cascade_of_care;
 
 % Alias fields to match transition matrix notation
-param.POP = 1;
-param.ATTEND = param.att;
-param.ATTENDSCREEN = param.attscreen;
+
+param.ATTENDCLINIC = param.att;
+param.SCREEN = param.attscreen;
 param.BEGINTREAT = param.begintrt;
 param.TESTSN = param.snqftgit;
 param.TESTSP = param.spqftgit;
@@ -26,12 +26,12 @@ idx = @(s) find(strcmp(state_names, s));
 param = p.cascade_of_care;
 
 % -- SUS transitions --
-T{idx('p_sus_notest'), idx('p_sus')} = '1 - ( param.ATTENDSCREEN)';
-T{idx('p_sus_nf'), idx('p_sus')} = '( param.ATTENDSCREEN) * (1 - (1 - param.TESTSP) * param.ATTEND)';
-T{idx('p_sus_nbt'), idx('p_sus')} = '( param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * (1 - param.BEGINTREAT)';
-T{idx('p_sus_nct'), idx('p_sus')} = '( param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * (1 - param.TREATCOMPLETE - param.SAE)';
-T{idx('p_sus_tc'), idx('p_sus')} = '( param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * param.TREATCOMPLETE';
-T{idx('p_sus_sae'), idx('p_sus')} = '( param.ATTENDSCREEN) * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * param.SAE';
+T{idx('p_sus_notest'), idx('p_sus')} = '1 - ( param.SCREEN)'; % not screened
+T{idx('p_sus_nf'), idx('p_sus')} = '( param.SCREEN) * (1 - param.ATTENDCLINIC)'; % went to screening but not to clinic for result
+T{idx('p_sus_nbt'), idx('p_sus')} = '( param.SCREEN) * (1 - param.TESTSP) * param.ATTENDCLINIC * (1 - param.BEGINTREAT)';% went to screening, got a FP result but declined treatment
+T{idx('p_sus_nct'), idx('p_sus')} = '( param.SCREEN) * (1 - param.TESTSP) * param.ATTENDCLINIC * param.BEGINTREAT * (1 - param.TREATCOMPLETE - param.SAE)';% went to screening, got a FP result and were partially treated
+T{idx('p_sus_tc'), idx('p_sus')} = '( param.SCREEN) * (1 - param.TESTSP) * param.ATTENDCLINIC * param.BEGINTREAT * param.TREATCOMPLETE';% went to screening, got a FP result and were  treated
+T{idx('p_sus_sae'), idx('p_sus')} = '( param.SCREEN) * (1 - param.TESTSP) * param.ATTENDCLINIC * param.BEGINTREAT * param.SAE';% went to screening, got a FP result and had an adverse event
 
 % -- SAE transitions --
 T{idx('p_sus_sae_death'), idx('p_sus_sae')} = 'param.SAEMR';
@@ -44,12 +44,12 @@ for i = 1:length(sus_end_states)
 end
 
 % -- LTBI transitions --
-T{idx('p_ltbi_notest'), idx('p_ltbi')} = '(1 - ( param.ATTENDSCREEN)) * (1 - (param.RR * param.RRADJUST))';
-T{idx('p_ltbi_nf'), idx('p_ltbi')} = '( param.ATTENDSCREEN) * (1 - (param.TESTSN * param.ATTEND) - (param.RR * param.RRADJUST * (1 - ((param.TESTSN * param.ATTEND * param.BEGINTREAT * param.TREATR) * (1 - param.TIMETOTREAT)))) )';
-T{idx('p_ltbi_nbt'), idx('p_ltbi')} = ' param.ATTENDSCREEN * param.TESTSN * param.ATTEND * (1 - param.BEGINTREAT)';
-T{idx('p_ltbi_nct'), idx('p_ltbi')} = ' param.ATTENDSCREEN * param.TESTSN * param.ATTEND * param.BEGINTREAT * (1 - param.TREATCOMPLETE - param.SAE)';
-T{idx('p_ltbi_tc'), idx('p_ltbi')} = ' param.ATTENDSCREEN * param.TESTSN * param.ATTEND * param.BEGINTREAT * param.TREATCOMPLETE';
-T{idx('p_ltbi_sae'), idx('p_ltbi')} = '( param.ATTENDSCREEN) * param.TESTSN * param.ATTEND * param.BEGINTREAT * param.SAE';
+T{idx('p_ltbi_notest'), idx('p_ltbi')} = '(1 - param.SCREEN) '; % not screened
+T{idx('p_ltbi_nf'), idx('p_ltbi')} = 'param.SCREEN * (1 -  param.ATTENDCLINIC)';% went to screening but not to clinic for result
+T{idx('p_ltbi_nbt'), idx('p_ltbi')} = 'param.SCREEN * param.TESTSN * param.ATTENDCLINIC * (1 - param.BEGINTREAT)';% went to screening, got a TP result but declined treatment
+T{idx('p_ltbi_nct'), idx('p_ltbi')} = 'param.SCREEN * param.TESTSN * param.ATTENDCLINIC * param.BEGINTREAT * (1 - param.TREATCOMPLETE - param.SAE)';% went to screening, got a TP result and were partially treated
+T{idx('p_ltbi_tc'), idx('p_ltbi')} = 'param.SCREEN * param.TESTSN * param.ATTENDCLINIC * param.BEGINTREAT * param.TREATCOMPLETE';% went to screening, got a TP result and were  treated
+T{idx('p_ltbi_sae'), idx('p_ltbi')} = 'param.SCREEN * param.TESTSN * param.ATTENDCLINIC * param.BEGINTREAT * param.SAE';% went to screening, got a TP result and had an adverse event
 T{idx('p_ltbi_sae_death'), idx('p_ltbi_sae')} = 'param.SAEMR';
 T{idx('p_ltbi_sae_death'), idx('p_ltbi_sae_death')} = '1';
 
@@ -59,18 +59,21 @@ for i = 1:length(ltbi_paths)
 end
 
 T{idx('p_ltbi_no_risk'), idx('p_ltbi_nct')} = 'param.PART_TREAT_EFFICACY';
-T{idx('p_ltbi_no_risk'), idx('p_ltbi_tc')} = 'param.FULL_TREAT_EFFICACY - (param.MR * param.FULL_TREAT_EFFICACY)';
+T{idx('p_ltbi_no_risk'), idx('p_ltbi_tc')} = 'param.FULL_TREAT_EFFICACY';
 T{idx('p_ltbi_no_risk'), idx('p_ltbi_no_risk')} = 'CMP';
+T{idx('p_ltbi_ongoing_risk'), idx('p_ltbi_nct')} = '(1-param.PART_TREAT_EFFICACY)';
+T{idx('p_ltbi_ongoing_risk'), idx('p_ltbi_tc')} = '(1-param.FULL_TREAT_EFFICACY)';
 
 % -- Reactivation to TB --
-T{idx('p_tb'), idx('p_ltbi')} = '((1 - ( param.ATTENDSCREEN)) * param.RR * param.RRADJUST) + (( param.ATTENDSCREEN) * param.RR * param.RRADJUST * (1 - ((param.TESTSN * param.ATTEND * param.BEGINTREAT * param.TREATR) * (1 - param.TIMETOTREAT))))';
-T{idx('p_tb'), idx('p_ltbi_notest')} = 'param.RR * param.RRADJUST';
-T{idx('p_tb'), idx('p_ltbi_nf')} = 'param.RR * param.RRADJUST';
-T{idx('p_tb'), idx('p_ltbi_nbt')} = 'param.RR * param.RRADJUST';
-T{idx('p_tb'), idx('p_ltbi_nct')} = '(1 - param.PART_TREAT_EFFICACY) * param.RR * param.RRADJUST';
-T{idx('p_tb'), idx('p_ltbi_tc')} = '(1 - param.FULL_TREAT_EFFICACY - param.MR * (1 - param.FULL_TREAT_EFFICACY)) * param.RR * param.RRADJUST';
-T{idx('p_tb'), idx('p_ltbi_sae')} = 'param.RR * param.RRADJUST';
-T{idx('p_tb'), idx('p_ltbi_ongoing_risk')} = 'param.RR * param.RRADJUST';
+T{idx('p_tb'), idx('p_ltbi')} = 0;
+T{idx('p_tb'), idx('p_ltbi_notest')} = 0;
+T{idx('p_tb'), idx('p_ltbi_nf')} = 0;
+T{idx('p_tb'), idx('p_ltbi_nbt')} = 0;
+T{idx('p_tb'), idx('p_ltbi_nct')} = 0;
+T{idx('p_tb'), idx('p_ltbi_tc')} = 0;
+T{idx('p_tb'), idx('p_ltbi_sae')} = 0';
+T{idx('p_tb'), idx('p_ltbi_ongoing_risk')} = 'param.RR * param.RRADJUST';% Reactivation to TB occurs only from ongoing risk group
+
 
 % -- TB to TBR and death
 T{idx('p_tbr'), idx('p_tb')} = 'CMP';
