@@ -1,0 +1,12 @@
+FROM\TO,p_sus,p_sus_notest,p_sus_nf,p_sus_nbt,p_sus_nct,p_sus_tc,p_sus_sae,p_sus_sae_death,p_sus_no_risk,p_death,p_emigrate
+p_sus,0,0,0,0,0,0,0,0,0,0,0
+p_sus_notest,1 - param.ATTENDSCREEN,0,0,0,0,0,0,0,0,0,0
+p_sus_nf,param.ATTENDSCREEN * (1 - (1 - param.TESTSP) * param.ATTEND),0,0,0,0,0,0,0,0,0,0
+p_sus_nbt,param.ATTENDSCREEN * (1 - param.TESTSP) * param.ATTEND * (1 - param.BEGINTREAT),0,0,0,0,0,0,0,0,0,0
+p_sus_nct,param.ATTENDSCREEN * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * (1 - param.TREATCOMPLETE - param.SAE),0,0,0,0,0,0,0,0,0,0
+p_sus_tc,param.ATTENDSCREEN * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * param.TREATCOMPLETE,0,0,0,0,0,0,0,0,0,0
+p_sus_sae,param.ATTENDSCREEN * (1 - param.TESTSP) * param.ATTEND * param.BEGINTREAT * param.SAE,0,0,0,0,0,0,0,0,0,0
+p_sus_sae_death,0,0,0,0,0,0,param.SAEMR,1,0,0,0
+p_sus_no_risk,0,CMP,CMP,CMP,CMP,CMP,CMP,0,CMP,0,0
+p_death,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,param.MR,1,0
+p_emigrate,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,param.EMIGRATE,0,1
